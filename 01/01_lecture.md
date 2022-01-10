@@ -279,7 +279,7 @@ To *follow the arrow*, you must *dereference* the pointer: `*b == 6`.
 ```c
 #include <stdio.h>
 
-int value;
+static int value;
 
 /* here, the `*` is part of the type "int *", i.e. a pointer to an `int` */
 void
@@ -411,7 +411,7 @@ There are types when one wants to iterate through each byte of an array, even if
 For example, the `memset` and `memcmp` functions set each byte in an range of memory, and byte-wise compare two ranges of memory.
 In such cases, *casts* can be used to manipulate the pointer type (e.g. `(char *)a` enables `a` to not be referenced with pointer arithmetic that iterates through bytes).
 
-#### Examples
+#### Example
 
 ```c
 #include <stdio.h>
@@ -450,7 +450,7 @@ main(void)
 
 ```
 
-#### Pointer Types
+#### Generic Pointer Types
 
 Generally, if you want to treat a pointer type as another, you need to use a cast.
 You rarely want to do this (see the `memset` example below to see an example where you might want it).

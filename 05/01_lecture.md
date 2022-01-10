@@ -301,7 +301,7 @@ $ gcc -print-search-dirs | grep libraries | sed 's/libraries: =//' | tr -s ":" '
 As many of these paths are in directories that any user can access, this is how the functionality of these libraries can be accessed by any program wishing to use them.
 As we compile our `ptrie` library as a static library, you've already seen one example of these in use.
 
-### Saving Memory with Shared Libraries
+### Saving Memory with Static Libraries
 
 Static libraries do provide some facilities for trying to shrink the amount of memory required for library code.
 If this was all done naively, then all of the object files in a static library could get loaded into a program with which it is linked.
@@ -459,5 +459,10 @@ As such, dynamic libraries typically only require memory for each library *once*
 **Static vs. dynamic library memory usage.**
 When a program is linked with a static library, the result is relatively small as only the objects in the library that are necessary are linked into the program.
 In contrast, a program that uses a dynamic library links in the entire library.
-Thus, for a *single* program, a static library approach is likely going to be more memory-efficient.
-However, in a system with *many* processes, the per-library memory, rather than per-process memory, will result in significantly less memory consumption.
+Thus, for a *single* program, a static library approach is almost always going to be more memory-efficient.
+
+However, in a system with *many* executing programs, the per-library memory, rather than per-process memory, will result in significantly less memory consumption.
+Requiring only a *single copy* of a *larger* dynamic library shared between all processes, uses less memory than *multiple copies* of *smaller* compilations of the library in each program.
+
+*Question:* OSX uses dynamically linked libraries for a few common libraries, and static libraries for the rest.
+Why?

@@ -90,6 +90,15 @@ class LinkedListOfStudents {
 
 	// ...
 }
+// This looks like the following. Note separate allocations for Node and Student
+//
+// head --> Node------+    ,-->Node-----+
+//          | s  next |---'    | s next |---...
+//          +-|-------+        +-|------+
+//            v                  V
+//          Student-+           Student-+
+//          | ...   |           | ...   |
+//          +-------+           +-------+
 ```
 
 Lets see the same in C.
@@ -132,6 +141,15 @@ main(void)
 
 	return 0;
 }
+
+/*
+ * This looks something like the following. Linked list is *internal* to student.
+ *
+ * head ----> student-+     ,-> student-+
+ *            | ...   |    ,    | ...   |
+ *            | next  |---'     | next  |--> NULL
+ *            +-------+         +-------+
+ */
 ```
 
 A few interesting things happened here:
@@ -716,6 +734,8 @@ main(void)
 	extracted = strtol(substr, &substr, 10);
 	printf("extracted %ld, remaining string: \"%s\"\n", extracted, substr);
 	substr_saved = substr;
+
+	/* what happens when we cannot extract a long? */
 	extracted = strtol(substr_saved, &substr, 10);
 	assert(extracted == 0 && substr_saved == substr);                     /* verify that we couldn't extract an integer */
 

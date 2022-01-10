@@ -131,8 +131,12 @@ main(void)
 		 */
 	} else if (amnt > 0 && amnt < hi_sz) {
 		/*
-		 * Didn't write everythign we wanted, better call write again with
-		 * `hi[amnt]` and `hi_sz - amnt`
+		 * Didn't write everythign we wanted, better call write again sending
+		 * data starting at `&hi[amnt]`, of length `hi_sz - amnt`.
+		 */
+	} else if (amnt == hi_sz) {
+		/*
+		 * Wrote out everything! Wooo!
 		 */
 	} else { /* amnt == -1 */
 		/* Could be a genuine error, but not always... */
