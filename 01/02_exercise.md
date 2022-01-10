@@ -1,3 +1,4 @@
+
 ## Example: C is a Thin Language Layer on Top of Memory
 
 We're going to look at a set of variables as memory.
