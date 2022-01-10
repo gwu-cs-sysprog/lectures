@@ -4,7 +4,8 @@
 ## Objectives
 
 - Recalling C types with a focus on pointers.
-- Practice thinking about C programs as memory
+- Focus on more advanced features like `void *`s and function pointers.
+- Practice thinking about C programs as memory.
 
 ## Types
 
@@ -55,14 +56,18 @@ You can choose the values explicitly (e.g. `enum grades { MON = 1, TUES = 2, WED
 
 **Modifiers**
 
-- `unsigned` - variables that cannot be negative. Given that variables have a fixed bit-width, they can use the extra bit ("negative" no longer needs to be tracked) to instead represent numbers twice the size of `signed` variants.
+- `unsigned` - variables that cannot be negative.
+    Given that variables have a fixed bit-width, they can use the extra bit ("negative" no longer needs to be tracked) to instead represent numbers twice the size of `signed` variants.
 - `signed` - signed variables.
     You don't see this modifier as much because `char`, `int`, `long` all default to `signed`.
 - `long` - Used to modify another type to make it larger in some cases.
 	`long int` can represent larger numbers and is synonymous with `long`.
 	`long long int` (or `long long`) is an even larger value!
+- `static` - this variable should not be accessible *outside of the .c file* in which it is defined.
 - `const` - an immutable value.
 	We won't focus much on this modifier.
+- `volatile` - this variable should be "read from memory" every time it is accessed.
+    Confusing now, relevant later, but not a focus.
 
 #### Examples
 
@@ -204,13 +209,15 @@ main(void)
 {
 	union food f_eggs, f_burger;
 
-	f_eggs.num_eggs = 10; /* now I shouldn't access `.burger` in `f_eggs` */
+	/* now I shouldn't access `.burger` in `f_eggs` */
+	f_eggs.num_eggs = 10;
 	/* This is just syntax for structure initialization. */
 	f_burger.burger = (struct hamburger) {
 		.num_burgers = 5,
 		.cheese      = 1,
 		.num_patties = 1
-	};                    /* now shouldn't access `.num_eggs` in `f_burger` */
+	};
+	/* now shouldn't access `.num_eggs` in `f_burger` */
 
 	printf("Size of union:  %ld\nSize of struct: %ld\n",
 		   sizeof(union food), sizeof(struct all_food));
@@ -219,26 +226,30 @@ main(void)
 }
 ```
 
-Note: The structure initialization syntax in this example is simply a shorthand.
-The `struct hamburger` initialization above is equivalent to:
+We can see the effect of the `union`: The size is `max(fields)` rather than `sum(fields)`.
+What other examples can you think of where you might want `union`s?
 
-```
-f_burger.burger.num_burgers = 5;
-f_burger.burger.cheese      = 1;
-f_burger.burger.num_patties = 1;
-```
-
-Though since there are so many `.`s, this is a little confusing.
-We'd typically want to simply as:
-
-```
-struct hamburger *h = &f_burger.burger;
-h->num_burgers = 5;
-h->cheese      = 1;
-h->num_patties = 1;
-```
-
-More on `->` in the next section.
+> An aside on syntax:
+> The structure initialization syntax in this example is simply a shorthand.
+> The `struct hamburger` initialization above is equivalent to:
+>
+> ``` c
+> f_burger.burger.num_burgers = 5;
+> f_burger.burger.cheese      = 1;
+> f_burger.burger.num_patties = 1;
+> ```
+>
+> Though since there are so many `.`s, this is a little confusing.
+> We'd typically want to simply as:
+>
+> ``` c
+> struct hamburger *h = &f_burger.burger;
+> h->num_burgers = 5;
+> h->cheese      = 1;
+> h->num_patties = 1;
+> ```
+>
+> More on `->` in the next section.
 
 ### Pointers & Arrays
 
@@ -270,10 +281,14 @@ To *follow the arrow*, you must *dereference* the pointer: `*b == 6`.
 
 int value;
 
+/* here, the `*` is part of the type "int *", i.e. a pointer to an `int` */
 void
-foo(int *ptr) /* here, the `*` is part of the type "int *", i.e. a pointer to an `int` */
+foo(int *ptr)
 {
-	/* here, the `*` is the dereference operation, and gives us the value that is pointed to */
+	/*
+	 * Here, the `*` is the dereference operation, and
+	 * gives us the value that is pointed to.
+	 */
 	*ptr = 1;
 }
 
@@ -282,7 +297,7 @@ main(void)
 {
 	printf("value is initialized to %d\n", value);
 
-	foo(&value); /* `&` gives us the address of the variable `value` */
+ 	foo(&value); /* `&` gives us the address of the variable `value` */
 	printf("value updated to %d\n", value);
 
 	return value - 1;
@@ -362,7 +377,10 @@ main(void)
 {
 	int a[] = {6, 7, 8, 9};
 	char b[] = {'a', 'b', 'c', 'd'};
-	/* Calculation: How big is the array? How big is each item? The division is the number of items. */
+	/*
+	 * Calculation: How big is the array?
+	 * How big is each item? The division is the number of items.
+	 */
 	int num_items = sizeof(a) / sizeof(a[0]);
 	int i;
 
@@ -478,75 +496,6 @@ Indexing into arrays (`a[b]`) and arrows (`a->b`) are redundant syntactic featur
 - `a->b` is equivalent to `(*a).b` where `a` is a pointer to a variable with a structure type that has `b` as a field.
 
 Generally, you should always try and stick to the array and arrow syntax were possible, as it makes your intention much more clear when coding than the pointer arithmetic and dereferences.
-
-## Example: C is a Thin Language Layer on Top of Memory
-
-We're going to look at a set of variables as memory.
-When variables are created globally, they are simply allocated into subsequent addresses.
-
-```c
-#include <stdio.h>
-#include <string.h>
-
-void print_values(void);
-
-unsigned char a = 1;
-int b = 2;
-struct foo {
-	long c_a, c_b;
-	int *c_c;
-};
-struct foo c = (struct foo) { .c_a = 3, .c_c = &b };
-unsigned char end;
-
-int
-main(void)
-{
-	size_t vars_size;
-	unsigned int i;
-	unsigned char *mem;
-
-	/* Q1: What would you predict the output of &end - &a is? */
-	printf("Addresses:\na   @ %p\nb   @ %p\nc   @ %p\nend @ %p\n&end - &a = %ld\n",
-		   &a, &b, &c, &end, &end - &a);
-	printf("\nInitial values:\n");
-	print_values();
-	/* Q2: Describe what these next two lines are doing. */
-	vars_size = &end - &a;
-	mem = &a;
-	/* Q3: What would you expect in the following printout? */
-	printf("\nPrint out the variables as raw memory\n");
-	for (i = 0; i < vars_size; i++) {
-		unsigned char c = mem[i];
-//		printf("%x ", c);
-	}
-	/* Q4: What would you expect in the following printout? */
-	memset(&a, 0, vars_size);
-	printf("\n\nPost-`memset` values:\n");
-//	print_values();
-
-	return 0;
-}
-
-void
-print_values(void)
-{
-	printf("a     = %d\nb     = %d\nc.c_a = %ld\nc.c_b = %ld\nc.c_c = %p\n", a, b, c.c_a, c.c_b, c.c_c);
-}
-```
-
-### Takeaways
-
-1. Each variable in C (including fields in structs) want to be aligned on a boundary equal to the variable's type's size.
-    This means that a variable (`b`) with an integer type (`sizeof(int) == 4`) should always have an address that is a multiple of its size (`&b % sizeof(b) == 0`, so an `int`'s address is always divisible by `4`, a `long`'s by `8`).
-2. The operation to figure out the size of all the variables, `&end - &a`, is *crazy*.
-    We're used to performing math operations values on things of the same type, but not on *pointers*.
-	This is only possible because C sees the variables are chunks of memory that happen to be laid out in memory, one after the other.
-3. The *crazy* increases with `mem = &a`, and our iteration through `mem[i]`.
-	We're able to completely ignore the types in C, and access memory directly!
-
-**Question 5**: What would break if we changed `char a;` into `int a;`?
-C doesn't let us do math on variables of *any type*.
 
 ## Memory Allocation
 

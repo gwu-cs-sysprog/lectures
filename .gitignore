@@ -1,6 +1,8 @@
 lectures.html
 lectures.pdf
 aggregate.md
+inline_exec_tmp
+inline_exec_tmp.c
 
 # Prerequisites
 *.d
