@@ -1,5 +1,7 @@
 
-## Example: C is a Thin Language Layer on Top of Memory
+## Exercises
+
+### C is a Thin Language Layer on Top of Memory
 
 We're going to look at a set of variables as memory.
 When variables are created globally, they are simply allocated into subsequent addresses.
@@ -60,7 +62,7 @@ print_values(void)
 **Question**
 Answer *Q1-4* in the code, then modify the code where appropriate to investigate them.
 
-### Takeaways
+#### Takeaways
 
 1. Each variable in C (including fields in structs) want to be aligned on a boundary equal to the variable's type's size.
     This means that a variable (`b`) with an integer type (`sizeof(int) == 4`) should always have an address that is a multiple of its size (`&b % sizeof(b) == 0`, so an `int`'s address is always divisible by `4`, a `long`'s by `8`).
@@ -74,7 +76,7 @@ Answer *Q1-4* in the code, then modify the code where appropriate to investigate
 C doesn't let us do math on variables of *any type*.
 If you fixed compilation problems, would you still get the same output?
 
-## Exercise: Quick-and-dirty Key-Value Store
+### Quick-and-dirty Key-Value Store
 
 Please read the `man` pages for `lsearch` and `lfind`.
 `man` pages can be pretty cryptic, and you are aiming to get *some idea* where to start with an implementation.
