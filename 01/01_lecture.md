@@ -366,8 +366,8 @@ We can see that *pointer arithmetic* (i.e. doing addition/subtraction on pointer
 That is, `*(a + 1) == a[1]`.
 For the most part, arrays and pointers can be viewed as very similar, with only a few exceptions^[Arrays differ from pointers as 1. the `sizeof` operator on an array variable gives the total size of the array (including all elements) whereas for pointers, it returns the size of the pointer (i.e. 8 bytes on a 64 bit architecture); 2. `&` on an array returns the address of the first item in the array whereas for pointers, it returns the address of the pointer; and 3. assignments to pointers end up initializing the pointer to an address, or doing math on the pointer whereas for arrays, initialization will initialize items in the array, and math/assignment after initialization are not allowed.].
 
-Pointer arithmetic should generally be avoided in favor of using the array syntax.
-One complication is that it does not fit our intuition for addition:
+*Pointer arithmetic should generally be avoided in favor of using the array syntax.*
+One complication for pointer arithmetic is that it does not fit our intuition for addition:
 
 ```c
 #include <stdio.h>
@@ -520,16 +520,76 @@ A few things to keep in mind:
 
 - *Allocation error.*
     You *must* check the return value of memory allocation functions for `NULL`, and handle the error appropriately.
+```c
+#include <malloc.h>
+
+int
+main(void)
+{
+	int *a = malloc(sizeof(int));
+	/* Error: did not check return value! */
+	*a = 1;
+	free(a);
+
+	return 0;
+}
+```
+
 - *Dangling pointer.*
     If you maintain a pointer to a chunk of memory that you `free`, and then dereference that pointer, bad things can happen.
 	The memory might have already been re-allocated due to another call to `malloc`, and is used for something completely different in your program.
 	It is up to you as a programmer to avoid `free`ing memory until all references to it are dropped.
+```c
+#include <malloc.h>
+
+int
+main(void)
+{
+	int *a = malloc(sizeof(int));
+	if (a == NULL) return -1;
+	free(a);
+
+	/* Error: accessing what `a` points to after `free`! */
+	return *a;
+}
+```
+
 - *Memory leaks.*
     If you remove all references to memory, but *don't* `free` it, then the memory will *never* get freed.
 	This is a memory leak.
+```c
+#include <malloc.h>
+
+int
+main(void)
+{
+	int *a = malloc(sizeof(int));
+	if (!a) return -1;
+	a = NULL;
+	/* Error: never `free`d `a` and no references to it remain! */
+
+	return 0;
+}
+```
+
 - *Double `free`.*
     If you `free` the memory twice, bad things can happen.
 	You could confuse the memory allocation logic, or you could accidentally `free` an allocation made after the first `free` was called.
+```c
+#include <malloc.h>
+
+int
+main(void)
+{
+	int *a = malloc(sizeof(int));
+	if (!a) return -1;
+	free(a);
+	free(a);
+	/* Error: yeah, don't do that! */
+
+	return 0;
+}
+```
 
 `valgrind` will help you debug the last three of these issues, and later in the class, we'll develop a library to help debug the first.
 

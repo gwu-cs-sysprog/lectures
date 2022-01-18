@@ -37,16 +37,17 @@ main(void)
 	/* Q2: Describe what these next two lines are doing. */
 	vars_size = &end - &a;
 	mem = &a;
-	/* Q3: What would you expect in the following printout? */
+	/* Q3: What would you expect in the following printout (with the print uncommented)? */
 	printf("\nPrint out the variables as raw memory\n");
 	for (i = 0; i < vars_size; i++) {
 		unsigned char c = mem[i];
 //		printf("%x ", c);
 	}
-	/* Q4: What would you expect in the following printout? */
-	memset(&a, 0, vars_size);
+	/* Q4: What would you expect in the following printout (with the print uncommented)? */
+	memset(mem, 0, vars_size);
+	/* memset(a, b, c): set the memory starting at `a` of size `c` equal `b` */
 	printf("\n\nPost-`memset` values:\n");
-//	print_values()
+//	print_values();
 
 	return 0;
 }
@@ -60,7 +61,7 @@ print_values(void)
 ```
 
 **Question**
-Answer *Q1-4* in the code, then modify the code where appropriate to investigate them.
+Answer *Q1-4* in the code, uncommenting and modifying where appropriate.
 
 #### Takeaways
 
@@ -143,7 +144,7 @@ main(void)
 
 	/* Insert the keys. */
 	for (i = 0; i < num_kv; i++) {
-		lsearch(&keys[i], entries, &num_items, sizeof(entries[0]), compare);
+		lsearch(&keys[i], entries, &num_items, sizeof(entries) / sizeof(entries[0]), compare);
 	}
 
 	/* Now lets lookup the keys. */
@@ -168,6 +169,7 @@ You want to implement a simple "key-value" store that is very similar in API to 
 **Questions/Tasks:**
 
 - *Q1*: What is the difference between `lsearch` and `lfind`?
+	The `man`pages should help here (`man 3 lsearch`) (you can exit from a `man` page using 'q').
     What operations would you want to perform with each (and why)?
 - *Q2*: The current implementation doesn't include *values* at all.
     It returns the keys instead of values.

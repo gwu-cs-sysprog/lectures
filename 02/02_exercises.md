@@ -1,6 +1,16 @@
 
 ## Exercises
 
+### Stack Allocation
+
+An old interview question:
+
+> How can you write a function that determines if the execution stack grows upwards (from lower addresses to higher), or downwards?
+
+Write this function!
+
+### Understanding Memory Ownership
+
 Lets look at a simple key-value store that needs to learn to be more careful about memory.
 Above each function, we specify the ownership of pointers being passed -- either passing ownership, or borrowing the memory.
 The current implementations do *not* adhere to these specifications.
@@ -19,9 +29,7 @@ static int   kv_key;
 static char *kv_value;
 
 /**
- * ...
- *
- * The returned value is not maintained in the data-structure
+ * The returned value should not be maintained in the data-structure
  * and should be `free`d by the caller.
  */
 char *
@@ -33,10 +41,8 @@ get_pass_ownership(int key)
 }
 
 /**
- * ...
- *
- * Pointers to the returned value are maintained in the data-structure
- * and it will be `free`d by the data-structure.
+ * Pointers to the returned value are maintained in this data-structure
+ * and it will be `free`d by the data-structure, not by the caller
  */
 char *
 get_borrow(int key)
@@ -47,8 +53,6 @@ get_borrow(int key)
 }
 
 /**
- * ...
- *
  * Pointers to the `value` passed as the second argument are maintained by
  * the caller, thus the `value` is borrowed here. The `value` will be `free`d
  * by the caller.
@@ -64,10 +68,8 @@ set_borrow(int key, char *value)
 }
 
 /**
- * ...
- *
  * Pointers to the `value` passed as the second argument are not maintained by
- * the caller, thus the `value` should be `free`d by the caller.
+ * the caller, thus the `value` should be `free`d by this data-structure.
  */
 void
 set_pass_ownership(int key, char *value)
@@ -89,7 +91,7 @@ main(void)
 	char *v_b2b = strdup("value4");
 
 	/* The return values */
- char *r_p2p, *r_p2b, *r_b2p, *r_b2b;
+	char *r_p2p, *r_p2b, *r_b2p, *r_b2b;
 
 	/* p2p: passing ownership on set, passing ownership on get */
 	set_pass_ownership(0, v_p2p);
