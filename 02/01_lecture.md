@@ -124,8 +124,9 @@ struct student {
 void
 add(struct linked_list *ll, struct linked_list_node *n, void *data)
 {
-	n->next = ll->head;
-	n->data = data;
+	n->next  = ll->head;
+	n->data  = data;
+	ll->head = n;
 }
 
 struct linked_list l;
