@@ -40,15 +40,15 @@ $(AGG): $(TITLE) $(sort $(wildcard ??/*.md))
 
 build_code: examples $(AGG)
 
-webpage: build_code
+html: build_code
 	$(PANDOC) $(AGG) $(PANDOC_WEBPAGE) -o $(OUTPUT_PREFIX).html
 
-book: build_code
+pdf: build_code
 	$(PANDOC) $(AGG) $(PANDOC_BOOK) -o $(OUTPUT_PREFIX).pdf
 
-doc: webpage book
+doc: html pdf
 
 clean: $(INLINE_EXEC)_clean
 	rm -f $(AGG) $(OUTPUT_PREFIX).pdf $(OUTPUT_PREFIX).html $(CBIN)
 
-.PHONY: all clean webpage book doc $(INLINE_EXEC)_clean $(INLINE_EXEC) examples build_code
+.PHONY: all clean html pdf doc $(INLINE_EXEC)_clean $(INLINE_EXEC) examples build_code

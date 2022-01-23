@@ -2,9 +2,10 @@
 # Processes
 
 Programming is hard.
+Really hard.
 When you write a program, you have to consider complex logic and the design of esoteric data-structures, all while desperately trying to avoid errors.
 It is an exercise that challenges all of our logical, creative, and risk management facilities.
-As such, programming is the act of methodically conquering complexity with our ability to abstract.
+As such, programming is the act of *methodically conquering complexity* with our *ability to abstract*.
 We walk on the knives-edge of our own abstractions where we can barely, just barely, make progress and engineer amazing systems.
 
 Imagine if when programming and debugging, we had to consider the actions and faults of *all other* programs running in the system?
@@ -12,22 +13,24 @@ If your program crashed because one of your colleagues' program had a bug, how c
 
 Luckily, we stand on the abstractions of those that came before us.
 A key abstraction provided by systems is that of *isolation* - that one program cannot arbitrarily interfere with the execution of another.
-This isolation is a core provision of Operating Systems (OSes), and one of the core abstractions that provides it is *processes*.
+This isolation is a core provision of Operating Systems (OSes), and a core abstraction they provide is the **process**.
 At the highest-level, each process can only corrupt its own memory, and a process that goes into an infinite loop cannot prevent another process for executing.
 
 A process has a number of properties including:
 
-- A set of memory that is only accessible to that process that includes the code, global data, stack, and dynamically allocated memory in the *heap*.
+- It contains the set of memory that is only accessible to that process.
+    This memory includes the code, global data, stack, and dynamically allocated memory in the *heap*.
     Different processes have *disjoint* sets of memory, thus no matter how one process alters its own memory, it won't interfere with the data-structures of another.
 - A number of *descriptors* identified by integers that enable the process to access the "resources" of the surrounding system including the file system, networking, and communication with other processes.
+    When we `printf`, we interact with the descriptor to output to the terminal.
     The OS prevents processes from accessing and changing resources they shouldn't have access to.
 - A set of unique identifiers including a process identifier (`pid`).
 - The "current working directory" for the process, analogous to `pwd`.
 - A owning user (e.g. `gparmer`) for whom the process executes on the behalf of.
-- Each process has a *parent* - the other process that created it, and that has the ability and responsibility oversee it (like a normal parent).
+- Each process has a *parent* - the process that created it, and that has the ability and responsibility oversee it (like a normal, human parent).
 
-Throughout the class we'll uncover more and more of these, but in this lecture, we'll focus on the lifecycle of a process, and its relationship to its parent.
-Processes are the abstraction that provide isolation between users, and between computations.
+Throughout the class we'll uncover more and more of these properties, but in this lecture, we'll focus on the lifecycle of a process, and its relationship to its parent.
+Processes are the abstraction that provide isolation between users, and between computations, thus it is the core of the *security* of the system.
 
 ## History: UNIX, POSIX, and Linux
 
@@ -68,7 +71,7 @@ It ensures the descriptor for the *output* of the `ps` process sends its data to
 What are the functions involved in the creation, termination, and coordination between processes?
 
 - `fork` - Create a new, child, process from the state of the calling process.
-- `getpid`, `getppid` - get the unique identifier for the process, or for its parent.
+- `getpid`, `getppid` - get the unique identifier (the Process ID, or pid) for the process, or for its parent.
 - `exit` - This is the function to terminate a process.
 - `wait` - A parent awaits a child exiting.
 - `exec` - Execute a new *program* using the current process^[This is a little bit like when an agent transforms from a normal citizen in the Matrix.].
@@ -76,7 +79,8 @@ What are the functions involved in the creation, termination, and coordination b
 Lets be a little more specific.
 A *program* is an executable file.
 We see them in the file system (for example, see `ls /bin`), and create them when we compile our programs.
-A *process* is an executing program with the previously mentioned characteristics (disjoint memory, descriptors to resources, etc...).
+When you compile your C programs, the generated file that you can execute, is a program.
+A *process* is an *executing* program with the previously mentioned characteristics (disjoint memory, descriptors to resources, etc...).
 
 First, lets look at `fork`:
 ```c
@@ -179,7 +183,7 @@ main(void)
 }
 ```
 
-### An Aside: Concurrency
+### Non-determinism Everywhere: Concurrency
 
 The output of this program can actually vary, somewhat arbitrarily, in the following way:
 any of the output lines can be reordered with respect to any other, *except* that the parent's print out for a specific child must come after it.
@@ -290,7 +294,7 @@ main(void) {
 }
 ```
 
-### `fork` Exercises
+### `fork` Questions
 
 1. How many processes (not including the initial one) are created in the following?
 
@@ -332,23 +336,6 @@ main(void) {
 		return 0;
 	}
 	```
-
-3. Implement `forkonacci`!
-    This will solve the `n`th [fibonacci number](https://en.wikipedia.org/wiki/Fibonacci_number), using `fork` for the recursion, and a combination of `exit` to "return" and `wait` to retrieve the returned value, instead of function calls.
-	The normal recursive implementation:
-
-	``` c
-	unsigned int
-	fibonacci(unsigned int n)
-	{
-	    if (n == 0 || n == 1) return n;
-
- 		return fibonacci(n - 1) + fibonacci(n - 2);
-	}
-	```
-
-	This will work decently for `n <= 12`, but not for `n > 12`.
-	Why^[Hint: make sure to read the `man` pages for `exit(1)`]?
 
 ## Executing a Program
 
@@ -622,18 +609,20 @@ main(int argc, char *argv[])
 }
 ```
 
-**Question.**
-How do you think that the shell-based support for environment variables (`export BESTPUP=penny`) is implemented?
-Specifically, if we do the following...
+### An Aside: Creating Processes with `posix_spawn`
 
-```
-$ export BESTPUP=penny
-$ ./03/envtest.bin BESTPUP
-Environment variable BESTPUP -> penny
-```
+`fork` and `exec` are not the only functions to execute a program.
+`posix_spawn` also enables the creation of a new process that execute a given program.
+`posix_spawn` performs three high-level actions:
 
-...which process is using which APIs?
-Put another way, how is `export` implemented?
+1. `fork` to create a new process,
+2. a set of "file actions" that update and modify the files/descriptors for the new process, that are specified in an array argument to `posix_spawn`, and
+3. `exec` to execute a program and pass arguments/environmental variables.
+
+It is strictly *more limited* in what it can do than `fork` and `exec`, but this is often a feature not a bug.
+`fork` is really hard to use well, and can be quite confusing to use.
+It is considered by some to be a [flawed API](https://www.microsoft.com/en-us/research/uploads/prod/2019/04/fork-hotos19.pdf).
+Thus the focus of `posix_spawn` on specific executing a new program can be quite useful to simply programs.
 
 ## Representations of Processes
 

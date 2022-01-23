@@ -40,9 +40,10 @@ I've pulled out a few selections that are easier to relate to:
 - OpenVPN which handles your VPN logins to the school network.
     You can see that the service is currently "exited" as I'm not running VPN now.
 
+We'll cover *services* later in the class, and here we'll focus mainly on libraries.
+
 ## Libraries - Goals and Overview
 
-We'll cover *services* later in the class, and here we'll focus mainly on libraries.
 The *goals* of libraries are to:
 
 - Enable programs to leverage shared implementations of specific functionality (e.g. the contents of `string.h`).
@@ -464,5 +465,31 @@ Thus, for a *single* program, a static library approach is almost always going t
 However, in a system with *many* executing programs, the per-library memory, rather than per-process memory, will result in significantly less memory consumption.
 Requiring only a *single copy* of a *larger* dynamic library shared between all processes, uses less memory than *multiple copies* of *smaller* compilations of the library in each program.
 
-*Question:* OSX uses dynamically linked libraries for a few common libraries, and static libraries for the rest.
-Why?
+### Explicitly Managing Dynamic Libraries
+
+Libraries are great for providing shared functionality to multiple programs.
+Dynamic libraries can also be used *explicitly* to enable additional capabilities.
+
+1. The environment variable `LD_PRELOAD` can be used to specify a dynamic library to load into the process to *interpose* on any library calls.
+    This enables you to write functions for common `libc` or other library APIs and have your functions be called by the program *instead* of the other library calls.
+	You can then, if you choose, invoke the normal library calls, thus why this is known as *interposing* on the library calls.
+	A trivial use of this might be to *log* (i.e. write out to a file) all of a set of library calls.
+	I've used this to track all calls to the `malloc` API to implement a janky `valgrind` -- you could write your own `valgrind` variant that watches only the memory allocation API by tracking all `malloc` and `free` calls in a hash table to make sure that each chunk of `malloc`ed memory is freed exactly once.
+2. An API enables your process to *load* a dynamic library into itself.
+    This is kinda crazy: a running process with a set of code and data can add a library with more code and data into itself dynamically.
+	This is a specific instance of *self-modifying code*, and it enables a few very cool features including:
+
+	- *dynamic update of services* in which new versions of a service can be dynamically loaded in (and old versions eventually removed),
+	- *plugin architectures* enable different interesting functionalities to be loaded into a process to provide unique functionalities -- some of the most popular image and video processing programs (e.g. `ffmpeg`) enable different formats to be handled with separate libraries, thus enabling the processing of any image or video by simply loading a new library, and
+	- *languages*, such as `python`, dynamically load libraries (many are written in C) into a process when the python code `import`s them.
+	    This enables your dynamic (slow) python code to load and leverage fast C libraries.
+
+	This API is provided by the linker (`ld.so`) that loaded the elf object for the currently executing process.
+	What does the API that enables this dynamic loaded look like?
+
+    - `handle = dlopen(filename, flags)` - Open and load in a dynamic library.
+	    This returns a handle to the library that you should pass into the latter functions.
+		You can read about the `flags` in `man dlopen`, but I'd recommend using `RTLD_NOW | RTLD_LOCAL`^[What are "flags"? The notion of "flags" is pretty confusing. Flags are often simply a set of bits (in this case, the bits of the `int`) where each bit specifies some option. In this case, there's a bit for `RTLD_NOW` which says to load all of the symbol dependencies now, and a separate bit for `RTLD_LOCAL` which says that subsequent libraries should not see this library's symbols. In short, these are just single bits in the "flags" integer, thus they can be bitwise or-ed together (thus the `|`) to specify options -- they are simply a way to specify a set of options.].
+	- `dlclose(handle)` - Close and unload a library that was previously loaded.
+	- `symb_ptr = dlsym(handle, symbol)` - pass in a `symbol` which is a string holding a function or variable name in the dynamic library.
+	    It should return a pointer to that symbol, which you can then call (if it is a function pointer), or dereference if it is a variable.
