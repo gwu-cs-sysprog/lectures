@@ -369,14 +369,73 @@ Though the file descriptors are identical in each process following `fork`, each
 Thus closing in one, doesn't impact the other.
 Remember, processes provide *isolation*!
 
+### Controlling Child Processes with Pipes
 
-**Exercise**: write a small program that enables a process to use `printf`, and have the output of that go through a pipe to be `scanf`ed in the receiving process.
-For example:
+Pipes contain arbitrary streams of bytes, not just characters.
+Lets do another example where we
 
-- Process 1: `printf("a = %d, b = %d", a, b);`
-- Process 2: `scanf("a = %d, b = %d", &a, &b);`
+1. setup the input and output of two files to communicate over a pipe, and
+2. send and receive binary data between processes.
 
-Just remember that `printf` sends it output to `STDIN_FILENO`, and `scanf` reads its input from `STDIN_FILENO`, so you have to set those up properly!
+```c
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+void
+perror_exit(char *s)
+{
+	perror(s);
+	exit(EXIT_FAILURE);
+}
+
+int
+main(void)
+{
+	int fds[2];
+	pid_t pid;
+
+	// make the pipe before we fork, so we can acccess it in each process
+	if (pipe(fds) == -1) perror_exit("Opening pipe");
+
+	pid = fork();
+	if (pid == -1) perror_exit("Forking process");
+
+	if (pid > 0) { // parent
+		// close standard out...
+		close(STDOUT_FILENO);
+		// ...and replace it with the output side of the pipe
+		if (dup2(fds[1], STDOUT_FILENO) == -1) perror_exit("parent dup stdout");
+
+		// if we don't close the pipes, the child will
+		// always wait for additional input
+		close(fds[0]);
+		close(fds[1]);
+
+		printf("%d %c %x", 42, '+', 42);
+		fflush(stdout); // make sure that we output to the stdout
+		if (wait(NULL) == -1) perror_exit("parent's wait");
+	} else {       // child
+		int a, c;
+		char b;
+
+	    // Same as above, but for standard input
+		close(STDIN_FILENO);
+		if (dup2(fds[0], STDIN_FILENO) == -1) perror_exit("child dup stdin");
+		close(fds[0]); // same as above
+		close(fds[1]);
+
+		scanf("%d %c %x", &a, &b, &c);
+
+		printf("%d %c %x", a, b, c);
+
+		exit(EXIT_SUCCESS);
+	}
+
+	return 0;
+}
+```
 
 ### The Shell
 
