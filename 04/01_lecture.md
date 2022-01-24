@@ -4,8 +4,63 @@
 We've discussed the APIs for process manipulation and program execution, but now we're going to start discussing how processes can manipulate the resources it has access to.
 Two of the key UNIX mechanisms that processes must use effectively are
 
+- the current working directory (reported by `pwd`),
 - the ability manipulate and use their *descriptors* -- often called "file descriptors" though they are more general than only interfacing with files, and
 - controlling and leveraging the exceptional control flow provided by *signals*.
+
+## Current Working Directory
+
+Each process has a "working directory" which is used as the base for any *relative paths* in the file system.
+All file system paths are either *absolute paths* -- in which case they begin with `/` and specify the path from the "root", or *relative paths*.
+Relative paths are quite frequently used when we interact with the shell.
+Every time you type `cd blah/`, you're saying "please change the current working directory to `blah/` which is a directory in the current working directory.
+Similarly, `cat penny_the_best_pup.md` looks up the file `penny_the_best_pup.md` in the current working directory.
+
+This is backed by a simple API:
+
+- `getcwd` which lets you check out the current process' working directory, and
+- `chdir` which enable the process to change its working directory.
+
+```c
+#include <unistd.h>
+#include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+int
+main(void)
+{
+	char *wd = getcwd(NULL, 0);
+
+	assert(wd);
+	printf("Current directory: %s\n", wd);
+	free(wd);
+
+	if (chdir("..") == -1) {
+		perror("chdir");
+		abort();
+	}
+	wd = getcwd(NULL, 0);
+	printf("New current dir: %s\n", wd);
+	free(wd);
+
+	return 0;
+}
+```
+
+The `cd` command in shells is actually *not a program*, and is instead a shell-internal function.
+You can confirm this using the `which` program, which tells you the location of a program:
+
+```
+$ which ls
+/bin/ls
+$ which pwd
+/bin/pwd
+$ which cd
+$
+```
+
+`cd` isn't a program, so `which` can't tell us where it is!
 
 ## Process Descriptors and Pipes
 
@@ -286,15 +341,18 @@ main(void)
 		printf("Child sent whole message!\n");
 	} else { /* parent */
 		ssize_t ret_r;
+		ssize_t rest = buf_sz, offset = 0;
 
 	    close(pipe_fds[1]); /* we aren't writing! */
-		ret_r = read(pipe_fds[0], to, buf_sz);
-		if (ret_r < 0) {
-			perror("read from pipe");
-			exit(EXIT_FAILURE);
+		while (rest > 0) {
+			ret_r = read(pipe_fds[0], &to[offset], rest);
+			if (ret_r < 0) {
+				perror("read from pipe");
+				exit(EXIT_FAILURE);
+			}
+			rest   -= ret_r;
+			offset += ret_r;
 		}
-		/* Question: why should this always be the case? */
-		assert((size_t)ret_r == buf_sz);
 
 		printf("Parent got the message!\n");
 	}
@@ -311,9 +369,20 @@ Though the file descriptors are identical in each process following `fork`, each
 Thus closing in one, doesn't impact the other.
 Remember, processes provide *isolation*!
 
+
+**Exercise**: write a small program that enables a process to use `printf`, and have the output of that go through a pipe to be `scanf`ed in the receiving process.
+For example:
+
+- Process 1: `printf("a = %d, b = %d", a, b);`
+- Process 2: `scanf("a = %d, b = %d", &a, &b);`
+
+Just remember that `printf` sends it output to `STDIN_FILENO`, and `scanf` reads its input from `STDIN_FILENO`, so you have to set those up properly!
+
 ### The Shell
 
 We can start to understand part of how to a shell might be implemented now!
+
+**Setting up pipes.**
 Lets start with the more obvious: for each `|` in a command, the shell will create a new `pipe`.
 It is a little less obvious to understand how the standard output for one process is hooked up through a `pipe` to the standard input of the next process.
 To do this, the shell does the following procedure:
@@ -325,13 +394,13 @@ To do this, the shell does the following procedure:
 
 Due to this *careful* usage of `close` to get rid of the old standard in/out, and `dup` or `dup2` to methodically replace it with the pipe, we can see how the shell sets up the processes in a pipeline!
 
-**Exercise**: write a small program that enables a process to use `printf`, and have the output of that go through a pipe to be `scanf`ed in the receiving process.
-For example:
+**Closing pipes.**
+`read`ing from a pipe will return that there is no more data on the pipe *only if all `write`-ends of the pipe are `close`d*.
+This makes sense because we think of a pipe as a potentially infinite stream of bytes, thus the only way the system can know that there are no more bytes to be `read`, is if the `write` end of the pipe cannot receive more data, i.e. if it is `close`d.
 
-- Process 1: `printf("a = %d, b = %d", a, b);`
-- Process 2: `scanf("a = %d, b = %d", &a, &b);`
-
-Just remember that `printf` sends it output to `STDIN_FILENO`, and `scanf` reads its input from `STDIN_FILENO`, so you have to set those up properly!
+This seems simple, in principle, but when implementing a shell, you use `dup` to make multiple copies of the `write` file descriptor.
+In this case, the shell must be very careful to close its own copies because *if any `write` end of a pipe is open, the reader will not realize when there is no more data left*.
+If you implement a shell, and it seems like commands are hanging, and not `exit`ing, this is likely why.
 
 ## Signals
 
