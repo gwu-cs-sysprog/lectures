@@ -369,10 +369,26 @@ Though the file descriptors are identical in each process following `fork`, each
 Thus closing in one, doesn't impact the other.
 Remember, processes provide *isolation*!
 
-### Controlling Child Processes with Pipes
+### The Shell
 
+We can start to understand part of how to a shell might be implemented now!
+
+**Setting up pipes.**
+Lets start with the more obvious: for each `|` in a command, the shell will create a new `pipe`.
+It is a little less obvious to understand how the standard output for one process is hooked up through a `pipe` to the standard input of the next process.
+To do this, the shell does the following procedure:
+
+1. Create a `pipe`.
+2. `fork` the processes (a `fork` for each process in a pipeline).
+3. In the *upstream* process `close(STDOUT_FILENO)`, and `dup2` the writable file descriptor in the pipe into `STDOUT_FILENO`.
+4. In the *downstream* process `close(STDIN_FILENO)`, and `dup2` the readable file descriptor in the pipe into `STDIN_FILENO`.
+
+Due to this *careful* usage of `close` to get rid of the old standard in/out, and `dup` or `dup2` to methodically replace it with the pipe, we can see how the shell sets up the processes in a pipeline!
+
+Lets go over an example of setting up the file descriptors for a child process.
+This does *not* set up the pipe-based communication between *two children*, so is not sufficient for a shell; but it is well on the way.
 Pipes contain arbitrary streams of bytes, not just characters.
-Lets do another example where we
+This example will
 
 1. setup the input and output of two files to communicate over a pipe, and
 2. send and receive binary data between processes.
@@ -396,65 +412,51 @@ main(void)
 	int fds[2];
 	pid_t pid;
 
-	// make the pipe before we fork, so we can acccess it in each process
+	/* make the pipe before we fork, so we can acccess it in each process */
 	if (pipe(fds) == -1) perror_exit("Opening pipe");
 
 	pid = fork();
 	if (pid == -1) perror_exit("Forking process");
 
-	if (pid > 0) { // parent
-		// close standard out...
+	if (pid == 0) {       /* child */
+		/* Same as above, but for standard output */
 		close(STDOUT_FILENO);
-		// ...and replace it with the output side of the pipe
-		if (dup2(fds[1], STDOUT_FILENO) == -1) perror_exit("parent dup stdout");
+		if (dup2(fds[1], STDOUT_FILENO) == -1) perror_exit("child dup stdout");
 
-		// if we don't close the pipes, the child will
-		// always wait for additional input
 		close(fds[0]);
 		close(fds[1]);
 
 		printf("%d %c %x", 42, '+', 42);
-		fflush(stdout); // make sure that we output to the stdout
-		if (wait(NULL) == -1) perror_exit("parent's wait");
-	} else {       // child
+		fflush(stdout); /* make sure that we output to the stdout */
+
+		exit(EXIT_SUCCESS);
+	} else {              /* parent */
 		int a, c;
 		char b;
 
-	    // Same as above, but for standard input
+		/* close standard in... */
 		close(STDIN_FILENO);
-		if (dup2(fds[0], STDIN_FILENO) == -1) perror_exit("child dup stdin");
-		close(fds[0]); // same as above
+		/* ...and replace it with the input side of the pipe */
+		if (dup2(fds[0], STDIN_FILENO) == -1) perror_exit("parent dup stdin");
+		/*
+		 * if we don't close the pipes, the child will
+		 * always wait for additional input
+		 */
+		close(fds[0]);
 		close(fds[1]);
 
 		scanf("%d %c %x", &a, &b, &c);
 
 		printf("%d %c %x", a, b, c);
-
-		exit(EXIT_SUCCESS);
+		if (wait(NULL) == -1) perror_exit("parent's wait");
 	}
 
 	return 0;
 }
 ```
 
-### The Shell
-
-We can start to understand part of how to a shell might be implemented now!
-
-**Setting up pipes.**
-Lets start with the more obvious: for each `|` in a command, the shell will create a new `pipe`.
-It is a little less obvious to understand how the standard output for one process is hooked up through a `pipe` to the standard input of the next process.
-To do this, the shell does the following procedure:
-
-1. Create a `pipe`.
-2. `fork` the processes (a `fork` for each process in a pipeline).
-3. In the *upstream* process `close(STDOUT_FILENO)`, and `dup2` the writable file descriptor in the pipe into `STDOUT_FILENO`.
-4. In the *downstream* process `close(STDIN_FILENO)`, and `dup2` the readable file descriptor in the pipe into `STDIN_FILENO`.
-
-Due to this *careful* usage of `close` to get rid of the old standard in/out, and `dup` or `dup2` to methodically replace it with the pipe, we can see how the shell sets up the processes in a pipeline!
-
 **Closing pipes.**
-`read`ing from a pipe will return that there is no more data on the pipe *only if all `write`-ends of the pipe are `close`d*.
+`read`ing from a pipe will return that there is no more data on the pipe (i.e. return `0`) *only if all `write`-ends of the pipe are `close`d*.
 This makes sense because we think of a pipe as a potentially infinite stream of bytes, thus the only way the system can know that there are no more bytes to be `read`, is if the `write` end of the pipe cannot receive more data, i.e. if it is `close`d.
 
 This seems simple, in principle, but when implementing a shell, you use `dup` to make multiple copies of the `write` file descriptor.
@@ -556,7 +558,7 @@ These are either to ignore the signal, terminate the process, to stop the proces
 
 ### Parent/Child Coordination with Signals
 
-Another example for coordination between parent and child processes:
+Another example of coordination between parent and child processes:
 
 ```c
 #include <signal.h>
@@ -568,8 +570,6 @@ Another example for coordination between parent and child processes:
 #include <assert.h>
 #include <sys/wait.h>
 
-volatile int child_exited = 0;
-
 void
 sig_handler(int signal_number, siginfo_t *info, void *context)
 {
@@ -577,7 +577,6 @@ sig_handler(int signal_number, siginfo_t *info, void *context)
 	case SIGCHLD: {
 		printf("%d: Child process has exited.\n", getpid());
 		fflush(stdout);
-		child_exited = 1;
 		break;
 	}
 	case SIGTERM: {
@@ -631,18 +630,20 @@ main(void)
 
 	if (pid == 0) {
 		printf("%d - Heyo!\n", getpid());
-		pause();
+		pause(); /* stop execution, wake upon signal */
 		printf("%d - post-pause\n", getpid());
+		fflush(stdout);
 
 		exit(EXIT_SUCCESS);
 	}
 
-	printf("%d: Parent asking child to terminate\n", getpid());
+	printf("%d: Parent asking child (%d) to terminate\n", getpid(), pid);
 	kill(pid, SIGTERM); /* send the child the TERM signal */
 
-	/* Wait for the value to be set! */
-	while (!child_exited) ;
+	/* Wait for the sigchild notification of child termination! */
+	pause();
 
+	/* this should return immediately because waited for sigchld! */
 	assert(pid == wait(NULL));
 
 	return 0;
