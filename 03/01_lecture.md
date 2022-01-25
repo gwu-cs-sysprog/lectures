@@ -28,6 +28,10 @@ A process has a number of properties including:
 - The "current working directory" for the process, analogous to `pwd`.
 - A owning user (e.g. `gparmer`) for whom the process executes on the behalf of.
 - Each process has a *parent* - the process that created it, and that has the ability and responsibility oversee it (like a normal, human parent).
+- Arguments to the process often passed on the command line.
+- Environment variables that give the process information about the system's configuration.
+
+![A process, and many of its properties.](figures/proc.png)
 
 Throughout the class we'll uncover more and more of these properties, but in this lecture, we'll focus on the lifecycle of a process, and its relationship to its parent.
 Processes are the abstraction that provide isolation between users, and between computations, thus it is the core of the *security* of the system.
@@ -57,6 +61,9 @@ Android and iOS layer a mobile runtime on top of UNIX; OSX and Ubuntu layer mode
 In many ways, UNIX has won.
 However, it has won be being adapted to different domains -- you might be a little hard-pressed looking at the APIs for some of those systems to understand that it is UNIX under the hood.
 Regardless, in this class, we'll be diving into UNIX and its APIs to better understand the core technology underlying most systems we use.
+
+The core UNIX philosophy endures, but has changed shape.
+In addition to the pervasive deployment of UNIX, Python is popular as it is has good support to compose together disparate services and libraries, and applications are frequently compositions of various REST/CRUD webservice APIs, and `json` is the unified language in which data is shared.
 
 ## Process: Life and Death
 
@@ -93,6 +100,7 @@ main(void)
 	pid_t pid; /* "process identifier" */
 
 	printf("pre-fork:\n\t parent pid %d\n", getpid());
+	fflush(stdout);
 	pid = fork(); /* so much complexity in such a simple call! */
 	printf("post-fork:\n\treturned %d,\n\tcurrent pid %d\n\tparent pid %d\n",
 	       pid, getpid(), getppid());
@@ -255,7 +263,7 @@ main(void)
 ...because when `main` returns, it calls `exit`.
 
 > **Investigating `main` return → `exit` via `gdb`.**
-> You can see this by diving into `gdb -tui`, breakpointing before the return (e.g. `b 5`), and single-stepping through the program.
+> You can see this by diving into the `return.c` program with `gdb -tui`, breakpointing before the return (e.g. `b 5`), and single-stepping through the program.
 > You'll want to `layout asm` to drop into "assembly mode", and single step through the assembly and if you want to step through it instruction at a time use `stepi` or `si`.
 > You can see that it ends up calling `__GI_exit`.
 > `__GI_*` functions are glibc internal functions, so we see that `libc` is actually calling `main`, and when it returns, it is then going through its logic for `exit`.
