@@ -119,6 +119,10 @@ A few observations:
 
 So much complexity for such a simple function prototype!
 
+![An analogy for `fork`. Each `fork` creates a copy of the last.](figures/fork_agent.gif)
+
+![Little known fact: `fork` is the basis for life.](figures/fork_bacteria.gif)
+
 **`exit` and `wait`.**
 In contrast to `fork` that creates a new process, `exit` is the function that used to terminate the current process.
 `exit`'s integer argument is the "exit status" -- `0` is equivalent to `EXIT_SUCCESS`, and denotes a successful execution of the program, and `-1` is `EXIT_FAILURE`, and denotes execution failure.
@@ -368,6 +372,8 @@ This is a little unnatural, but has a few handy side-effects:
 - Many other process properties are comparably inherited.
     With the exception of the process memory, you can assume, by default, that process properties are inherited across an `exec`.
 
+![`exec` replaces the previous program executing in this process with the `exec`ed program. Not shown here: maintaining the descriptors, current working directory, etc... of the program previously executing in this process.](figures/exec_agentxform.gif)
+
 ### `exec` APIs
 
 There are a few ways to execute a program:
@@ -423,7 +429,7 @@ main(int argc, char *argv[])
 
 ## Command Line Arguments
 
-I think that we likely have a decent intuition about what the command-line arguments are:
+I think that we likely have a decent intuition about what the command-line arguments are`:
 
 ```
 $ ls /bin /sbin
@@ -431,8 +437,12 @@ $ ls /bin /sbin
 
 The `ls` program takes two arguments, `/bin` and `/sbin`.
 How does `ls` access those arguments?
+
 Lets look at a *chain of programs* that `exec` each other.
 The first program (that you see here) is called `inline_exec_tmp`, and the programs `03/args?.c` are subsequently executed.
+
+![A chain of processes `exec`ing each other, and passing arguments. We only print them out in the 3rd program, `args2.bin`.](figures/exec_chain.png)
+
 ```c
 #include <unistd.h>
 #include <stdio.h>
@@ -454,6 +464,64 @@ main(int argc, char *argv[])
 	if (execvp(prog, args)) {
 		perror("exec");
 		return EXIT_FAILURE;
+	}
+
+	return 0;
+}
+```
+
+`args1.c` is
+
+``` c
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <unistd.h>
+
+char *prog = "./03/args2.bin";
+
+int
+main(int argc, char *argv[])
+{
+	int i;
+	char **args; 		/* an array of strings */
+
+	printf("Inside %s\n", argv[0]);
+
+	/* lets just pass the arguments on through to args2! */
+	args = calloc(argc + 1, sizeof(char *));
+	assert(args);
+
+	args[0] = prog;
+	for (i = 1; i < argc; i++) {
+		args[i] = argv[i];
+	}
+	args[i] = NULL; /* the arguments need to be `NULL`-terminated */
+
+	if (execvp(prog, args)) {
+		perror("exec");
+
+		return EXIT_FAILURE;
+	}
+
+	return 0;
+}
+```
+
+...and `args2.c` is
+
+``` c
+#include <stdio.h>
+
+int
+main(int argc, char *argv[])
+{
+	int i;
+
+	printf("Inside %s\n", argv[0]);
+
+	for (i = 0; i < argc; i++) {
+		printf("arg %d: %s\n", i, argv[i]);
 	}
 
 	return 0;
@@ -617,6 +685,16 @@ main(int argc, char *argv[])
 }
 ```
 
+A common use of environment variables is the "home" directory in your shell.
+How is this implemented?
+
+```
+$ cd ~
+```
+
+The `~` means "my home directory".
+To understand what directory is a user's home directory, you can `getenv(HOME)`!
+
 ### An Aside: Creating Processes with `posix_spawn`
 
 `fork` and `exec` are not the only functions to execute a program.
@@ -654,7 +732,7 @@ main(void)
 	int stack_allocated;
 	int *heap = malloc(sizeof(int));
 
-	printf("pid %d\nglobal (RO):\t%p\nglobal:\t%p\nstack:\t%p\nheap:\t%p\nfunction:\t%p\n",
+	printf("pid %d\nglobal (RO):\t%p\nglobal:      \t%p\nstack:      \t%p\nheap:      \t%p\nfunction:\t%p\n",
 	       getpid(), &global_readonly, &global, &stack_allocated, heap, main);
 
 	pause();

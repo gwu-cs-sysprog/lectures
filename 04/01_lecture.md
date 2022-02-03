@@ -18,7 +18,7 @@ Similarly, `cat penny_the_best_pup.md` looks up the file `penny_the_best_pup.md`
 
 This is backed by a simple API:
 
-- `getcwd` which lets you check out the current process' working directory, and
+- `getcwd` which lets you get the current process' working directory, and
 - `chdir` which enable the process to change its working directory.
 
 ```c
@@ -279,7 +279,6 @@ main(void)
 		}
 
 		ret_r = read(pipe_fds[0], &to[written], ret_w);
-		/* Question: why should this always be the case? */
 		assert(ret_r == ret_w);
 
 		/* Question: Describe at a high-level what `buf_sz` and `written` are doing here. */
@@ -463,6 +462,8 @@ This seems simple, in principle, but when implementing a shell, you use `dup` to
 In this case, the shell must be very careful to close its own copies because *if any `write` end of a pipe is open, the reader will not realize when there is no more data left*.
 If you implement a shell, and it seems like commands are hanging, and not `exit`ing, this is likely why.
 
+![A graphical sequence for the above code. Each image is a snapshot of the system after an operation is preformed. The red portions of each figure show what is changed in each operation. The parent creates a pipe, forks a child, which inherits a copy of all of the file descriptors (including the pipe), the parent and child close their stdin and stdout, respectively, the pipes descriptors are `dup`ed into those now vacant descriptors, and the pipe descriptors are closed. Now all processes are in a state where they can use their stdin/stdout/stderr descriptors as normal (`scanf`, `printf`), but the standard output from the child will get piped to the standard input of the parent. Shells do a similar set of operations, but in which a child has their standard output piped to the standard input of another child.](figures/pipe_proc.png)
+
 ## Signals
 
 We're used to *sequential* execution in our processes.
@@ -575,7 +576,8 @@ sig_handler(int signal_number, siginfo_t *info, void *context)
 {
 	switch(signal_number) {
 	case SIGCHLD: {
-		printf("%d: Child process has exited.\n", getpid());
+		/* see documentation on `siginfo_t` in `man sigaction` */
+		printf("%d: Child process %d has exited.\n", getpid(), info->si_pid);
 		fflush(stdout);
 		break;
 	}
@@ -590,7 +592,7 @@ sig_handler(int signal_number, siginfo_t *info, void *context)
 }
 
 void
-setup_signal(int signo)
+setup_signal(int signo, void (*fn)(int , siginfo_t *, void *))
 {
 	sigset_t masked;
 	struct sigaction siginfo;
@@ -599,7 +601,7 @@ setup_signal(int signo)
 	sigemptyset(&masked);
 	sigaddset(&masked, signo);
 	siginfo = (struct sigaction) {
-		.sa_sigaction = sig_handler,
+		.sa_sigaction = fn,
 		.sa_mask      = masked,
 		.sa_flags     = SA_RESTART | SA_SIGINFO
 	};
@@ -614,9 +616,10 @@ int
 main(void)
 {
 	pid_t pid;
+	int status;
 
-	setup_signal(SIGCHLD);
-	setup_signal(SIGTERM);
+	setup_signal(SIGCHLD, sig_handler);
+	setup_signal(SIGTERM, sig_handler);
 
 	/*
 	 * The signal infromation is inherited across a fork,
@@ -629,10 +632,7 @@ main(void)
 	}
 
 	if (pid == 0) {
-		printf("%d - Heyo!\n", getpid());
 		pause(); /* stop execution, wake upon signal */
-		printf("%d - post-pause\n", getpid());
-		fflush(stdout);
 
 		exit(EXIT_SUCCESS);
 	}
@@ -644,7 +644,8 @@ main(void)
 	pause();
 
 	/* this should return immediately because waited for sigchld! */
-	assert(pid == wait(NULL));
+	assert(pid == wait(&status));
+	assert(WIFEXITED(status));
 
 	return 0;
 }
