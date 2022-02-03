@@ -464,6 +464,9 @@ If you implement a shell, and it seems like commands are hanging, and not `exit`
 
 ![A graphical sequence for the above code. Each image is a snapshot of the system after an operation is preformed. The red portions of each figure show what is changed in each operation. The parent creates a pipe, forks a child, which inherits a copy of all of the file descriptors (including the pipe), the parent and child close their stdin and stdout, respectively, the pipes descriptors are `dup`ed into those now vacant descriptors, and the pipe descriptors are closed. Now all processes are in a state where they can use their stdin/stdout/stderr descriptors as normal (`scanf`, `printf`), but the standard output from the child will get piped to the standard input of the parent. Shells do a similar set of operations, but in which a child has their standard output piped to the standard input of another child.](figures/pipe_proc.png)
 
+**Question.**
+If we wanted to have a parent, shell process setup two child connected by `|`, what would the *final* picture (in the image of the pictures above) look like?
+
 ## Signals
 
 We're used to *sequential* execution in our processes.
@@ -557,9 +560,77 @@ Notable signals include:
 Each signal has a *default* behavior that triggers if you *do not* define a handler.
 These are either to ignore the signal, terminate the process, to stop the process executing, and to continue its execution.
 
+### Tracking Time with Signals
+
+Lets see `ualarm` in action:
+
+```c
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <unistd.h>
+
+volatile int timers = 0;
+
+void
+sig_handler(int signal_number, siginfo_t *info, void *context)
+{
+	timers++;
+
+	return;
+}
+
+void
+setup_signal(int signo)
+{
+	sigset_t masked;
+	struct sigaction siginfo;
+	int ret;
+
+	sigemptyset(&masked);
+	sigaddset(&masked, signo);
+	siginfo = (struct sigaction) {
+		.sa_sigaction = sig_handler,
+		.sa_mask      = masked,
+		.sa_flags     = SA_RESTART | SA_SIGINFO
+	};
+
+	if (sigaction(signo, &siginfo, NULL) == -1) {
+		perror("sigaction error");
+		exit(EXIT_FAILURE);
+	}
+}
+
+int
+main(void)
+{
+	int t = timers;
+
+	setup_signal(SIGALRM);
+	ualarm(1000, 1000); /* note: 1000 microseconds is a millisecond, 1000 milliseconds is a second */
+	while (t < 10) {
+		if (timers > t) {
+			printf("%d milliseconds passed!\n", t);
+			t = timers;
+		}
+	}
+
+	return 0;
+}
+```
+
+**Question**: Again, track and explain the control flow through this program.
+
+`SIGKILL` and `SIGSTOP` are unique in that they *cannot be disabled*, and handlers for them cannot be defined.
+They enable non-optional control of a child by the parent.
+
+
 ### Parent/Child Coordination with Signals
 
-Another example of coordination between parent and child processes:
+Another example of coordination between parent and child processes.
+We can use signals to get a notification that *a child has exited*!
+Additionally, we can send the `SIGTERM` signal to terminate a process (this is used to implement the `kill` command line program -- see `man 1 kill`).
 
 ```c
 #include <signal.h>
@@ -660,78 +731,13 @@ We now see a couple of new features:
 - We can use the `kill` function to *send a signal* to a another process owned by the same user (e.g. `gparmer`).
 - The `pause` call says to stop execution (to pause) until a signal is triggered.
 
-**Question**: Please explain the control flow through this program.
+**Question**: Please try and explain the control flow through this program.
 
 A couple of additional important functions:
 
 - `raise` will trigger a signal in the current process (it is effectively a `kill(getpid(), ...)`).
 - `ualarm` will set a recurring `SIGALRM` signal.
     This can be quite useful if your program needs to keep track of time in some way.
-
-### Tracking Time with Signals
-
-Lets see `ualarm` in action:
-
-```c
-#include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <unistd.h>
-
-volatile int timers = 0;
-
-void
-sig_handler(int signal_number, siginfo_t *info, void *context)
-{
-	timers++;
-
-	return;
-}
-
-void
-setup_signal(int signo)
-{
-	sigset_t masked;
-	struct sigaction siginfo;
-	int ret;
-
-	sigemptyset(&masked);
-	sigaddset(&masked, signo);
-	siginfo = (struct sigaction) {
-		.sa_sigaction = sig_handler,
-		.sa_mask      = masked,
-		.sa_flags     = SA_RESTART | SA_SIGINFO
-	};
-
-	if (sigaction(signo, &siginfo, NULL) == -1) {
-		perror("sigaction error");
-		exit(EXIT_FAILURE);
-	}
-}
-
-int
-main(void)
-{
-	int t = timers;
-
-	setup_signal(SIGALRM);
-	ualarm(1000, 1000); /* note: 1000 microseconds is a millisecond, 1000 milliseconds is a second */
-	while (t < 10) {
-		if (timers > t) {
-			printf("%d milliseconds passed!\n", t);
-			t = timers;
-		}
-	}
-
-	return 0;
-}
-```
-
-**Question**: Again, track and explain the control flow through this program.
-
-`SIGKILL` and `SIGSTOP` are unique in that they *cannot be disabled*, and handlers for them cannot be defined.
-They enable non-optional control of a child by the parent.
 
 ### The Dark Side of Signals
 
