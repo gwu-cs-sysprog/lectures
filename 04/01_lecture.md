@@ -620,7 +620,7 @@ main(void)
 }
 ```
 
-**Question**: Again, track and explain the control flow through this program.
+**Question**: Track and explain the control flow through this program.
 
 `SIGKILL` and `SIGSTOP` are unique in that they *cannot be disabled*, and handlers for them cannot be defined.
 They enable non-optional control of a child by the parent.
@@ -731,7 +731,7 @@ We now see a couple of new features:
 - We can use the `kill` function to *send a signal* to a another process owned by the same user (e.g. `gparmer`).
 - The `pause` call says to stop execution (to pause) until a signal is triggered.
 
-**Question**: Please try and explain the control flow through this program.
+![A high-level overview of the control flow between parent and child in this code.](./figures/sig_chld.png)
 
 A couple of additional important functions:
 
