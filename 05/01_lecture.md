@@ -71,6 +71,7 @@ main(void)
 	printf("We want to say %ld things...but the world doesn't value artistry.\n", finfo.st_size);
 
 	printf("Lets cut down to 280 characters and tweet like it is 1915...\n\n");
+	fflush(stdout); /* see later */
 
 	ret = read(fd, tweet, TWEET_LEN);
 	assert(ret == TWEET_LEN); /* for this demo... */
@@ -152,6 +153,7 @@ main(void)
 	assert(fd >= 0); /* should normally do better error checking */
 
 	printf("What lies beyond the tweet? Tweet 2/N:\n\n");
+	fflush(stdout); /* see later */
 
 	ret = lseek(fd, 280, SEEK_SET);
 	assert(ret == 280);
@@ -333,6 +335,26 @@ main(void)
 
 Well that's not good.
 The *buffered data* is copied into each process, then it is output when a `\n` is encountered.
+
+```c
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+
+int
+main(void)
+{
+	printf("hello ");
+	write(STDOUT_FILENO, "world ", 6);
+	printf("\n"); /* remember, streams output on \n */
+
+	return 0;
+}
+```
+
+Both `printf` and the `write ` are to standard output, but `printf` is to a stream.
+The *buffered* `printf` output is not written out immediately, thus ordering can get messed up.
+Yikes.
 
 It is imperative that streams give us some means to force the buffer to be output!
 Thus, streams provide a means of *flushing* the stream's buffers, and sending them out to the system (e.g. using `write`).
