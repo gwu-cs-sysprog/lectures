@@ -1,5 +1,5 @@
 
-# Filesystem Input/Output
+# I/O: Programming Files and Directories
 
 We've seen how to use `pipe`s for communication between processes, and how descriptors are used to interact with system resources.
 In this module, we'll dive into how to access the file system and the files and directories on your system!

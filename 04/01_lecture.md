@@ -1,5 +1,5 @@
 
-# Programming Process Resources
+# Process Descriptors and Signals
 
 We've discussed the APIs for process manipulation and program execution, but now we're going to start discussing how processes can manipulate the resources it has access to.
 Two of the key UNIX mechanisms that processes must use effectively are
