@@ -30,7 +30,7 @@ The relevant functions include:
 
 - `int open(path, flags)` - Open a file, identified by its `path`, and return a *file descriptor* that can be used to access that file.
     The `flags` must be include of the following: `O_RDONLY`, `O_WRONLY`, or `O_RDWR` -- if you want to only read from the file, only write to the file, or have the ability to both read and write to the file.
-	Another interesting `flag` value is `O_CREAT` which will *create* the file if it doesn't already exist, but requires that we pass an additional "mode" argument that you can, for now, assume is `0777`.
+	Another interesting `flag` value is `O_CREAT` which will *create* the file if it doesn't already exist.
 	Whenever you see "flags", you should think of them as a set of bits, and each of the options as a single bit.
 	Thus, when passing in flags, you can use bitwise operators to pass in multiple options, for example `open("penny_is_best.gif", O_RDWR | O_CREAT, 0777)` will open the file, creating it if it doesn't already exist, and enable reading and writing to the file.
 - `read` &` write` - We've seen these before when we saw `pipe`s!
@@ -42,7 +42,7 @@ The relevant functions include:
 - `creat(path, mode)` - Create a new file at the `path` with the `mode` (specified identically to `open`).
     Later, we'll learn about mode when we discuss security, for now, you can use a permissive mode of `0777`.
 - `unlink(path)` - Try and remove a file!
-    This is called, for example, buy the `rm` program.
+    This is called, for example, by the `rm` program.
 
 
 ```c
@@ -403,6 +403,39 @@ A few other functions for streams that can be useful:
 - `getline` - Read out a line (delimited by a `\n`) from a stream.
     Since reading input, line at a time, is a pretty common thing, this is a useful function.
 
+```c
+#include <stdio.h>
+#include <assert.h>
+#include <stdlib.h>
+#include <string.h>
+
+int
+main(void)
+{
+	FILE *f = fopen("./05/prufrock.txt", "r");
+	size_t s = 0;
+	char *line = NULL;
+	int i;
+
+	assert(f);
+	printf("The new genre: abridged, tweet-worthy poetry...\n\n");
+	for (i = 0; getline(&line, &s, f) != -1; i++) {
+		if (i % 15 == 0) {
+			fwrite(line, 1, strlen(line), stdout);
+			/* same as printf("%s", line); */
+		}
+	}
+	if (!feof(f)) {
+		perror("getline");
+		exit(EXIT_FAILURE);
+	}
+	free(line);
+	fclose(f);
+
+	return 0;
+}
+```
+
 ### Accessing Directories
 
 Files aren't the only thing we care to access in the system -- what about directories!
@@ -470,6 +503,7 @@ main(void)
 		perror("Reading directory");
 		exit(EXIT_FAILURE);
 	}
+	closedir(d);
 
 	return 0;
 }
@@ -482,7 +516,7 @@ file_size(char *dir, char *file)
 	int ret;
 
 	memset(buf, 0, 512); /* zero out the buffer to add '\0's */
-	snprintf(buf, 512, "./05/%s", file);
+	snprintf(buf, 512, "./%s/%s", dir, file);
 
 	ret = stat(buf, &finfo);
 	assert(ret == 0);
@@ -530,11 +564,11 @@ main(void)
 	ret = rmdir("05/newerdir");
 	assert(ret == 0);
 
-	printf("If there were no errors, we\n"
-		"1. created a directory, \n"
-		"2. a file in the directory, \n"
-		"3. change the directory name,\n"
-		"4. removed the file, and\n"
+	printf("If there were no errors, we\n\t"
+		"1. created a directory, \n\t"
+		"2. a file in the directory, \n\t"
+		"3. change the directory name,\n\t"
+		"4. removed the file, and\n\t"
 		"5. removed the directory\n");
 
 	return 0;
