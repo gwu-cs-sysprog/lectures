@@ -52,7 +52,6 @@ The relevant functions include:
 #include <unistd.h>
 #include <assert.h>
 #include <stdio.h>
-/* open, stat, read, & close */
 
 #define TWEET_LEN 280
 
@@ -171,7 +170,7 @@ main(void)
 }
 ```
 
-### Mapping Files
+## Mapping Files
 
 It is very common to access files with `read` and `write`.
 However, they require many interactions with the file through subsequent calls to these functions.
@@ -227,6 +226,8 @@ main(void)
 	ret = write(STDOUT_FILENO, addr, 280 * 2);
 	assert(ret == 280 * 2);
 
+	munmap(addr, 280 * 2);
+
 	return 0;
 }
 ```
@@ -239,7 +240,7 @@ Interesting, `mmap` can also be used to *allocate memory*.
 Specifically, if we pass in `fd = 0`, `prot = PROT_READ | PROT_WRITE`, and `flags = MAP_ANONYMOUS | MAP_PRIVATE`, `mmap` will simply return newly allocated memory instead of a file!
 Somewhere deep in `malloc`'s implementation, it calls `mmap` to allocate the memory it eventually returns to the application!
 
-### Stream-based I/O
+## Stream-based I/O
 
 There is actually a *third* way to access files beyond "raw" `read`/`write` and `mmap` -- streams!
 [Streams](https://www.gnu.org/software/libc/manual/html_node/I_002fO-on-Streams.html) are an abstraction *on top of the* "raw" descriptor accesses using `read` and `write`.
@@ -372,6 +373,11 @@ Fixing the previous examples:
 int
 main(void)
 {
+	printf("hello ");
+	fflush(stdout);
+	write(STDOUT_FILENO, "world ", 6);
+	printf("\n"); /* remember, streams output on \n */
+
 	printf("hello world");
 	fflush(stdout);
 	_exit(EXIT_SUCCESS); /* this exits immediately without calling `atexit` functions */
@@ -436,7 +442,7 @@ main(void)
 }
 ```
 
-### Accessing Directories
+## Accessing Directories
 
 Files aren't the only thing we care to access in the system -- what about directories!
 We want to be able to create directories, delete them, and be able to read their contents.

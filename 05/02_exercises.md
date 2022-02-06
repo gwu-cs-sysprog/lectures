@@ -16,7 +16,8 @@ $ tree .
 
 ### Task 1: Markdown Tree
 
-We'll simplify the output to print out markdown lists with either `D` or `F` for directories or files:
+We'll simplify the output to print out markdown lists with either `D` or `F` for directories or files.
+If we run the program in the `05` directory:
 
 ```
 $ ./t
@@ -126,6 +127,7 @@ file_size(char *dir, char *file)
 
 **Task: Add output for the size of files, and the size of each directory -- the sum of the size of all contained directories and files.**
 
+Again, if we run the program in the `05` directory:
 ```
 $ ./t
 - 01_lecture.md (20759)
