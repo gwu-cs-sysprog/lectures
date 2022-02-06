@@ -30,9 +30,9 @@ The relevant functions include:
 
 - `int open(path, flags)` - Open a file, identified by its `path`, and return a *file descriptor* that can be used to access that file.
     The `flags` must be include of the following: `O_RDONLY`, `O_WRONLY`, or `O_RDWR` -- if you want to only read from the file, only write to the file, or have the ability to both read and write to the file.
-	Another interesting `flag` value is `O_CREAT` which will *create* the file if it doesn't already exist.
+	Another interesting `flag` value is `O_CREAT` which will *create* the file if it doesn't already exist, but requires that we pass an additional "mode" argument that you can, for now, assume is `0777`.
 	Whenever you see "flags", you should think of them as a set of bits, and each of the options as a single bit.
-	Thus, when passing in flags, you can use bitwise operators to pass in multiple options, for example `open("penny_is_best.gif", O_RDWR | O_CREAT)` will open the file, creating it if it doesn't already exist, and enable reading and writing to the file.
+	Thus, when passing in flags, you can use bitwise operators to pass in multiple options, for example `open("penny_is_best.gif", O_RDWR | O_CREAT, 0777)` will open the file, creating it if it doesn't already exist, and enable reading and writing to the file.
 - `read` &` write` - We've seen these before when we saw `pipe`s!
     They are the generic functions for getting data from, and pushing data to descriptors.
 - `close` - Remember that we can `close` any descriptor to release it (the `free` for descriptors, if you will), including those that reference files.
@@ -40,6 +40,7 @@ The relevant functions include:
     The structure is documented in the `man` page, but it includes, for example, the file size.
 	`fstat` enables to you get stat info from an existing file descriptor.
 - `creat(path, mode)` - Create a new file at the `path` with the `mode` (specified identically to `open`).
+    Later, we'll learn about mode when we discuss security, for now, you can use a permissive mode of `0777`.
 - `unlink(path)` - Try and remove a file!
     This is called, for example, buy the `rm` program.
 
@@ -492,7 +493,7 @@ file_size(char *dir, char *file)
 
 To make *changes* in the first system hierarchy, we need an additional set of functions.
 
-- `mkdir(path)` -
+- `mkdir(path, mode)` -
     This function is used in, for example, the `mkdir` program.
 	Don't confuse the program you use in the shell, with the function you can call from C.
 - `rmdir(path)` -
@@ -503,5 +504,39 @@ To make *changes* in the first system hierarchy, we need an additional set of fu
 	You can imagine this is used by the `mv` command line program.
 
 ```c
-/* directory manipulations */
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <assert.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <stdio.h>
+
+int
+main(void)
+{
+	int ret;
+	int fd;
+
+	ret = mkdir("05/newdir", 0777);
+	assert(ret == 0);
+	fd = open("05/newdir/newfile", O_RDWR | O_CREAT);
+	assert(fd >= 0);
+	ret = write(fd, "new contents", 13);
+	assert(ret == 13);
+	ret = rename("05/newdir", "05/newerdir");
+	assert(ret == 0);
+	ret = unlink("05/newerdir/newfile");
+	assert(ret == 0);
+	ret = rmdir("05/newerdir");
+	assert(ret == 0);
+
+	printf("If there were no errors, we\n"
+		"1. created a directory, \n"
+		"2. a file in the directory, \n"
+		"3. change the directory name,\n"
+		"4. removed the file, and\n"
+		"5. removed the directory\n");
+
+	return 0;
+}
 ```
