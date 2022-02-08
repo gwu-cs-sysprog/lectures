@@ -219,7 +219,7 @@ main(void)
 	assert(addr);
 
 	/* The file is now memory we can access! */
-	ret = strncmp(&addr[5], "Love", 4);
+	ret = memcmp(&addr[5], "Love", 4);
 	assert(ret == 0);
 
 	/* write it out to see it is the same as before */
@@ -227,6 +227,7 @@ main(void)
 	assert(ret == 280 * 2);
 
 	munmap(addr, 280 * 2);
+	close(fd);
 
 	return 0;
 }

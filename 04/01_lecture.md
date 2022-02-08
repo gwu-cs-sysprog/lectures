@@ -762,6 +762,83 @@ Yikes^[A hallmark of *bad design* is functionality that is not [*orthogonal* wit
 Luckily, UNIX provides a means to disable the interruption of blocking calls by setting the `SA_RESTART` flag to the `sa_flags` field of the `sigaction` struct passed to the `sigaction` call.
 Note that the code above already sets this as I consider it a default requirement if you're setting up signal handlers.
 
+Lets see the explicit interaction with between the slow call `wait`, and the signal handler:
+```c
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <unistd.h>
+#include <string.h>
+#include <assert.h>
+#include <sys/wait.h>
+
+void
+sig_handler(int signal_number, siginfo_t *info, void *context)
+{
+	printf("Alarm signal handler\n");
+
+	return;
+}
+
+void
+setup_signal(int signo)
+{
+	sigset_t masked;
+	struct sigaction siginfo;
+	int ret;
+
+	sigemptyset(&masked);
+	sigaddset(&masked, signo);
+	siginfo = (struct sigaction) {
+		.sa_sigaction = sig_handler,
+		.sa_mask      = masked,
+		/*
+		 * We didn't set RESTART so that wait returns
+		 * when a signal happens.
+		 */
+		.sa_flags     = SA_SIGINFO /* | SA_RESTART */
+	};
+
+	if (sigaction(signo, &siginfo, NULL) == -1) {
+		perror("sigaction error");
+		exit(EXIT_FAILURE);
+	}
+}
+
+int
+main(void)
+{
+	pid_t pid;
+
+	setup_signal(SIGALRM);
+
+	/* lets spin up a simple child */
+	if ((pid = fork()) == 0) {
+		pause(); /* await signal */
+		exit(EXIT_SUCCESS);
+	}
+	/* our signal handler for the alarm should execute in a second */
+	alarm(1);
+	while (1) {
+		pid_t ret;
+
+		ret = wait(NULL);
+		if (ret == -1) {
+			if (errno == EINTR) {
+				printf("Wait call interrupted by signal!\n");
+				kill(pid, SIGTERM); /* goodbye sweet child! */
+				/* loop again and `wait` */
+			} else if (errno == ECHILD) {
+				printf("Child has exited.\n");
+				return 0; /* no more children! */
+			}
+		}
+	}
+}
+```
+
+
 **Re-entrant computations.**
 Signal handlers execute by interrupting the currently executing instructions, regardless what computations they are performing.
 Because we don't really know anything about what was executing when a signal handler started, we have to an issue.
