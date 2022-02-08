@@ -87,12 +87,128 @@ It also uses the `dri` device is part of the [Direct Rendering Infrastructure](h
 Finally, we see it uses the same means of IPC as the client, and if we carefully look at the `[ids]` of the sockets and pipes, we can see that they match those in the child tab process!
 We can see that the tab has multiple IPC channels open with the parent, and can access them with file descriptors.
 
+## Goals of IPC Mechanisms
+
+There are multiple IPC mechanisms in the system, and they all represent different trade-offs.
+They might be good for some things, and bad at others.
+
+- [ ] **Transparent IPC.**
+    Do applications need to be changed at all to perform IPC?
+	If not, they are *transparently* leveraging IPC.
+- [ ] **Simple IPC setup code.**
+    Though this is subjective, how many hoops do we need to jump through to setup the IPC code.
+	If IPC is transparent, then there is *zero* setup, which is, of course, quite simple.
+- [ ] **Named IPC.**
+    If we want multiple process that are not related by a common parent to communicate, they need a means to find an "name" the IPC mechanism.
+	Named IPC is in conflict with transparent IPC.
+- [ ] **Channel-based IPC.**
+    Often we want to send *messages* between processes.
+	You can think of messages as being similar to the arguments and return values we pass to functions.
+	It is natural that we'd want to pass arguments to a
+- [ ] **Multi-client communication.**
+    We often want to create a process that can provide services to *multiple* other "client" processes.
+	Clients request service, and the "server" process receives these requests, and provides replies.
+
+Lets assess `pipe`s in this taxonomy:
+
+- [x] **Transparent IPC.**
+- [x] **Simple IPC setup code.**
+- [ ] **Named IPC.**
+- [x] **Channel-based IPC.**
+- [ ] **Multi-client communication.**
+
 ## Files & Shared Memory
+
+If the goal is to send data from one process to another, one option is found in the filesystem (FS): can't we just use files to share?
+Toward this, we saw in the section on FS I/O that we can open a file, and `read` and `write` (or `fread`/`fwrite`) from it from *multiple* processes.
+This will certainly get data from one process to the other.
+However, it has a number of shortcomings:
+
+1. If you want to pass a potentially infinite stream of data between processes (think `pipe`s), then we'd end up with an infinite file.
+    That translates to your disk running out of space very quickly, with little benefit.
+	Take-away: files are for a finite amount of data, not for an infinite stream of data.
+2. Given this, processes must assume that the file has a specific format, and they have indication of if the other process has accessed/read data in the file.
+    An example of a specific format: maybe the file is treated as a single string of a constant length.
+3. There isn't any indication about when other processes have modified the file, thus the processes might overwrite each other's data^[This is called a "race condition". File "locking" helps solve this issue, but we'll delay discussing locking until the OS class.].
+
+To emphasize these problems, lets try and implement a channel in a file to send data between processes.
+We just want to send a simple string repetitively from one process to the other.
+
+```c
+#include <stdio.h>
+#include <assert.h>
+#include <string.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <sys/wait.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <fcntl.h>
+
+int
+main(void)
+{
+	int ret;
+
+	ret = creat("string_data", 0777);
+	assert(ret != -1);
+
+	if (fork() == 0) {
+		char *msg[] = {"penny for pawsident", "america for good doggies"};
+		int fd = open("string_data", O_WRONLY);
+		assert(fd != -1);
+
+		/* send the first message! */
+		ret = write(fd, msg[0], strlen(msg[0]) + 1);
+		assert(ret == (int)strlen(msg[0]) + 1);
+		/* send the second message! */
+		ret = lseek(fd, 0, SEEK_SET);
+		ret = write(fd, msg[1], strlen(msg[1]) + 1);
+		assert(ret == (int)strlen(msg[1]) + 1);
+
+		close(fd);
+		exit(EXIT_SUCCESS);
+	} else {
+		char data[32];
+		int fd = open("string_data", O_RDONLY);
+		assert(fd != -1);
+
+		memset(data, 0, 32);
+		ret = read(fd, data, 32);
+		assert(ret != -1);
+		printf("msg1: %s\n", data);
+
+		ret = lseek(fd, 0, SEEK_SET);
+		assert(ret != -1);
+		ret = read(fd, data, 32);
+		assert(ret != -1);
+		printf("msg2: %s\n", data);
+	}
+	wait(NULL);
+	unlink("string_data");
+
+	return 0;
+}
+	```
+
+You can see that there are some problems here.
+If we run it many times, we can see that sometimes we don't see any messages, sometimes we only see the first, sometimes we only see the second, and other times combinations of all three options.
+
+On the other side, files have a very  *useful* properti that we'd like to use in a good solution to IPC: they *have a location in the FS* that the communicating processes can both use to find the file, thus avoiding the need for a shared parent.
+
+> An aside: you can use `mmap` to map a *file* into the address space, and if you map it `MAP_SHARED` (instead of `MAP_PRIVATE`), then the memory will be shared between processes.
+> When one process does a store to the memory, the other process will see that store immediately!
+> We can use this to pass data between processes, but we still have many of the problems above.
+> How do we avoid conflicting modifications to the memory, get notifications that modifications have been made, and make sure that the data is formatted in an organized (finite) manner?
 
 ## Named Pipes
 
-FIFOs are like pipes in that one process can write into the FIFO, and another process can read from it.
-However, unlike pipes, FIFOs appear in the filesystem along side files.
+The core problem with files is that they aren't channels that remove existing data when it is "consumed" (`read`).
+But they have the significant up-side that they have a "name" in the filesystem that multiple otherwise independent processes can use to access the communication medium.
+
+Named pipes or FIFOs are like pipes in that one process can write into the FIFO, and another process can read from it.
+Thus, unlike files, they have the desirable property of channels in which data read from the channel is consumed.
+However, like files (and unlike pipes) they have a "name" in the filesystem -- FIFOs appear in the filesystem along-side files.
 The `stat` function will let you know that a file is a FIFO if the `st_mode` is `S_IFIFO`.
 Since these pipes appear in the filesystem, they are called **named pipes**.
 Two processes that wish to communicate need only both know where in the filesystem they agree to find the named pipe.
@@ -171,7 +287,249 @@ Regardless, we do see a cool option: named pipes enable us to use the filesystem
 This enables communicating processes without shared parents to leverage IPC.
 This enables pipes to live up to the UNIX motto: *everything is a file*.
 
+### Challenge in Using Named Pipes for Multi-Client Communication
+
+Lets check out an example that demonstrates how using named pipes for communication between a single process and multiple *clients* has a number of challenges.
+
+```c
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/wait.h>
+#include <fcntl.h>
+#include <assert.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+/*
+ * Receive requests, and send them immediately as a response.
+ * You can imagine that interesting computation could be done
+ * to formulate a response.
+ */
+void
+instructor(void)
+{
+	int req, resp, ret;
+	char msg[32];
+
+	req = open("requests", O_RDONLY);
+	assert(req != -1);
+	resp = open("responses", O_WRONLY);
+	assert(resp != -1);
+
+	while (1) {
+		ret = read(req, msg, 32);
+		if (ret == 0) break;
+		assert(ret != -1);
+		ret = write(resp, msg, ret);
+		if (ret == 0) break;
+		assert(ret != -1);
+	}
+
+	close(req);
+	close(resp);
+}
+
+/*
+ * Make a "request" with our pid, and get a response,
+ * hopefully also our pid.
+ */
+void
+student(void)
+{
+	int req, resp, ret;
+	char msg[32];
+
+	req = open("requests", O_WRONLY);
+	assert(req != -1);
+	resp = open("responses", O_RDONLY);
+	assert(resp != -1);
+
+	ret = snprintf(msg, 32, "%d", getpid());
+	ret = write(req, msg, ret);
+	assert(ret != -1);
+	ret = read(resp, msg, 32);
+	assert(ret != -1);
+
+	printf("%d: %s\n", getpid(), msg);
+
+	close(req);
+	close(resp);
+}
+
+void
+close_fifos(void)
+{
+	unlink("requests");
+	unlink("responses");
+}
+
+int
+main(void)
+{
+	int ret, i;
+	pid_t pids[3];
+
+	/* clients write to this, server reads */
+	ret = mkfifo("requests", 0777);
+	assert(ret == 0);
+	/* server sends replies to this, clients read */
+	ret = mkfifo("responses", 0777);
+	assert(ret == 0);
+
+	/* create 1 instructor that is lecturing */
+	if ((pids[0] = fork()) == 0) {
+		instructor();
+		return 0;
+	}
+	/* Create 2 students "listening" to the lecture */
+	for (i = 0; i < 2; i++) {
+		if ((pids[i + 1] = fork()) == 0) {
+			student();
+			return 0;
+		}
+	}
+
+	atexit(close_fifos);
+	sleep(1);
+	for (i = 0; i < 3; i++) kill(pids[i], SIGTERM);
+	while (wait(NULL) != -1);
+
+	return 0;
+}
+```
+
+
+If executed many times, you see the expected result:
+
+```
+167907: 167907
+167908: 167908
+```
+
+...but also strange results:
+
+```
+167941: 167940167941
+```
+
+If this is executed many times, we see a few properties of named pipes.
+
+1. There isn't really a way to predict which student sees which data -- this is determined by the concurrency of the system.
+2. Sometimes a student is "starved" of data completely.
+3. The instructor doesn't have any control over *which* student should receive which data.
+
 ## UNIX Domain Sockets
+
+*Sockets* are the mechanism provided by UNIX to communicate over the *network*!
+However, they can also be used to communicate between processes on your system through *UNIX domain sockets*.
+
+There are a few interesting new concepts required for sockets.
+Importantly, the goal is to create a descriptor for *each pair of communicating processes*.
+This is essential so that the processes can be explicit about who they want to send data to and receive data from.
+
+### Domain sockets for Multi-Client Communication
+
+- A *server* receives IPC requests from *clients*.
+    Note that this is similar to how a server on the internet serves webpages to multiple clients (and, indeed, the code is similar!).
+- The server's functions include `socket`, `bind`, and `listen`.
+    `socket` creates a domain socket file descriptor
+- The server creates a *separate descriptor* for each client using `accept`.
+- The client's functions include `socket` and `connect`.
+
+``` c
+int
+domain_socket_server_create(const char *file_name)
+{
+	struct sockaddr_un addr;
+	int fd;
+
+	if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
+		perror("socket error");
+		exit(EXIT_FAILURE);
+	}
+
+	memset(&addr, 0, sizeof(addr));
+	addr.sun_family = AF_UNIX;
+	strncpy(addr.sun_path, file_name, sizeof(addr.sun_path)-1);
+
+	if (bind(fd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
+		perror("bind error");
+		exit(-1);
+	}
+
+	if (listen(fd, 5) == -1) {
+		perror("listen error");
+		exit(-1);
+	}
+
+	return fd;
+}
+```
+
+``` c
+int
+domain_socket_client_create(const char *file_name)
+{
+	struct sockaddr_un addr;
+	int fd;
+
+	if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
+		perror("socket error");
+		exit(EXIT_FAILURE);
+	}
+
+	memset(&addr, 0, sizeof(addr));
+	addr.sun_family = AF_UNIX;
+	strncpy(addr.sun_path, file_name, sizeof(addr.sun_path)-1);
+
+	if (connect(fd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
+		perror("connect error");
+		exit(EXIT_FAILURE);
+	}
+
+	return fd;
+}
+```
+
+Lets see an example of connecting the client to the server:
+
+```c
+/*
+ * The core code for domain sockets is in
+ * - 06/domain_socket_client.c
+ * - 06/domain_socket_server.c
+ * This code just runs those, passing the domain socket
+ * file name in the environment variables.
+ */
+
+#include <stdlib.h>
+#include <assert.h>
+#include <unistd.h>
+
+int
+main(void)
+{
+	char *dsname = "domain_socket_file";
+	int ret;
+
+	ret = setenv("DOMAIN_SOCKET_FILENAME", dsname, 1);
+	assert(ret != -1);
+
+	if (fork() == 0) {
+		char *args[] = {"./06/domain_socket_client.bin", NULL};
+		/* let the server run first and create the domain socket file */
+		sleep(1);
+		execvp(args[0], args);
+	} else {
+		char *args[] = {"./06/domain_socket_server.bin", NULL};
+		execvp(args[0], args);
+	}
+
+	return 0;
+}
+```
 
 - `socket`
 - `listen`

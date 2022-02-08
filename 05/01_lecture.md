@@ -32,7 +32,7 @@ The relevant functions include:
     The `flags` must be include of the following: `O_RDONLY`, `O_WRONLY`, or `O_RDWR` -- if you want to only read from the file, only write to the file, or have the ability to both read and write to the file.
 	Another interesting `flag` value is `O_CREAT` which will *create* the file if it doesn't already exist.
 	Whenever you see "flags", you should think of them as a set of bits, and each of the options as a single bit.
-	Thus, when passing in flags, you can use bitwise operators to pass in multiple options, for example `open("penny_is_best.gif", O_RDWR | O_CREAT, 0777)` will open the file, creating it if it doesn't already exist, and enable reading and writing to the file.
+	Thus, when passing in flags, you can use bitwise operators to pass in multiple options, for example `open("penny_is_best.gif", O_RDWR | O_CREAT)` will open the file, creating it if it doesn't already exist, and enable reading and writing to the file.
 - `read` &` write` - We've seen these before when we saw `pipe`s!
     They are the generic functions for getting data from, and pushing data to descriptors.
 - `close` - Remember that we can `close` any descriptor to release it (the `free` for descriptors, if you will), including those that reference files.
@@ -95,7 +95,7 @@ We see something a little strange with files as compared to `pipe`s.
 Files have a finite size, and the data remains in the file after being read -- unlike with pipes where data is removed out of the pipe when read.
 For files, subsequent reads and writes must progress through the contents of the file, but we must also to be able to go back and read previously read data.
 Lets understand what happens when we `read` or `write` from a file -- we'll focus only on `read` to start, but both behave similarly.
-Each file descriptor^[I'll try and call it a "file descriptor" when we know the descriptor is to a file.] tracks an *offset* into the file at which the next `read` will access data.
+*Each file descriptor*^[I'll try and call it a "file descriptor" when we know the descriptor is to a file.] tracks an *offset* into the file at which the next `read` will access data.
 Lets go through an example of a file that contains the alphabet:
 
 ```
