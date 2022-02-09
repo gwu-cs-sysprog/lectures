@@ -838,7 +838,6 @@ main(void)
 }
 ```
 
-
 **Re-entrant computations.**
 Signal handlers execute by interrupting the currently executing instructions, regardless what computations they are performing.
 Because we don't really know anything about what was executing when a signal handler started, we have to an issue.
