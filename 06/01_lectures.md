@@ -431,12 +431,17 @@ This is essential so that the processes can be explicit about who they want to s
 
 ### Domain sockets for Multi-Client Communication
 
+Lets look at an example were we want a server to receive a client's requests as strings, and to reply with those same strings.
+This isn't useful, per-say, but demonstrates how this communication can happen.
+Notably, we want to enable the server to communicate with different clients!
+
 - A *server* receives IPC requests from *clients*.
     Note that this is similar to how a server on the internet serves webpages to multiple clients (and, indeed, the code is similar!).
 - The server's functions include `socket`, `bind`, and `listen`.
     `socket` creates a domain socket file descriptor
 - The server creates a *separate descriptor* for each client using `accept`.
 - The client's functions include `socket` and `connect`.
+
 
 ``` c
 int
@@ -445,6 +450,7 @@ domain_socket_server_create(const char *file_name)
 	struct sockaddr_un addr;
 	int fd;
 
+	/* create a new descriptor to a "socket" */
 	if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
 		perror("socket error");
 		exit(EXIT_FAILURE);
@@ -454,11 +460,13 @@ domain_socket_server_create(const char *file_name)
 	addr.sun_family = AF_UNIX;
 	strncpy(addr.sun_path, file_name, sizeof(addr.sun_path)-1);
 
+	/* "bind" the socket to the domain socket in the file-system */
 	if (bind(fd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
 		perror("bind error");
 		exit(-1);
 	}
 
+	/* enable 5 clients to queue up awaiting communication */
 	if (listen(fd, 5) == -1) {
 		perror("listen error");
 		exit(-1);
@@ -514,6 +522,7 @@ main(void)
 	char *dsname = "domain_socket_file";
 	int ret;
 
+	/*  */
 	ret = setenv("DOMAIN_SOCKET_FILENAME", dsname, 1);
 	assert(ret != -1);
 
