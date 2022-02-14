@@ -135,6 +135,7 @@ To emphasize these problems, lets try and implement a channel in a file to send 
 We just want to send a simple string repetitively from one process to the other.
 
 ```c
+
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
