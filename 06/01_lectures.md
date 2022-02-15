@@ -92,30 +92,28 @@ We can see that the tab has multiple IPC channels open with the parent, and can 
 There are multiple IPC mechanisms in the system, and they all represent different trade-offs.
 They might be good for some things, and bad at others.
 
-- [ ] **Transparent IPC.**
+- **Transparent IPC.**
     Do applications need to be changed at all to perform IPC?
 	If not, they are *transparently* leveraging IPC.
-- [ ] **Simple IPC setup code.**
-    Though this is subjective, how many hoops do we need to jump through to setup the IPC code.
-	If IPC is transparent, then there is *zero* setup, which is, of course, quite simple.
-- [ ] **Named IPC.**
-    If we want multiple process that are not related by a common parent to communicate, they need a means to find an "name" the IPC mechanism.
-	Named IPC is in conflict with transparent IPC.
-- [ ] **Channel-based IPC.**
-    Often we want to send *messages* between processes.
-	You can think of messages as being similar to the arguments and return values we pass to functions.
-	It is natural that we'd want to pass arguments to a
-- [ ] **Multi-client communication.**
+	Shell-driven pipes have a huge benefit that they enable transparent IPC!
+- **Named IPC.**
+    If we want multiple process to communicate that can't rely on a comment parent to coordinate that communication, they need a means to find an "name" the IPC mechanism.
+	Named IPC is in conflict with transparent IPC as we likely need to use a specific API to access the IPC mechanism.
+- **Channel-based IPC.**
+    Often we want to send *messages* between processes such that a sent message, when received is removed from the channel -- once read, it won't be read again.
+	This enables processes to receive some request, do some processing on it, then move on to the next request.
+- **Multi-client communication.**
     We often want to create a process that can provide services to *multiple* other "client" processes.
 	Clients request service, and the "server" process receives these requests, and provides replies.
 
 Lets assess `pipe`s in this taxonomy:
 
-- [x] **Transparent IPC.**
-- [x] **Simple IPC setup code.**
-- [ ] **Named IPC.**
-- [x] **Channel-based IPC.**
-- [ ] **Multi-client communication.**
+- ✓ **Transparent IPC.** - Pipes are pervasive for a reason!
+    They enable composition of programs via pipelines despite the programs not even knowing they are in the pipeline!
+- ✗ **Named IPC.** - Na.
+    The parent has to set it all up -- lots of `dup`, `close`, and `pipe`.
+- ✓ **Channel-based IPC.** - Data written to a pipe is removed by the reader.
+- ✗ **Multi-client communication.** - Pipes are really there to pass a stream of data from one process to the other.
 
 ## Files & Shared Memory
 
@@ -135,7 +133,6 @@ To emphasize these problems, lets try and implement a channel in a file to send 
 We just want to send a simple string repetitively from one process to the other.
 
 ```c
-
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
@@ -190,12 +187,20 @@ main(void)
 
 	return 0;
 }
-	```
+```
 
 You can see that there are some problems here.
 If we run it many times, we can see that sometimes we don't see any messages, sometimes we only see the first, sometimes we only see the second, and other times combinations of all three options.
+Thus, they are not useful for channel-based communication between multiple processes.
 
 On the other side, files have a very  *useful* properti that we'd like to use in a good solution to IPC: they *have a location in the FS* that the communicating processes can both use to find the file, thus avoiding the need for a shared parent.
+
+
+- ✗ **Transparent IPC** - We have to open the file explicitly.
+- ✓ **Named IPC.** - Each file has a path in the filesystem.
+- ✗ **Channel-based IPC.** - When we read out of a file, the data remains, making it hard to know what we've read, and what is yet to be written.
+    A stream of messages placed into a file also will expend your disk!
+- ✗ **Multi-client communication.** - It isn't clear how multiple clients can convey separate requests, and can receive separate replies from a server.
 
 > An aside: you can use `mmap` to map a *file* into the address space, and if you map it `MAP_SHARED` (instead of `MAP_PRIVATE`), then the memory will be shared between processes.
 > When one process does a store to the memory, the other process will see that store immediately!
@@ -284,11 +289,11 @@ Processes attempting to `open` a named pipe will block (the `open` will not retu
 This is awkward because how would a process *know* when another process might want to communicate with it?
 If a process gets IPC requests from many others (think the browser manager), then it doesn't want to block awaiting a new communication; it wants to service the requests of other processes.
 
-Regardless, we do see a cool option: named pipes enable us to use the filesystem to identify the pipe used for IPC.
+Regardless, we do see named pipes as a cool option: named pipes enable us to use the filesystem to identify the pipe used for IPC.
 This enables communicating processes without shared parents to leverage IPC.
 This enables pipes to live up to the UNIX motto: *everything is a file*.
 
-### Challenge in Using Named Pipes for Multi-Client Communication
+### Challenges with Named Pipes for Multi-Client Communication
 
 Lets check out an example that demonstrates how using named pipes for communication between a single process and multiple *clients* has a number of challenges.
 
@@ -421,14 +426,28 @@ If this is executed many times, we see a few properties of named pipes.
 2. Sometimes a student is "starved" of data completely.
 3. The instructor doesn't have any control over *which* student should receive which data.
 
+**Named pipes summary.**
+These solve an important problem: how can we have multiple processes find a "pipe" to use for communication even if they don't have a parent to coordinate that communication?
+They use a filesystem path/name to identify the pipe.
+However, they are not suitable for a single processes (a server) to communicate with multiple clients as they don't enable the communication for each client to be separated in the server.
+
+- ✗ **Transparent IPC.** - we have to use the `mkfifo` API explicitly.
+- ✓ **Named IPC.** - the named pipe is represented as a file in the filesystem.
+- ✓ **Channel-based IPC.** - read data is removed from the pipe.
+- ✗ **Multi-client communication.** - a server cannot tell the difference between clients, nor can they send responses to specific clients.
+
 ## UNIX Domain Sockets
 
 *Sockets* are the mechanism provided by UNIX to communicate over the *network*!
 However, they can also be used to communicate between processes on your system through *UNIX domain sockets*.
 
-There are a few interesting new concepts required for sockets.
-Importantly, the goal is to create a descriptor for *each pair of communicating processes*.
-This is essential so that the processes can be explicit about who they want to send data to and receive data from.
+A few key concepts for domain sockets:
+
+1. They are presented in the filesystem as a file, similar to named pipes.
+    This enables them to be accessed by multiple communicating processes that don't necessarily share a parent to coordinate that communication.
+2. Each new *client* that attempts to connect to a *server* will be represented as a *separate descriptor* in the server, thus enabling the server to separate its communication with on, from the other.
+    The goal is to create a descriptor for *each pair of communicating processes*.
+3. Each descriptor to a domain socket is bi-directional -- it can be `read` and `write`n to, thus making communication back and forth quite a bit easier.
 
 ### Domain sockets for Multi-Client Communication
 
@@ -443,108 +462,130 @@ Notably, we want to enable the server to communicate with different clients!
 - The server creates a *separate descriptor* for each client using `accept`.
 - The client's functions include `socket` and `connect`.
 
+Most of these functions are complex and have tons of options.
+Most of them have been distilled into the following functions in `06/domain_sockets.h`:
 
-``` c
-int
-domain_socket_server_create(const char *file_name)
-{
-	struct sockaddr_un addr;
-	int fd;
+- `int domain_socket_server_create(const char *file_name)` - Create a descriptor to the "server" end of the IPC channel identified by `file_name` in the filesystem, similar to the named pipes before.
+- `int domain_socket_client_create(const char *file_name)` - Create a descriptor to the "client" end of the IPC channel identified by a file name.
+    One constraint is that the *server must create the domain socket first*, or else this call (the `connect`) will fail.
 
-	/* create a new descriptor to a "socket" */
-	if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
-		perror("socket error");
-		exit(EXIT_FAILURE);
-	}
+The server's descriptor is not meant to be used for direct communication (i.e. should not be used for `read`, and `write`).
+Instead, it is used to *create new descriptors, one per client*!
+With a descriptor per-client, we have the fortunate ability to communicate explicitly with each client without the same problem of messages getting messed up in named pipes.
 
-	memset(&addr, 0, sizeof(addr));
-	addr.sun_family = AF_UNIX;
-	strncpy(addr.sun_path, file_name, sizeof(addr.sun_path)-1);
+#### Setting up Domain Sockets
 
-	/* "bind" the socket to the domain socket in the file-system */
-	if (bind(fd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
-		perror("bind error");
-		exit(-1);
-	}
-
-	/* enable 5 clients to queue up awaiting communication */
-	if (listen(fd, 5) == -1) {
-		perror("listen error");
-		exit(-1);
-	}
-
-	return fd;
-}
-```
-
-``` c
-int
-domain_socket_client_create(const char *file_name)
-{
-	struct sockaddr_un addr;
-	int fd;
-
-	if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
-		perror("socket error");
-		exit(EXIT_FAILURE);
-	}
-
-	memset(&addr, 0, sizeof(addr));
-	addr.sun_family = AF_UNIX;
-	strncpy(addr.sun_path, file_name, sizeof(addr.sun_path)-1);
-
-	if (connect(fd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
-		perror("connect error");
-		exit(EXIT_FAILURE);
-	}
-
-	return fd;
-}
-```
-
-Lets see an example of connecting the client to the server:
+Two functions that both take an argument which is the domain socket name/path in the file system, and return a descriptor to the socket.
+For the most part, you can just use these functions in your code directly by using `06/domain_sockets.h`.
 
 ```c
-/*
- * The core code for domain sockets is in
- * - 06/domain_socket_client.c
- * - 06/domain_socket_server.c
- * This code just runs those, passing the domain socket
- * file name in the environment variables.
- */
+#include "06/domain_sockets.h"
 
-#include <stdlib.h>
-#include <assert.h>
+#include <errno.h>
 #include <unistd.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/wait.h>
+
+void
+unlink_domain_socket(int status, void *filename)
+{
+	unlink(filename);
+	free(filename);
+}
+
+#define MAX_BUF_SZ 128
+
+void
+server(int num_clients, char *filename)
+{
+	char buf[MAX_BUF_SZ];
+	int new_client, amnt, i, socket_desc;
+
+	socket_desc = domain_socket_server_create(filename);
+	if (socket_desc < 0) exit(EXIT_FAILURE); /* should do proper cleanup */
+	on_exit(unlink_domain_socket, strdup(filename));
+
+	/*
+	 * Service `num_clients` number of clients, one at a time.F
+	 * For many servers, this might be an infinite loop.
+	 */
+	for (i = 0; i < num_clients; i++) {
+		/*
+		 * We use this new descriptor to communicate with *this* client.
+		 * This is the key function that enables us to create per-client
+		 * descriptors. It only returns when a client is ready to communicate.
+		 */
+		if ((new_client = accept(socket_desc, NULL, NULL)) == -1) exit(EXIT_FAILURE);
+		printf("Server: New client connected with new file descriptor %d.\n", new_client);
+
+		amnt = read(new_client, buf, MAX_BUF_SZ - 1);
+		if (amnt == -1) exit(EXIT_FAILURE);
+		buf[amnt] = '\0'; /* ensure null termination of the string */
+		printf("Server received message (sz %d): \"%s\". Replying!\n", amnt, buf);
+
+		/* send the client a reply */
+		if (write(new_client, buf, amnt) < 0) exit(EXIT_FAILURE);
+		/* Done with communication with this client */
+		close(new_client);
+	}
+	close(socket_desc);
+
+	exit(EXIT_SUCCESS);
+}
+
+void
+client(char *filename)
+{
+	char msg[MAX_BUF_SZ];
+	int  amnt = 0, socket_desc;
+
+	socket_desc = domain_socket_client_create(filename);
+	if (socket_desc < 0) exit(EXIT_FAILURE);
+	printf("1. Client %d connected to server.\n", getpid());
+
+	snprintf(msg, MAX_BUF_SZ - 1, "Citizen %d: Penny for Pawsident!", getpid());
+	amnt = write(socket_desc, msg, strlen(msg) + 1);
+	if (amnt < 0) exit(EXIT_FAILURE);
+	printf("2. Client %d request sent message to server.\n", getpid());
+
+	if (read(socket_desc, msg, amnt) < 0) exit(EXIT_FAILURE);
+	msg[amnt] = '\0';
+	printf("3. Client %d reply received from server: %s\n", getpid(), msg);
+
+	close(socket_desc);
+
+	exit(EXIT_SUCCESS);
+}
 
 int
 main(void)
 {
-	char *dsname = "domain_socket_file";
-	int ret;
+	char *channel_name = "pennys_channel";
+	int nclients = 2;
+	int i;
 
-	/*  */
-	ret = setenv("DOMAIN_SOCKET_FILENAME", dsname, 1);
-	assert(ret != -1);
-
-	if (fork() == 0) {
-		char *args[] = {"./06/domain_socket_client.bin", NULL};
-		/* let the server run first and create the domain socket file */
-		sleep(1);
-		execvp(args[0], args);
-	} else {
-		char *args[] = {"./06/domain_socket_server.bin", NULL};
-		execvp(args[0], args);
+	if (fork() == 0) server(nclients, channel_name);
+	/* wait for the server to create the domain socket */
+	sleep(1);
+	for (i = 0; i < nclients; i++) {
+		if (fork() == 0) client(channel_name);
 	}
+	/* wait for all of the children */
+	while (wait(NULL) != -1);
 
 	return 0;
 }
 ```
 
-- `socket`
-- `listen`
-- `accept`
+The server's call to `accept` is the key difference of domain sockets from named pipes.
+It enables us to have per-client descriptors we can use to separately communicate (via `read`/`write`) to each client.
 
-## Event Multiplexing
+- ✗ **Transparent IPC.** - We have to explicitly use the socket APIs.
+- ✓ **Named IPC.** - Uses a file name to name the domain socket.
+- ✓ **Channel-based IPC.** - When data is read, it is removed from the socket.
+- ✓ **Multi-client communication.** - The server separates each client's communication into separate descriptors.
 
-- `poll`
+> Aside:
+> Sockets are the main way to communicate over the network (i.e. to chat with the Internet).
+> The APIs you'd use to create network sockets are the same, it simply requires setting up the `socket` and the `bind`ing of the socket in a network-specific manner.

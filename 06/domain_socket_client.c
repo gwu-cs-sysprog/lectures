@@ -1,8 +1,3 @@
-/*
- * Graciously taken from
- * https://github.com/troydhanson/network/tree/master/unixdomain
- */
-
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <stdio.h>
@@ -10,60 +5,36 @@
 #include <unistd.h>
 #include <assert.h>
 
+#include "domain_sockets.h"
+
 #define MAX_BUF_SZ 128
 
 int
-domain_socket_client_create(const char *file_name)
+main(int argc, char *argv[])
 {
-	struct sockaddr_un addr;
-	int fd;
-
-	if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
-		perror("socket error");
-		exit(EXIT_FAILURE);
-	}
-
-	memset(&addr, 0, sizeof(addr));
-	addr.sun_family = AF_UNIX;
-	strncpy(addr.sun_path, file_name, sizeof(addr.sun_path)-1);
-
-	if (connect(fd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
-		perror("connect error");
-		exit(EXIT_FAILURE);
-	}
-
-	return fd;
-}
-
-int
-main(void)
-{
-	char buf[] = "The most important message: penny for pawsident!\n";
-	char msg[MAX_BUF_SZ];
-	int fd;
 	int amnt = 0;
-	char *socket_path;
+	int socket_desc;
+	char chunkachunk[MAX_BUF_SZ];
 
-	socket_path = getenv("DOMAIN_SOCKET_FILENAME");
-	assert(socket_path != NULL);
-	fd = domain_socket_client_create(socket_path);
-
-	printf("Client connected to server.\n");
-
-	amnt = write(fd, buf, strlen(buf) + 1);
-	if (amnt < 0) {
-		perror("write error");
-		exit(EXIT_FAILURE);
+	if (argc != 2) {
+		fprintf(stderr, "Usage: %s <domain_socket_file_name>\n", argv[0]);
+		return EXIT_FAILURE;
 	}
-	printf("Client request sent sent to server.\n");
-
-	if (read(fd, msg, amnt) < 0) {
-		perror("error during reading reply");
-		exit(EXIT_FAILURE);
+	socket_desc = domain_socket_client_create(argv[1]);
+	if (socket_desc < 0) {
+		perror("client domain socket creation");
+		return EXIT_FAILURE;
 	}
-	msg[amnt] = '\0';
-	printf("Client reply received from server: %s\n", msg);
-	close(fd);
+
+	while (1) {
+		if ((amnt = read(STDIN_FILENO, chunkachunk, MAX_BUF_SZ)) < 0) {
+			perror("error during reading reply");
+			exit(EXIT_FAILURE);
+		}
+		if (amnt == 0) exit(EXIT_SUCCESS);
+
+		write(socket_desc, chunkachunk, amnt);
+	}
 
 	return 0;
 }

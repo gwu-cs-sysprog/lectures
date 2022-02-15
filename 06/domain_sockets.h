@@ -1,5 +1,10 @@
 #pragma once
 
+/*
+ * Graciously taken from
+ * https://github.com/troydhanson/network/tree/master/unixdomain
+ */
+
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/socket.h>
