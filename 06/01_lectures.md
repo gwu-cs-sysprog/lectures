@@ -426,6 +426,8 @@ If this is executed many times, we see a few properties of named pipes.
 2. Sometimes a student is "starved" of data completely.
 3. The instructor doesn't have any control over *which* student should receive which data.
 
+![Using two named pipes, one per communication direction, to communicate between a server (right) and clients (left). The color of the arrows designates the client for whom the communication is relevant. Note that on the way back to the clients, we "lose" track of which client each reply is for. This simply isn't tracked with named pipes.](./figures/fifo.png)
+
 **Named pipes summary.**
 These solve an important problem: how can we have multiple processes find a "pipe" to use for communication even if they don't have a parent to coordinate that communication?
 They use a filesystem path/name to identify the pipe.
@@ -472,6 +474,8 @@ Most of them have been distilled into the following functions in `06/domain_sock
 The server's descriptor is not meant to be used for direct communication (i.e. should not be used for `read`, and `write`).
 Instead, it is used to *create new descriptors, one per client*!
 With a descriptor per-client, we have the fortunate ability to communicate explicitly with each client without the same problem of messages getting messed up in named pipes.
+
+![A sequence of using domain sockets to communicate between multiple clients and a server. (a) The single domain socket that clients can attempt to `connect` to. (b) The server using `accept` to create a new descriptor and channel for communication with the red client (thus the "red" channel). (c) Subsequent communication with that client is explicitly through that channel, so the server can send specifically to that client. (d) The server creates a *separate* channel for communication with the blue client.](./figures/domain_sockets.png)
 
 #### Setting up Domain Sockets
 
