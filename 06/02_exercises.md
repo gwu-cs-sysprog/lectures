@@ -7,6 +7,9 @@ Find the programs:
 - [`06/domain_socket_client.c`](https://github.com/gwu-cs-sysprog/lectures/blob/main/06/domain_socket_client.c) - a sample client.
 
 Both require the [`06/domain_sockets.h`](https://github.com/gwu-cs-sysprog/lectures/blob/main/06/domain_sockets.h) header file.
+You *must* run the server first to create the domain socket "file".
+If you run the server, and it complains that "server domain socket creation", then you might need to `rm` the domain socket file on the command line first.
+It already exists from a previous run of the server, so the server cannot create it again!
 
 Your job is to try to figure what in the hey these do!
 Answer the following questions:
