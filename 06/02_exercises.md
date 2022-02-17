@@ -22,7 +22,7 @@ Answer the following questions:
     What data does it send to the server?
 - Describe the behavior when you use the client with the server.
 
-The programs can be compiled directly with `gcc`.
+The programs can be compiled directly with `gcc` (e.g. `gcc domain_socket_server.c -o server; gcc domain_socket_client.c -o client`).
 Use these programs on the command line to send data from the client to server.
 
 - How can you use the client and server programs to send data between them?
