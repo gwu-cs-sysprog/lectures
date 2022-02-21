@@ -361,6 +361,31 @@ Both `printf` and the `write ` are to standard output, but `printf` is to a stre
 The *buffered* `printf` output is not written out immediately, thus ordering can get messed up.
 Yikes.
 
+Last example of the complexities of streams.
+What happens if you get a segfault!?
+
+```c
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+
+int
+main(void)
+{
+	int a;
+
+	printf("hello ");
+	a = *(int *)NULL;
+
+	return 0;
+}
+```
+
+Even though we fault *after* the `printf`, we don't see the `printf`'s output!
+We now know why: the `printf` wrote into a buffer, and didn't yet `write` to the system.
+Thus the segmentation fault, which terminates the process, happens before the buffer is actually written!
+
+**Flushing the stream buffers.**
 It is imperative that streams give us some means to force the buffer to be output!
 Thus, streams provide a means of *flushing* the stream's buffers, and sending them out to the system (e.g. using `write`).
 
