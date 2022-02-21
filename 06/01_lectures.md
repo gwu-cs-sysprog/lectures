@@ -593,3 +593,91 @@ It enables us to have per-client descriptors we can use to separately communicat
 > Aside:
 > Sockets are the main way to communicate over the network (i.e. to chat with the Internet).
 > The APIs you'd use to create network sockets are the same, it simply requires setting up the `socket` and the `bind`ing of the socket in a network-specific manner.
+
+## System Services
+
+The `systemctl` command enables you to understand many of the services on the system (of which there are many: `systemctl --list-units | wc -l` yields `244` on my system).
+
+```
+$ systemctl --list-units
+...
+  cups.service           loaded active     running   CUPS Scheduler
+...
+  gdm.service            loaded active     running   GNOME Display Manager
+...
+  ssh.service            loaded active     running   OpenBSD Secure Shell server
+...
+  NetworkManager.service loaded active     running   Network Manager
+...
+  openvpn.service        loaded active     exited    OpenVPN service
+...
+```
+
+I've pulled out a few selections that are easier to relate to:
+
+- CUPS which is the service used to receive print jobs.
+- [GDM](https://en.wikipedia.org/wiki/GNOME_Display_Manager) which manages your *graphical logins* on Ubuntu.
+- OpenSSH which manages your *remote* logins through `ssh`.
+- NetworkManager that you interact with when you select which wifi hotspot to use.
+- OpenVPN which handles your VPN logins to the school network.
+    You can see that the service is currently "exited" as I'm not running VPN now.
+
+### IPCing with Multiple Clients
+
+Each of these services is a process that any client send requests to.
+We've seen that domain sockets can help us to talk to many different clients as each is represented with a separate file descriptor.
+How does the service process know *which of the file descriptors* has information available on it?
+Imagine the following case:
+
+1. a client, *A*, connects to a service.
+2. a client, *B*, connects to the same service.
+3. *B* immediately sends a request, while *A* goes into a `sleep(100)` (or, more realistically, simply does some expensive computation).
+
+If the server issues a `read` on the descriptor for *A*, it will block for 100 seconds!
+Worse, it won't service *B* despite it being available and making a request immediately.
+Yikes.
+
+We'd really like a facility that can tell us *which* descriptor's have data and are ready to be read from, and which are ready to be written to!
+Luckily, UNIX comes to the rescue with its *event notification* APIs.
+These are APIs that let us understand when a file descriptor has an *event* (i.e. a client writes to it) and is now readable or writable.
+These include three functions: `poll`, `select`, and (the more modern) `epoll`.
+Lets look at how to use `poll`!
+
+- `int poll(struct pollfd *fds, nfds_t nfds, int timeout)` - We pass in an array of `struct pollfd`s of length `nfds`, with each entry corresponding to a single file descriptor we want to get information about.
+    The `timeout` is in milliseconds, and enables `poll` to return after that amount of time returns even if none of the file descriptors has an event.
+	A negative `timeout` is interpreted as "infinite", while `0` means that `poll` will return immediately with any current events.
+
+Lets check out the `struct pollfd`:
+
+``` c
+struct pollfd {
+    int   fd;         /* file descriptor */
+    short events;     /* requested events */
+    short revents;    /* returned events */
+};
+```
+
+When we make the `poll` call, we populate the `events` field with which events we're interested in retrieving.
+These include:
+
+- `POLLIN` - is there data available to be `read`?
+- `POLLOUT` - is there data available to be `write`n?
+
+We can almost always set `events = POLLIN | POLLOUT` as we wait to wait for both.
+
+When `poll` returns, we determine which events happened by looking at the contents of the `revents` field.
+In addition to `POLLIN` and `POLLOUT` which tell us if data is ready to be `read` or `written`, we have the following:
+
+- `POLLHUP` - The other side of the people closed its descriptor!
+    Subsequent `read`s to the descriptor will return `0`.
+	We can likely `close` our descriptor.
+- `POLLERR` - Again, there was some sort of a problem with the descriptor, and we should likely `close` it, terminating communication.
+
+Lets put this all together:
+
+
+``` c
+#include <poll.h>
+
+
+```
