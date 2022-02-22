@@ -2,7 +2,7 @@ INLINE_EXEC = inline_exec
 CC = gcc
 # we're permissive on warnings here to enable terser example code (i.e. avoids fixing warnings)
 WARNING_EXCEPTIONS = -Wno-unused-variable -Wno-unused-parameter -Wno-unused-but-set-variable
-CFLAGS = -O0 -g -Wall -Wextra $(WARNING_EXCEPTIONS)
+CFLAGS = -ggdb3 -rdynamic -Wall -Wextra $(WARNING_EXCEPTIONS)
 CFILES = $(wildcard ??/*.c)
 CBIN   = $(patsubst %.c,%.bin,$(CFILES))
 AGG = aggregate.md

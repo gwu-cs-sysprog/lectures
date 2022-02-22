@@ -32,7 +32,9 @@ The relevant functions include:
     The `flags` must be include of the following: `O_RDONLY`, `O_WRONLY`, or `O_RDWR` -- if you want to only read from the file, only write to the file, or have the ability to both read and write to the file.
 	Another interesting `flag` value is `O_CREAT` which will *create* the file if it doesn't already exist.
 	Whenever you see "flags", you should think of them as a set of bits, and each of the options as a single bit.
-	Thus, when passing in flags, you can use bitwise operators to pass in multiple options, for example `open("penny_is_best.gif", O_RDWR | O_CREAT)` will open the file, creating it if it doesn't already exist, and enable reading and writing to the file.
+	Thus, when passing in flags, you can use bitwise operators to pass in multiple options, for example `open("penny_is_best.gif", O_RDWR | O_CREAT, 0700)` will open the file, creating it if it doesn't already exist, and enable reading and writing to the file.
+	Note that when you pass in `O_CREAT`, you should pass in the third argument, the `mode`.
+	For now, just always pass in `0700`!
 - `read` &` write` - We've seen these before when we saw `pipe`s!
     They are the generic functions for getting data from, and pushing data to descriptors.
 - `close` - Remember that we can `close` any descriptor to release it (the `free` for descriptors, if you will), including those that reference files.
@@ -40,7 +42,7 @@ The relevant functions include:
     The structure is documented in the `man` page, but it includes, for example, the file size.
 	`fstat` enables to you get stat info from an existing file descriptor.
 - `creat(path, mode)` - Create a new file at the `path` with the `mode` (specified identically to `open`).
-    Later, we'll learn about mode when we discuss security, for now, you can use a permissive mode of `0777`.
+    Later, we'll learn about mode when we discuss security, for now, you can use a permissive mode of `0700`.
 - `unlink(path)` - Try and remove a file!
     This is called, for example, by the `rm` program.
 
@@ -583,9 +585,9 @@ main(void)
 	int ret;
 	int fd;
 
-	ret = mkdir("05/newdir", 0777);
+	ret = mkdir("05/newdir", 0700);
 	assert(ret == 0);
-	fd = open("05/newdir/newfile", O_RDWR | O_CREAT);
+	fd = open("05/newdir/newfile", O_RDWR | O_CREAT, 0700);
 	assert(fd >= 0);
 	ret = write(fd, "new contents", 13);
 	assert(ret == 13);
