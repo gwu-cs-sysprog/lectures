@@ -522,11 +522,13 @@ server(int num_clients, char *filename)
 		 */
 		if ((new_client = accept(socket_desc, NULL, NULL)) == -1) exit(EXIT_FAILURE);
 		printf("Server: New client connected with new file descriptor %d.\n", new_client);
+		fflush(stdout);
 
 		amnt = read(new_client, buf, MAX_BUF_SZ - 1);
 		if (amnt == -1) exit(EXIT_FAILURE);
 		buf[amnt] = '\0'; /* ensure null termination of the string */
 		printf("Server received message (sz %d): \"%s\". Replying!\n", amnt, buf);
+		fflush(stdout);
 
 		/* send the client a reply */
 		if (write(new_client, buf, amnt) < 0) exit(EXIT_FAILURE);
@@ -547,15 +549,18 @@ client(char *filename)
 	socket_desc = domain_socket_client_create(filename);
 	if (socket_desc < 0) exit(EXIT_FAILURE);
 	printf("1. Client %d connected to server.\n", getpid());
+	fflush(stdout);
 
 	snprintf(msg, MAX_BUF_SZ - 1, "Citizen %d: Penny for Pawsident!", getpid());
 	amnt = write(socket_desc, msg, strlen(msg) + 1);
 	if (amnt < 0) exit(EXIT_FAILURE);
 	printf("2. Client %d request sent message to server.\n", getpid());
+	fflush(stdout);
 
 	if (read(socket_desc, msg, amnt) < 0) exit(EXIT_FAILURE);
 	msg[amnt] = '\0';
 	printf("3. Client %d reply received from server: %s\n", getpid(), msg);
+	fflush(stdout);
 
 	close(socket_desc);
 
