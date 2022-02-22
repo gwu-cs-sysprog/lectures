@@ -599,7 +599,9 @@ It enables us to have per-client descriptors we can use to separately communicat
 > Sockets are the main way to communicate over the network (i.e. to chat with the Internet).
 > The APIs you'd use to create network sockets are the same, it simply requires setting up the `socket` and the `bind`ing of the socket in a network-specific manner.
 
-## System Services
+## IPCing with Multiple Clients
+
+### System Services
 
 The `systemctl` command enables you to understand many of the services on the system (of which there are many: `systemctl --list-units | wc -l` yields `244` on my system).
 
@@ -627,7 +629,9 @@ I've pulled out a few selections that are easier to relate to:
 - OpenVPN which handles your VPN logins to the school network.
     You can see that the service is currently "exited" as I'm not running VPN now.
 
-### IPCing with Multiple Clients
+Each of these services communicates with many clients using domain sockets.
+
+### Understanding Descriptor Events with `poll`
 
 Each of these services is a process that any client send requests to.
 We've seen that domain sockets can help us to talk to many different clients as each is represented with a separate file descriptor.
@@ -680,9 +684,123 @@ In addition to `POLLIN` and `POLLOUT` which tell us if data is ready to be `read
 
 Lets put this all together:
 
-
 ``` c
+#include "06/domain_sockets.h"
+
+#include <errno.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/wait.h>
+#include <assert.h>
 #include <poll.h>
 
+void
+unlink_domain_socket(int status, void *filename)
+{
+	unlink(filename);
+	free(filename);
+}
 
+void
+server(char *filename)
+{
+	int socket_desc, fd_off = 0, num_fds = 0;
+	struct pollfd poll_fds[3] = {
+		{ .events = POLLIN | POLLOUT },
+		{ .events = POLLIN | POLLOUT },
+		{ .events = POLLIN | POLLOUT }
+	};
+
+	socket_desc = domain_socket_server_create(filename);
+	if (socket_desc < 0) {
+		unlink(filename);
+		socket_desc = domain_socket_server_create(filename);
+		if (socket_desc < 0) exit(EXIT_FAILURE);
+	}
+	on_exit(unlink_domain_socket, strdup(filename));
+
+	poll_fds[fd_off].fd = socket_desc;
+	fd_off++;
+	while (1) {
+		int ret, new_client, i;
+
+		ret = poll(poll_fds, fd_off, 0);
+		if (ret == -1) break;
+		/* Accept file descriptor has a new client connecting! */
+		if (poll_fds[0].revents & POLLIN) {
+			if ((new_client = accept(socket_desc, NULL, NULL)) == -1) exit(EXIT_FAILURE);
+			/* add a new file descriptor! */
+			poll_fds[fd_off].fd = new_client;
+			fd_off++;
+			num_fds++;
+		}
+		/* Communicate with clients! */
+		for (i = 1; i < fd_off; i++) {
+			char b;
+			int amnt;
+
+			if (poll_fds[i].fd == -1) continue;
+			if (poll_fds[i].revents & (POLLHUP | POLLERR)) {
+				close(poll_fds[i].fd);
+				/* This tells poll to no longer look for events on this fd */
+				poll_fds[i].fd = -1;
+				num_fds--;
+				continue;
+			}
+			if (poll_fds[i].revents & POLLIN) {
+				amnt = read(poll_fds[i].fd, &b, 1);
+				if (amnt == -1) {
+					perror("read");
+					exit(EXIT_FAILURE);
+				}
+			}
+			if (poll_fds[i].revents & POLLOUT) {
+				if (write(new_client, ".", 1) < 0) {
+					perror("write");
+					exit(EXIT_FAILURE);
+				}
+			}
+		}
+		if (num_fds == 0) break;
+	}
+	close(socket_desc);
+
+	exit(EXIT_SUCCESS);
+}
+
+void
+client(char *filename)
+{
+	int i, socket_desc;
+
+	sleep(1);
+	socket_desc = domain_socket_client_create(filename);
+	if (socket_desc < 0) {
+		perror("domain socket client create");
+		exit(EXIT_FAILURE);
+	}
+
+	for (i = 0; i < 5; i++) {
+		char b;
+		if (write(socket_desc, ".", 1) == -1) exit(EXIT_FAILURE);
+		read(socket_desc, &b, 1);
+		printf("%c", b);
+	}
+	printf("\n");
+
+	close(socket_desc);
+	exit(EXIT_SUCCESS);
+}
+
+int
+main(void)
+{
+	char *ds = "domain_socket";
+
+	if (fork() == 0) client(ds);
+	server(ds);
+
+	return 0;
+}
 ```
