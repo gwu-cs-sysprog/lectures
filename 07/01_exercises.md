@@ -1,5 +1,5 @@
 
-# Reinforcement: Assorted Exercises
+# Reinforcing Ideas: Assorted Exercises and Event Notification
 
 In the following, if you aren't *positive* of the answer, please run the program!
 Note that we're omitting error checking in these programs to keep them terse.
