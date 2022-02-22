@@ -32,23 +32,34 @@ write(STDOUT_FILENO, ".", 1);
 ### Wait Behavior
 
 ``` c
-pid_t child;
-int i;
-int wait_param = 0;     /* or WNOHANG */
-int output_w_write = 0; /* or 1 */
+#include <stdlib.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <sys/wait.h>
 
-for (i = 0; i < 2; i++) {
-	child = fork();
-	if (child == 0) {
-		sleep(1);
-		if (output_w_write) write(STDOUT_FILENO, ".\n", 2);
-		else                printf(".\n");
-		exit(EXIT_SUCCESS);
-	}
-	waitpid(child, NULL, wait_param);
-	write(STDOUT_FILENO, "Post-fork\n", 10);
+int
+main(void)
+{
+    pid_t child;
+    int i;
+    int wait_param = 0;     /* or WNOHANG */
+    int output_w_write = 0; /* or 1 */
+
+    for (i = 0; i < 2; i++) {
+    	child = fork();
+    	if (child == 0) {
+    		sleep(1);
+    		if (output_w_write) write(STDOUT_FILENO, ".\n", 2);
+    		else                printf(".\n");
+    		exit(EXIT_SUCCESS);
+    	}
+    	waitpid(child, NULL, wait_param);
+    	write(STDOUT_FILENO, "Post-fork\n", 10);
+    }
+    /* ...are we done here? */
+
+	return 0;
 }
-/* ...are we done here? */
 ```
 
 - What if change `wait_param` to equal `WNOHANG`?
@@ -59,23 +70,33 @@ for (i = 0; i < 2; i++) {
 ### `read` Behavior
 
 ``` c
-pid_t child;
-int fds[2];
-char *msg = "What type of doggo is Penny?\n";
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/wait.h>
 
-pipe(fds);
+int
+main(void)
+{
+    pid_t child;
+    int fds[2];
+    char *msg = "What type of doggo is Penny?\n";
 
-if ((child = fork()) == 0) {
-	/* recall: `cat` reads its stdin, and outputs it to stdout */
-	char *args[] = {"cat", NULL};
+    pipe(fds);
 
-	close(STDIN_FILENO);
-	dup2(fds[0], STDIN_FILENO);
-	execvp(args[0], args);
+    if ((child = fork()) == 0) {
+    	/* recall: `cat` reads its stdin, and outputs it to stdout */
+    	char *args[] = {"cat", NULL};
+
+    	close(STDIN_FILENO);
+    	dup2(fds[0], STDIN_FILENO);
+    	execvp(args[0], args);
+    }
+    write(fds[1], msg, sizeof(msg));
+    wait(NULL);
+    printf("100%% good girl.");
+
+	return 0;
 }
-write(fds[1], msg, sizeof(msg));
-wait(NULL);
-printf("100% good girl.");
 ```
 
 - There are *multiple* bugs here.
