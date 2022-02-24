@@ -224,6 +224,7 @@ client(char *filename, int slowdown)
 		exit(EXIT_FAILURE);
 	}
 
+	/* delay after creating connection, but before communicating */
 	sleep(slowdown);
 	if (write(socket_desc, ".", 1) == -1) panic("client write");
 	if (read(socket_desc, &b, 1) == -1)   panic("client read");
@@ -267,6 +268,7 @@ main(void)
 	for (i = 0; i < 2; i++) {
 		int ret, new_client, i;
 		char b;
+
 		new_client = accept(socket_desc, NULL, NULL);
 		if (new_client == -1) panic("server accept");
 
