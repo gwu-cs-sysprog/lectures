@@ -1,6 +1,20 @@
 
 # Libraries
 
+Up till now, we've been focusing on UNIX programming APIs, and how to interact with various aspects of the system.
+Part of this discussion has been how various programs can be orchestrated to cooperate.
+Pipelines enable larger functionalities to be composed out of multiple programs in which the output of one goes to the input of the next.
+System servers provide services to clients that use IPC to harness their functionality.
+This enables servers that control system resources (like wifi) to let many clients have limited and controlled access to those resources.
+
+The next few chapters dive under the hood of processes.
+We'll investigate
+
+1. how programs are represented and how to understand their format,
+2. how programs are organized and can share code, and
+3. how they interact with the system.
+
+How do we think about our system's programs?
 We're used to writing our own programs, and like to think of the code we write being relatively self-contained.
 In contrast, quite a bit of *system programming* is about providing functionality that can be used by *any program on the system*.
 What if you wanted to implement the world's best key-value store, and wanted to enable anyone to use your implementation!?
@@ -46,7 +60,7 @@ $ ls /usr/include/std*
 ```
 
 Yes, this means that you have the source code for much of the standard library at your fingertips!
-But how does `gcc` know to find all of these files when we use `#include <>`?
+But how does `gcc` know to find all of these files when we use `#include <...>`?
 The following `gcc` incantation gives us a good idea:
 
 ```
