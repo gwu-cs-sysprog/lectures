@@ -1,5 +1,5 @@
 
-# Reinforcement: Assorted Exercises
+# Reinforcing Ideas: Assorted Exercises and Event Notification
 
 In the following, if you aren't *positive* of the answer, please run the program!
 Note that we're omitting error checking in these programs to keep them terse.
@@ -73,6 +73,7 @@ main(void)
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <string.h>
 
 int
 main(void)
@@ -91,9 +92,9 @@ main(void)
     	dup2(fds[0], STDIN_FILENO);
     	execvp(args[0], args);
     }
-    write(fds[1], msg, sizeof(msg));
-    wait(NULL);
-    printf("100%% good girl.");
+	write(fds[1], msg, strlen(msg));
+	printf("100%% good girl.");
+	wait(NULL);
 
 	return 0;
 }
@@ -223,9 +224,10 @@ client(char *filename, int slowdown)
 		exit(EXIT_FAILURE);
 	}
 
+	/* delay after creating connection, but before communicating */
 	sleep(slowdown);
 	if (write(socket_desc, ".", 1) == -1) panic("client write");
-	if (read(socket_desc, &b, 1) == -1) panic("client read");
+	if (read(socket_desc, &b, 1) == -1)   panic("client read");
 	printf("c: %c\n", b);
 
 	close(socket_desc);
@@ -252,7 +254,8 @@ main(void)
 
 	socket_desc = domain_socket_server_create(ds);
 	if (socket_desc < 0) {
-		unlink(ds); /* remove the previous domain socket file if it exists */
+		/* remove the previous domain socket file if it exists */
+		unlink(ds);
 		socket_desc = domain_socket_server_create(ds);
 		if (socket_desc < 0) panic("server domain socket creation");
 	}
@@ -265,16 +268,19 @@ main(void)
 	for (i = 0; i < 2; i++) {
 		int ret, new_client, i;
 		char b;
+
 		new_client = accept(socket_desc, NULL, NULL);
 		if (new_client == -1) panic("server accept");
 
 		/* read from, then write to the client! */
-		if (read(new_client, &b, 1) == -1) panic("server read");
+		if (read(new_client, &b, 1) == -1)   panic("server read");
 		if (write(new_client, "*", 1) == -1) panic("server write");
 		close(new_client);
 	}
 
 	close(socket_desc);
+	/* reap all children */
+	while (wait(NULL) != -1) ;
 
 	return 0;
 }
@@ -282,4 +288,4 @@ main(void)
 
 - See the TODO in the `main`.
     When you change the order, what do you see?
-- Is there a problem when we use both fast and slow clients?
+- Is there generally a problem when we use both fast and slow clients?
