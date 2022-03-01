@@ -152,7 +152,7 @@ client(char *filename)
 		char b;
 		if (write(socket_desc, ".", 1) == -1) panic("client write");
 		if (read(socket_desc, &b, 1) == -1)   panic("client read");
-		printf("c: %c\n", b);
+		printf("c %d: %c\n", getpid(), b);
 	}
 
 	close(socket_desc);
@@ -178,8 +178,8 @@ server(char *filename)
 
 	/* Initialize all pollfd structs to 0 */
 	memset(poll_fds, 0, sizeof(struct pollfd) * MAX_FDS);
-	poll_fds[num_fds] = (struct pollfd) {
-		.fd = socket_desc,
+	poll_fds[0] = (struct pollfd) {
+		.fd     = socket_desc,
 		.events = POLLIN,
 	};
 	num_fds++;

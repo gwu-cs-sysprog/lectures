@@ -261,8 +261,8 @@ main(void)
 	}
 
 	/* TODO: change this order. What changes? */
-	if (fork() == 0) client_fast(ds);
 	if (fork() == 0) client_slow(ds);
+	if (fork() == 0) client_fast(ds);
 
 	/* handle two clients, one after the other */
 	for (i = 0; i < 2; i++) {

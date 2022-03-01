@@ -27,11 +27,19 @@ We think of these *shared* functionalities as falling into one of two categories
 2. *Services* which track different aspects of the system, and provide information to our programs.
     They tend to be programs that are always running on your system, and your programs can communicate with them to harness their functionality.
 	These include services that receive print requests, that service `ssh` sessions, that provide your `vpn` connection, and that display your graphical user interface, and many other functions.
-	We'll focus on these in a few weeks.
+	We've already seen many of the IPC and communication foundations that make these tick.
 
-This lecture, we'll focus on libraries, but I want to give you a slightly more concrete understanding of services on a modern Linux system.
+This chapter, we'll focus on libraries as a foundation for sharing software in systems.
 
 ## Libraries - Goals and Overview
+
+Before we start, consider:
+
+- When you `#include` a ton of files, do you think that all of the related functionality is compiled into your program?
+    That would mean that *every* program has the functionality compiled into it.
+- If so, how much memory and disk space do you think that will take?
+- Do you think there are other options?
+    What might they be?
 
 The *goals* of libraries are to:
 
@@ -40,13 +48,20 @@ The *goals* of libraries are to:
 - Attempt to save memory by making all programs in the system as small as possible by not taking memory for all of the library code in each program.
 - Enable the system to upgrade both libraries and programs (for example, if a security compromise is found).
 
-Libraries have two core components that mirror what we understand about C: *header files* that share the types of the library API functions and data, and the *code to implement* those APIs.
-There are two main ways in which library code is integrated into programs:
+Libraries are collections of functionality that can be used by many different programs.
+They are code that expand the functionality of programs.
+This differs from services which are separate programs.
+Libraries have two core components that mirror what we understand about C:
+
+1. *header files* that share the types of the library API functions and data, and
+2. the *code to implement* those APIs.
+
+There are two main ways library code is integrated into programs:
 
 - **Static libraries.**
     These are added into your program *when you compile it*.
 - **Shared or dynamic libraries.**
-    These are integrated into your program *when you run the program*.
+    These are integrated into your program, dynamically, *when you run the program*.
 
 We'll discuss each of these in subsequent sections
 
@@ -126,8 +141,8 @@ The left column is the address of the symbol, and the character in the middle co
 - `T` - this symbol is part of the code of the `*.o` file, and is visible outside of the object (i.e. it isn't `static`).
     Capital letters mean that the symbol is visible outside the object which simply means it can be linked with another object.
 - `t` - this symbol is part of the code, but is *not visible* outside of the object (it is `static`).
-- `d` - a global variable that is not visible.
 - `D` - a global variable that is visible.
+- `d` - a global variable that is not visible.
 - `U` - an *undefined symbol* that must be provided by another object file.
 
 For other symbol types, see `man nm`.
@@ -175,7 +190,7 @@ OK, lets summarize so far.
 Objects can have *undefined symbol references* that get *linked* to the symbols when combined with the objects in which they are defined.
 How is this linking implemented?
 
-First, we have to understand something that is a little *amazing*: all of our objects and binaries have a defined file format called the [Executable and Linkable Format](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format) (ELF)^[ELF is a file format along side `html` for webpages, `.c` for C files, [`.png`](https://raw.githubusercontent.com/corkami/pics/master/binary/PNG.png) for images, and [`.pdf`](https://raw.githubusercontent.com/corkami/pics/master/binary/PDF.png) for documents. It just happens to contain all of the information necessary to link and execute a program! It may be surprising, but comparable formats even exist for [java (`.class`) files](https://github.com/corkami/pics/blob/master/binary/CLASS.png) as well.].
+First, we have to understand something that is a little *amazing*: all of our objects and binaries have a defined file format called the [Executable and Linkable Format](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format) (ELF)^[ELF is a file format for binary programs in the same way that  `html` is the data format for webpages, `.c` for C files, [`.png`](https://raw.githubusercontent.com/corkami/pics/master/binary/PNG.png) for images, and [`.pdf`](https://raw.githubusercontent.com/corkami/pics/master/binary/PDF.png) for documents. It just happens to contain all of the information necessary to link and execute a program! It may be surprising, but comparable formats even exist for [java (`.class`) files](https://github.com/corkami/pics/blob/master/binary/CLASS.png) as well.].
 
 ![A representation of the ELF binary program format by [Ange_Albertini](https://github.com/corkami/pics).](figures/elf.png)
 
@@ -214,6 +229,7 @@ It will only know that when it links with the `ptrie` implementation!
 Lets check out what this looks like in the ELF object's code.
 For this, we'll use `objdump`'s ability to dump out the "assembly code" for the object file.
 It also will try and print out the C code that corresponds to the assembly, which is pretty cool.
+
 ```
 $ objdump -S tests/01_add.o
 ...
@@ -243,27 +259,43 @@ Now we can understand what a *linker*'s job is:
 
 In our `Makefile`s, we always use `gcc` both for compiling `*.c` files into objects, but also linking objects together into a binary.
 
+### Linking Summary
+
+Lets back up and collect our thoughts.
+
+- Our programs are collections of a number of ELF object files.
+- We've seen that some symbols in an object file are *undefined* if they are functions or variables that are not defined in a `.c` file.
+- Though their types are defined in header files, their implementation must be found somewhere.
+- Each reference to an undefined symbol has a *relation entry* that enables the linker to update the reference once it knows the ELF object that provides it.
+- When another ELF exports the symbol that is undefined elsewhere, they can be *linked* to turn the function calls of undefined functions into function calls, and references to global variables be actual pointers to memory.
+
+This is the *foundation for creating large programs out of small pieces*, and to enable some of those pieces to be *shared between programs*.
+
 ## Static Libraries
 
-A static library is essentially a collection of object files.
-Static libraries have names of the form `lib*.a` and are created with the `ar` program from a collection of objects.
+A static library is simply a collection of ELF object (`*.o`) files created with `gcc -c`.
+They are collected together into a static library file that has the name `lib*.a`.
+You can think of these files as a `.zip` or `.tar` file containing the ELF objects.
+
+Static libraries of the form `lib*.a` and are created with the `ar` (archive) program from a collection of objects.
 An example from the `ptrie` library (expanded from its `Makefile`) that creates `libptrie.a`:
 
 ```
 $ ar -crs libptrie.a *.o
 ```
 
-A static library file (`lib*.a`) is really just a file that contains a set of objects (much like a `.zip` or `.tar`/`.tgz` file of objects).
-When we want to link a program to a static library, we need to use a few compiler flags:
+So a static library is just a collection of ELF objects created by our compilation process.
+If we are writing a program that wants to *use* a library, first you make sure to include its header file(s).
+Then, when compiling, we have to tell the compiler which library we want to link with by using a few compiler flags:
 
 ```
-gcc -o tests/01_add.test 01_add.o -L. -lptrie
+$ gcc -o tests/01_add.test 01_add.o -L. -lptrie
 ```
 
 The last two flags are the relevant ones:
 
-- `-L.` says "look for static libraries in the current directory (i.e. `.`)", and
-- `-lptrie`  says "please link me with the ptrie library (found in a file called `libptrie.a`).
+- `-L.` says "look for static libraries in the current directory (i.e. `.`)" -- other directories can be included, and a few default directories are used, and
+- `-lptrie`  says "please link me with the `ptrie` library" which should be found in one of the given directories and is found in a file called `libptrie.a`.
 
 Note that the linker already searches a few directories for libraries (i.e. default `-L` paths):
 
@@ -307,38 +339,45 @@ For example [musl libc](https://www.musl-libc.org/) is a libc replacement, and i
 
 ## Shared/Dynamic Libraries
 
-Shared or dynamic libraries (for brevity, I'll call them only "dynamic libraries", but both terms are commonly used) are linked into a program *at runtime* when the program starts executing.
+Shared or dynamic libraries (for brevity, I'll call them only "dynamic libraries", but both terms are commonly used) are linked into a program *at runtime* when the program starts executing as part of `exec`.
 
 Recall that even executable binaries might still have undefined references to symbols.
 For example, see `calloc` in the example below:
+
 ```
 $ nm tests/01_add.test | grep calloc
                  U calloc@@GLIBC_2.2.5
 ```
+
 Though we can execute the program `tests/01_add.test`, it has references to functions that don't exist in the program!
 How can we possibly execute a program that has undefined functions; won't the calls to `calloc` here be `NULL` pointer dereferences?
 
 To understand how dynamic linking works, lets look at the output of a program that tells us about dynamic library dependencies, `ldd`.
+
 ```
 $ ldd tests/01_add.test
         linux-vdso.so.1 (0x00007ffff3734000)
         libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007fb502adf000)
         /lib64/ld-linux-x86-64.so.2 (0x00007fb502cfa000)
 ```
+
 `ldd` also simply parses through the ELF program, and .
 For now, we'll ignore the `linux-vdso`, but the other two entries are interesting.
 We can see that the C standard library, `libc` is being provided by `/lib/x86_64-linux-gnu/libc.so.6`.
 These are both dynamic libraries, as are most `*.so.?*` and `*.so` files.
 If we check out that object we see that it provides `calloc`.
+
 ```
 $ objdump -T /lib/x86_64-linux-gnu/libc.so.6  | grep calloc
 000000000009ec90 g    DF .text  0000000000000395  GLIBC_2.2.5 __libc_calloc
 000000000009ec90  w   DF .text  0000000000000395  GLIBC_2.2.5 calloc
 ```
+
 So this library provides the symbols we require (i.e. the `calloc` function)!
 
 But how does the `libc.so` library get linked into our program?
 Diving in a little bit further, we see that `ld` is our program's "interpreter":
+
 ```
 $ readelf --program-headers tests/01_add.test
 Elf file type is DYN (Shared object file)
@@ -375,6 +414,7 @@ Why load `ld` to link our program instead of just running our program?
 Because `ld` *also* loads and links all of the dynamic libraries (`.so`s) that our program depends on!!!
 
 We can confirm that `ld` is loaded into our program by executing it in `gdb`, blocking it on breakpoint, and outputting its memory maps (`cat /proc/262648/maps` on my system):
+
 ```
 555555554000-555555555000 r--p 00000000 08:02 527420                     /home/gparmer/repos/gwu-cs-sysprog/22/hw_solns/02/tests/01_add.test
 555555555000-555555556000 r-xp 00001000 08:02 527420                     /home/gparmer/repos/gwu-cs-sysprog/22/hw_solns/02/tests/01_add.test
@@ -399,6 +439,7 @@ We can confirm that `ld` is loaded into our program by executing it in `gdb`, bl
 7ffffffde000-7ffffffff000 rw-p 00000000 00:00 0                          [stack]
 ffffffffff600000-ffffffffff601000 --xp 00000000 00:00 0                  [vsyscall]
 ```
+
 Recall that this dumps all of the memory segments of the process.
 
 There are two important observations:
