@@ -228,6 +228,11 @@ This reveals a cool truth: **programs are data**, plain and simple.
 They happen to be data of a very specific format, ELF.
 `nm`, `readelf`, and `objdump` are all programs that simply understand how to dive into the ELF format, parse, and display the information.
 
+As programs are simply data encapsulated in the ELF format, we can start to understand what it means to *link* two objects together.
+
+![An example demonstrating what it means to *link* two objects together. In this case, we can see the ELF object tells us where in the `prog.o` binary the reference to `bar` is, and gcc patchs up `prog.o` as part of linking to reference `bar` in `example.o`.](figures/08_linking.svg)
+
+An in-depth explanation follows.
 Now we get to an interesting part of the ELF objects:
 
 ```
@@ -344,6 +349,8 @@ $ gcc -print-search-dirs | grep libraries | sed 's/libraries: =//' | tr -s ":" '
 
 As many of these paths are in directories that any user can access, this is how the functionality of these libraries can be accessed by any program wishing to use them.
 As we compile our `ptrie` library as a static library, you've already seen one example of these in use.
+
+![How static libraries are created, and interact with our programs.](figures/08_staticlib.svg)
 
 ### Saving Memory with Static Libraries
 
