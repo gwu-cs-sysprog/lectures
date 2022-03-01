@@ -41,6 +41,10 @@ Before we start, consider:
 - Do you think there are other options?
     What might they be?
 
+Visually, this is what it would look like to compile with "libraries" that are defined as normal `*.o` files.
+
+![We know how to generate `*.o` files, and to combine them together as shown here. If some other people's code that we depend on (e.g. `string.h` functionality) is provided as `*.o` files, we could compile with it  as such. The questions above should let you think about the trade-offs with this approach.](figures/08_naivelib.svg)
+
 The *goals* of libraries are to:
 
 - Enable programs to leverage shared implementations of specific functionality (e.g. the contents of `string.h`).
@@ -55,6 +59,10 @@ Libraries have two core components that mirror what we understand about C:
 
 1. *header files* that share the types of the library API functions and data, and
 2. the *code to implement* those APIs.
+
+Lets set up some visual nomenclature.
+
+![We'll talk about the files that are part of your normal programs (the `*.c` and `*.o` on the left), those that are part of the library, and files to represent the library.](figures/08_libfiles.svg)
 
 There are two main ways library code is integrated into programs:
 
@@ -109,13 +117,15 @@ These are all of the "include paths" that are searched, by default, when we do a
 
 ## Linking Undefined Symbols to References Across Objects
 
-The answer to how the code for libraries is provided is complicated, and has multiple options that represent trade-offs.
-Before we can dive into that, we have to understand how object files (`*.o`) and binaries think about symbols and linking them together.
+Before we proceed to figure out how multiple `*.o` *objects* are combined into an executable, lets learn what it means for one object to depend on another for some functionality.
+To understand this, we have to understand how object files (`*.o`) and binaries think about symbols and linking them together.
 
 When your program uses a library's API, the library's code is *linked* into your program.
-Linking is the act of taking any symbols (recall: functions and global variables) that are referenced, but not defined in your object (`*.o`) files, and the definition of those symbols in the objects that provide them.
+Linking is the act of taking any symbols that are referenced, but not defined in your object (`*.o`) files, and the definition of those symbols in the objects that provide them.
+A *symbol* is a functions or global variable in your program.
+Each symbol has a representation in your object files so that they can be referenced across objects.
 We have to understanding the linking operation to dive into how libraries can be added into, thus accessible from your program.
-We can see this process in action using the common set of programs for interpreting object files including `nm`, `objdump`, and `readelf`.
+Lets peek into how our objects think about the world using a number of programs that can introspect on the objects including `nm`, `objdump`, and `readelf`.
 
 As an example, lets look at your `ptrie` implementation.
 We know that each of the tests (in `tests/0?-*.c`) depends on your ptrie implementation in `ptrie.c`.
@@ -185,10 +195,22 @@ Now we can see that there are no longer any undefined references (`U`) to `ptrie
 Additionally, we can see that some symbols (e.g. `calloc` here) are still undefined and have some mysterious `@@...` information associated with them.
 You might guess that this somehow tells us that the function should be provided by the standard C library (`glibc` on Ubuntu).
 
+Lets see another example visually using the `libexample/*` files:
+
+![The program on the left depends on the functionality of the object on the right, the library. We can see from the `nm` output that the left has undefined symbols for `bar` which is defined in the library. On the right, we can see the symbols defined in the object (with `T`, saying it is part of the text, or code, i.e. a function). Both are compiled together into an executable binary, `prog_naive` which shows that the reference from `prog.o` is *resolved* or linked with the definition in `example.o`.](figures/08_objectsymbs.svg)
+
+
 *Where are we?*
 OK, lets summarize so far.
 Objects can have *undefined symbol references* that get *linked* to the symbols when combined with the objects in which they are defined.
 How is this linking implemented?
+
+**Question: What does a file *format* mean?**
+**We talk about the format of webpages being `html`, images, being `png`, documents being `docx` or `pdf`.**
+**What do these formats mean?**
+**What is the format of object and executable binaries?**
+
+### ELF Object Format
 
 First, we have to understand something that is a little *amazing*: all of our objects and binaries have a defined file format called the [Executable and Linkable Format](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format) (ELF)^[ELF is a file format for binary programs in the same way that  `html` is the data format for webpages, `.c` for C files, [`.png`](https://raw.githubusercontent.com/corkami/pics/master/binary/PNG.png) for images, and [`.pdf`](https://raw.githubusercontent.com/corkami/pics/master/binary/PDF.png) for documents. It just happens to contain all of the information necessary to link and execute a program! It may be surprising, but comparable formats even exist for [java (`.class`) files](https://github.com/corkami/pics/blob/master/binary/CLASS.png) as well.].
 
