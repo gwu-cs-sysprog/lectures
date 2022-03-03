@@ -298,6 +298,12 @@ Lets back up and collect our thoughts.
 
 This is the *foundation for creating large programs out of small pieces*, and to enable some of those pieces to be *shared between programs*.
 
+We'll also see that libraries enable an opportunity to *save memory*.
+For example,
+
+- static libraries enable only the object files that are needed by a program to be compiled into it, and
+- dynamic libraries enable the code for a library to be *shared* between all processes that execute it in the system.
+
 ## Static Libraries
 
 A static library is simply a collection of ELF object (`*.o`) files created with `gcc -c`.
@@ -350,7 +356,7 @@ $ gcc -print-search-dirs | grep libraries | sed 's/libraries: =//' | tr -s ":" '
 As many of these paths are in directories that any user can access, this is how the functionality of these libraries can be accessed by any program wishing to use them.
 As we compile our `ptrie` library as a static library, you've already seen one example of these in use.
 
-![How static libraries are created, and interact with our programs.](figures/08_staticlib.svg)
+![How static libraries are created, and interact with our programs. The `.a` files include all library objects, but only those that are needed by the program are compiled into it.x](figures/08_staticlib.svg)
 
 ### Saving Memory with Static Libraries
 
@@ -362,6 +368,8 @@ Some static libraries can be quite large.
 Instead, static libraries are smarter.
 If a static library contains multiple `.o` files, *only those object files that define symbols that are undefined in the program being linked with, are compiled into the program*.
 This means that when designing a static library, you often want to break it into multiple `.o` files along the lines of different functionalities that separately used by different programs^[This is increasingly not true as many compilers support [Link-Time Optimization](https://en.wikipedia.org/wiki/Interprocedural_optimization#WPO_and_LTO) (LTO). This goes beyond the scope of this class.].
+
+![A graphical depiction of how library memory gets added into a program using static libraries. The program is only dependent on a single object within the library, so we only need to compile that object into the resulting executable program.](figures/08_staticmem.svg)
 
 Some projects take this quite far.
 For example [musl libc](https://www.musl-libc.org/) is a libc replacement, and it separates almost every single function into a separate object file (i.e. in a separate `.c` file!) so that only the exact functions that are called are linked into the program.
@@ -390,7 +398,7 @@ $ ldd tests/01_add.test
         /lib64/ld-linux-x86-64.so.2 (0x00007fb502cfa000)
 ```
 
-`ldd` also simply parses through the ELF program, and .
+`ldd` also simply parses through the ELF program, and determines which dynamic libraries are required by the program.
 For now, we'll ignore the `linux-vdso`, but the other two entries are interesting.
 We can see that the C standard library, `libc` is being provided by `/lib/x86_64-linux-gnu/libc.so.6`.
 These are both dynamic libraries, as are most `*.so.?*` and `*.so` files.
@@ -404,7 +412,109 @@ $ objdump -T /lib/x86_64-linux-gnu/libc.so.6  | grep calloc
 
 So this library provides the symbols we require (i.e. the `calloc` function)!
 
-But how does the `libc.so` library get linked into our program?
+### Compiling and Executing with Dynamic Libraries
+
+If we want our program to use a dynamic library, we have to compile it quite similarly to when we wanted to use static libraries:
+
+```
+$ gcc -o dyn_prog *.o -L. -lptrie
+```
+
+So everything is somewhat normal here; we're saying "look for the library in this directory", and compile me with the `ptrie` library.
+To create the dynamic library:
+
+```
+$ gcc -Wall -Wextra -fpic -I. -c -o ptrie.o ptrie.c
+$ gcc -shared -o libptrie.so ptrie.o
+```
+
+The first line is the normal way to create an object file from C, but includes a new flag, `-fpic`.
+This tells the compiler to generate ["Position Independent Code", or PIC](https://en.wikipedia.org/wiki/Position-independent_code), which is code that can, seemingly magically, be executed when the code is loaded into any address!
+The dynamic library cannot assume which addresses it will be loaded into as many dynamic libraries might be loaded into an executable, thus the PIC requirement.
+
+The second line creates the dynamic (shared) library.
+By convention, all dynamic libraries end with `.so` which you can think of as "shared object".
+This is the line that is dynamic-library equivalent to the `ar` command for static libraries.
+
+Now we have a binary that has been told were the library is; lets execute it!
+
+```
+$ ./dyn_prog
+./dyn_prog: error while loading shared libraries: libptrie.so: cannot open shared object file: No such file or directory
+```
+
+Whaaaaaa?
+If we dive in a little bit, we can see:
+
+```
+$ nm ./dyn_prog | grep ptrie_alloc
+                 U ptrie_alloc
+```
+
+But I thought that we wanted all symbols to be defined when we create a binary?
+Why is the library's `ptrie_alloc` not linked into the program?
+We can see that not all symbols are defined in a program when we are using dynamic libraries as they are *linked when we try and run the program*!
+
+We now can see the main practical difference between static and dynamic libraries:
+
+- Static libraries are compiled into the program when you compile with the `-lptrie` directive.
+- Dynamic libraries not *not* compiled into the program, and are instead *linked* into the program when it is executed (i.e. at the time of `exec`).
+
+We can start to see why the program wont execute when we look at its dynamic library dependencies:
+
+```
+$ ldd ./dyn_prog
+        linux-vdso.so.1 (0x00007ffdf3ca0000)
+        libptrie.so => not found
+        libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007ff9921e8000)
+        /lib64/ld-linux-x86-64.so.2 (0x00007ff9923f8000)
+```
+
+It isn't finding `libptrie.so`!
+
+To execute the program, we have to properly set an *environment variable* that will tell the program, when it is executed, where to look for the dynamic library:
+
+```
+$ LD_LIBRARY_PATH=./:$LD_LIBRARY_PATH ./dyn_prog
+...success...
+```
+
+This is some strange shell syntax.
+`LD_LIBRARY_PATH=./:$LD_LIBRARY_PATH` essentially says "The environment variable called `LD_LIBRARY_PATH` should be updated to prepend the diretory `./` onto the front of it.
+This is conceptually similar to something like `lib_path = "./:" + lib_path` in a language that supports string concatenation.
+When `./dyn_prog` is executed, the updated `LD_LIBRARY_PATH` environment variable is visible in that program using the normal `getenv`.
+So there is some part of the initialization of `./dyn_prog` that looks at this environment variable to figure out where to look for the dynamic library.
+
+To confirm why we can now execute the program, we can again look at the library dependencies:
+
+```
+$ LD_LIBRARY_PATH=./:$LD_LIBRARY_PATH ldd prog_dynamic
+        linux-vdso.so.1 (0x00007ffc939f8000)
+        libptrie.so => ./libptrie.so (0x00007f70d316f000)
+        libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f70d2f66000)
+        /lib64/ld-linux-x86-64.so.2 (0x00007f70d3236000)
+```
+
+If we expand the `LD_LIBRARY_PATH` to include the current directory, the program can find the library.
+
+If we want to see the [default paths](https://stackoverflow.com/questions/9922949/how-to-print-the-ldlinker-search-path) that are searched for dynamic libraries:
+
+```
+$ ldconfig -v 2>/dev/null | grep -v ^$'\t'
+/usr/local/lib:
+/lib/x86_64-linux-gnu:
+/lib32:
+/libx32:
+/lib:
+```
+
+In fact, `ldconfig -v` will also print out all of the potential default dynamic libraries we can link with.
+
+![Using dynamic libraries to compile a program. Additional flags are required when compiling the library files (for PIC), and we must tell the system that the library is dynamic when compiling using the `-shared` flag. But even then, the executable doesn't have the library functionality linked into it. Only when we execute the program does `ld` dynamically link in the library. For `ld` to know where to look for te library, we also have to tell it additional paths in which to look using an environment variable.](figures/08_dynamiclib.svg)
+
+### `exec` with Dynamic Linking
+
+How does the `libc.so` library get linked into our program?
 Diving in a little bit further, we see that `ld` is our program's "interpreter":
 
 ```
@@ -436,9 +546,12 @@ When we call `exec`, we believe that the program we execute takes over the curre
 This is not true!
 Instead, if a program interpreter is defined for our program (as we see: it is), the interpreter program's memory is loaded along side our program, but then the interpreter is executed instead of our program!
 It is given access to our program's ELF object, and `ld`'s job is to finish linking and loading our program.
+We have to add `./` to the `LD_LIBRARY_PATH` to make the program execute because **`ld` reads that environment variable when it is trying to link and load in your program**!
+
+### Diving into Dynamic Linking at `exec`
 
 But wait.
-Why?
+Why does `exec` end up loading `ld`, which then loads our program?
 Why load `ld` to link our program instead of just running our program?
 Because `ld` *also* loads and links all of the dynamic libraries (`.so`s) that our program depends on!!!
 
@@ -485,7 +598,7 @@ Lets summarize the algorithm for executing a dynamically loaded program.
 3. In most cases, the interpreter is `ld`, and it is loaded into the process along with the target program.
 4. Execution is started at `ld`, and it:
 
-    1. Loads all of the dynamic libraries required by the program.
+    1. Loads all of the dynamic libraries required by the program, looking at the `LD_LIBRARY_PATH` environment variable to help look for them.
     2. Links the program such that all of its references to library symbols (i.e. `calloc` above) are set to point to library functions.
     3. Executes the initialization procedures (and eventually `main`) of our program.
 
@@ -516,15 +629,46 @@ Dynamic libraries enable us to do a lot better.
 The contents memory for the library is the same regardless the process it is present in, and an Operating System has a neat trick: it can make the same memory appear in multiple processes if it is identical *and* cannot be modified^[This sharing of library memory across processes is why dynamic libraries are also called *shared libraries.*].
 As such, dynamic libraries typically only require memory for each library *once* in the system (only $X$), as opposed for each process.
 
-**Static vs. dynamic library memory usage.**
-When a program is linked with a static library, the result is relatively small as only the objects in the library that are necessary are linked into the program.
-In contrast, a program that uses a dynamic library links in the entire library.
-Thus, for a *single* program, a static library approach is almost always going to be more memory-efficient.
+![A graphical depiction of how library memory gets added into a program using static libraries. The program is only dependent on a single object within the library, so we only need to compile that object into the resulting executable program.](figures/08_staticmem.svg)
 
-However, in a system with *many* executing programs, the per-library memory, rather than per-process memory, will result in significantly less memory consumption.
+## Static vs. Dynamic Library Memory Usage Summary
+
+When a program is linked with a static library, the result is relatively small as only the objects in the library that are necessary are linked into the program.
+When executed as a process, the memory consumed will only include the necessary objects of the library.
+In contrast, a program that uses a dynamic library links in the entire library at runtime into a process.
+Thus, for a *single process*, a static library approach is almost always going to be more memory-efficient.
+
+However, in a system with *many* executing processes, the per-library memory, rather than per-process memory, will result in significantly less memory consumption.
 Requiring only a *single copy* of a *larger* dynamic library shared between all processes, uses less memory than *multiple copies* of *smaller* compilations of the library in each program.
 
-### Explicitly Managing Dynamic Libraries
+## Exercise: Understanding Library Memory Consumption
+
+### `libexample`
+
+See the [`08/libexample/`](https://github.com/gwu-cs-sysprog/lectures/tree/main/08/libexample) directory for examples of using normal linking (`make naive`), static library linking (`make static`), and dynamic library linking (`make dynamic`).
+The source includes:
+
+- `prog` and `prog2` that are programs that use libraries.
+- `example.c` is a single file that creates the first library.
+- `example2.c` and `example2b.c` are the files that create the second library.
+
+Each of the library objects uses around *750KB* of memory.
+
+1. Use `nm` and `ldd` to understand which libraries and object files within those libraries each of the programs require.
+2. Use `ls -lh` to see the size of each of the resulting executable programs.
+    Each plain the differences in sizes.
+x
+### Library Trade-offs
+
+- *Question:*
+    What types of systems might want to always use only static libraries?
+- *Question:*
+    What types of systems might want to always use only dynamic libraries?
+- *Question:*
+    OSX uses dynamically linked libraries for a few common and frequently used libraries (like `libc`), and static libraries for the rest.
+    Why?
+
+## Explicitly Managing Dynamic Libraries
 
 Libraries are great for providing shared functionality to multiple programs.
 Dynamic libraries can also be used *explicitly* to enable additional capabilities.

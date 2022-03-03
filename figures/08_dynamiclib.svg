@@ -9,13 +9,13 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="213.30612mm"
-   height="148.28482mm"
-   viewBox="0 0 213.30613 148.28482"
+   width="211.17879mm"
+   height="176.75888mm"
+   viewBox="0 0 211.1788 176.75888"
    version="1.1"
    id="svg8"
    inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
-   sodipodi:docname="08_staticlib.svg">
+   sodipodi:docname="08_dynamiclib.svg">
   <defs
      id="defs2" />
   <sodipodi:namedview
@@ -26,8 +26,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.1792308"
-     inkscape:cx="336.90773"
-     inkscape:cy="262.79493"
+     inkscape:cx="347.93187"
+     inkscape:cy="163.49887"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -46,7 +46,7 @@
        type="xygrid"
        id="grid815"
        originx="10.708334"
-       originy="-47.506835" />
+       originy="-19.032778" />
   </sodipodi:namedview>
   <metadata
      id="metadata5">
@@ -56,7 +56,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -64,7 +64,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(10.708335,-101.20833)">
+     transform="translate(10.708335,-101.20832)">
     <rect
        style="opacity:0.95;fill:#b0b4ff;fill-opacity:1;stroke:#050080;stroke-width:0.25;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect817"
@@ -197,7 +197,7 @@
          id="tspan864-19"
          x="161.12332"
          y="138.37021"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93888903px;font-family:FontAwesome;-inkscape-font-specification:FontAwesome;stroke-width:0.26458332">gcc -c ...</tspan></text>
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93888903px;font-family:FontAwesome;-inkscape-font-specification:FontAwesome;stroke-width:0.26458332">gcc -c -fpic ...</tspan></text>
     <rect
        style="opacity:0.95;fill:#b0e5ff;fill-opacity:1;stroke:#003954;stroke-width:0.25;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect817-9-8-2"
@@ -230,19 +230,19 @@
        y="228.20833" />
     <path
        style="fill:none;stroke:#000000;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 87.633496,212.01233 -5.612664,5.61266 -1.87087,-1.87088 -3e-6,7.48352 7.483547,2e-5 -1.87089,-1.87089 5.61265,-5.61267 z"
+       d="m 81.245879,210.91639 -5.612664,5.61266 -1.87087,-1.87088 -3e-6,7.48352 7.483547,2e-5 -1.87089,-1.87089 5.61265,-5.61267 z"
        id="path1031-6-0"
        inkscape:connector-curvature="0" />
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.41111112px;line-height:1.25;font-family:'Bold Oblique';-inkscape-font-specification:'Bold Oblique, ';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="110.26337"
-       y="216.59764"
+       x="94.977493"
+       y="216.08572"
        id="text866-9-7"><tspan
          sodipodi:role="line"
          id="tspan864-19-0"
-         x="110.26337"
-         y="216.59764"
+         x="94.977493"
+         y="216.08572"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93888903px;font-family:FontAwesome;-inkscape-font-specification:FontAwesome;stroke-width:0.26458332">gcc prog.o -L. -lexample -o prog</tspan></text>
     <text
        xml:space="preserve"
@@ -254,7 +254,7 @@
          id="tspan864-83-0-46"
          x="47.230537"
          y="249.42322"
-         style="font-size:4.93888903px;stroke-width:0.26458332">executable</tspan></text>
+         style="font-size:4.93888903px;stroke-width:0.26458332">prog executable</tspan></text>
     <rect
        style="opacity:0.95;fill:#ff9595;fill-opacity:1;stroke:#630002;stroke-width:0.25;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect817-1"
@@ -281,59 +281,91 @@
        id="rect817-8"
        width="47.624996"
        height="21.166666"
-       x="82.020828"
-       y="185.87497" />
+       x="73.958328"
+       y="185.99998" />
     <path
        style="fill:none;stroke:#000000;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 73.762339,172.32482 5.612661,5.61266 -1.870887,1.87088 h 7.483541 l 6e-6,-7.48354 -1.870887,1.87088 -5.61266,-5.61266 z"
+       d="m 65.049892,173.74177 5.612661,5.61266 -1.870887,1.87088 h 7.483541 l 6e-6,-7.48354 -1.870887,1.87088 -5.61266,-5.61266 z"
        id="path1031-6-5-3"
        inkscape:connector-curvature="0" />
     <path
        style="fill:none;stroke:#000000;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 131.19573,168.90405 -5.61267,5.61266 -1.87087,-1.87088 v 7.48352 l 7.48355,2e-5 -1.87089,-1.87089 5.61265,-5.61267 z"
+       d="m 127.321,169.67899 -5.61267,5.61266 -1.87087,-1.87088 v 7.48352 l 7.48355,2e-5 -1.87089,-1.87089 5.61265,-5.61267 z"
        id="path1031-6-0-6"
        inkscape:connector-curvature="0" />
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.41111112px;line-height:1.25;font-family:'Bold Oblique';-inkscape-font-specification:'Bold Oblique, ';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="93.750694"
-       y="183.15921"
+       x="85.688194"
+       y="183.28423"
        id="text866-02-7"><tspan
          sodipodi:role="line"
          id="tspan864-83-5"
-         x="93.750694"
-         y="183.15921"
-         style="font-size:4.23333311px;stroke-width:0.26458332">libexample.a</tspan></text>
+         x="85.688194"
+         y="183.28423"
+         style="font-size:4.23333311px;stroke-width:0.26458332">libexample.so</tspan></text>
     <path
        style="fill:none;stroke:#000000;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 12.390668,182.22987 23.616886,31.8177 -2.167338,1.51758 7.36985,1.29951 1.299508,-7.36985 -2.167339,1.51759 -21.821403,-33.07491 z"
+       d="m 12.214426,182.42255 23.616886,31.8177 -2.167338,1.51758 7.36985,1.29951 1.299508,-7.36985 -2.167339,1.51759 -21.821403,-33.07491 z"
        id="path1031-6-5-35"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cccccccc" />
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.41111112px;line-height:1.25;font-family:'Bold Oblique';-inkscape-font-specification:'Bold Oblique, ';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="139.36754"
-       y="179.04404"
+       x="124.08166"
+       y="192.27322"
        id="text866-9-7-6"><tspan
          sodipodi:role="line"
          id="tspan864-19-0-2"
-         x="139.36754"
-         y="179.04404"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93888903px;font-family:FontAwesome;-inkscape-font-specification:FontAwesome;stroke-width:0.26458332">ar -crs libexample2.a *.o </tspan></text>
+         x="124.08166"
+         y="192.27322"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93888903px;font-family:FontAwesome;-inkscape-font-specification:FontAwesome;stroke-width:0.26458332">gcc -shared libexample2.so *.o </tspan></text>
     <rect
        style="opacity:0.95;fill:#b0e5ff;fill-opacity:1;stroke:#003954;stroke-width:0.25;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect817-9-8-3"
        width="18.520834"
        height="15.87501"
-       x="84.666664"
-       y="188.5208" />
+       x="76.604164"
+       y="188.64581" />
     <rect
        style="opacity:0.95;fill:#b0e5ff;fill-opacity:1;stroke:#003954;stroke-width:0.25;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect817-9-8-6"
        width="18.520836"
        height="15.87499"
-       x="108.47916"
-       y="188.52081" />
+       x="100.41666"
+       y="188.64583" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 58.208334,254.66666 v 7.9375 H 55.5625 l 5.291667,5.29166 5.291667,-5.29166 H 63.5 v -7.9375 z"
+       id="path1031-0-3"
+       inkscape:connector-curvature="0" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.41111112px;line-height:1.25;font-family:'Bold Oblique';-inkscape-font-specification:'Bold Oblique, ';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="70.952774"
+       y="258.41904"
+       id="text866-9-7-67"><tspan
+         sodipodi:role="line"
+         x="70.952774"
+         y="258.41904"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93888903px;font-family:FontAwesome;-inkscape-font-specification:FontAwesome;stroke-width:0.26458332"
+         id="tspan914">LD_LIBRARY_PATH=./:$LD_LIBRARY_PATH</tspan><tspan
+         sodipodi:role="line"
+         x="70.952774"
+         y="264.59265"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93888903px;font-family:FontAwesome;-inkscape-font-specification:FontAwesome;stroke-width:0.26458332"
+         id="tspan918">./prog</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.41111112px;line-height:1.25;font-family:'Bold Oblique';-inkscape-font-specification:'Bold Oblique, ';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="40.00927"
+       y="276.93988"
+       id="text866-02-4-3-3"><tspan
+         sodipodi:role="line"
+         id="tspan864-83-0-46-5"
+         x="40.00927"
+         y="276.93988"
+         style="font-size:4.93888903px;stroke-width:0.26458332">Executing process</tspan></text>
   </g>
 </svg>
