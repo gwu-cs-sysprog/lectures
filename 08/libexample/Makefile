@@ -1,4 +1,5 @@
 all: naive static dynamic
+	@:
 
 naive: prog_naive  prog2_naive
 
