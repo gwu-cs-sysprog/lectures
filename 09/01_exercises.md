@@ -1,8 +1,12 @@
-# Exercise: Understanding Library Memory Consumption
 
-## `libexample`
+# Organizing Software with Dynamic Libraries: Exercises and Programming
 
-See the [`08/libexample/`](https://github.com/gwu-cs-sysprog/lectures/tree/main/08/libexample) directory for examples of using normal linking (`make naive`), static library linking (`make static`), and dynamic library linking (`make dynamic`).
+Lets dive a little deeper into how software is structured on our system, and the trade-offs that different libraries make in the system.
+
+## Exercise: Understanding Library Memory Consumption
+
+Lets investigate the `libexample` from the figures in last week's lectures.
+See the [`08/libexample/` directory](https://github.com/gwu-cs-sysprog/lectures/tree/main/08/libexample) for examples of using normal linking (`make naive`), static library linking (`make static`), and dynamic library linking (`make dynamic`).
 The source includes:
 
 - `prog` and `prog2` that are programs that use libraries.

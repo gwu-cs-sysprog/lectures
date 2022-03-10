@@ -59,28 +59,18 @@ free(void *mem)
 	fprintf(stderr, "free(%p)\n", mem);
 }
 
-static char init_mem[1024 * 8];
-static unsigned long init_off = 0;
-
 /*
  * While we're initializing, a call to malloc in `dlsym` requires
  * memory, thus will call `malloc`! But we need `dlsym` to figure out
  * where `malloc` is. How do we break this circular dependency?
  *
- * This is the simplest allocator (called a bump-allocator) to solve
- * this problem. It is only used when we're initializing to satisfy
- * `dlsym`'s `malloc` requests.
+ * This is a very simple allocator: ask the system for memory!
  */
 static void *
 init_malloc(size_t sz)
 {
-	char *ret;
-	size_t i;
-
-	ret = &init_mem[init_off];
-	for (i = 0; i < sz; i++) ret[i] = 0;
-	init_off += sz;
-	if (init_off >= sizeof(init_mem)) exit(EXIT_FAILURE);
-
-	return ret;
+	/* Lets use sbrk to ask for memory from the system! */
+	return sbrk(sz);
+	/* mmap is another option */
+	/* return mmap(NULL, sz, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, 0, 0); */
 }

@@ -1,11 +1,11 @@
 
-# Programming Dynamic Libraries and System Calls
+## Programming Dynamic Libraries
 
 We saw how libraries enable the sharing of functionality between programs.
 Static libraries are convenient, and only required objects are linked with your program at compile time.
 In contrast, dynamic libraries are linked at runtime *before* the `main` of your program executes.
 
-## Plugins and Dynamic Library APIs
+### Plugins and Dynamic Library APIs
 
 In addition to enabling shared library code, dynamic libraries also enable explicit means to load libraries programmatically.
 Namely, UNIX provdes an API that enables your process to *load* a dynamic library into itself.
@@ -101,7 +101,7 @@ See (b) in the image below.
 
 ![Three programmatic means to interact with dynamic libraries.](figures/09_dl_api.svg)
 
-## Interposing Libraries on Library APIs
+### Interposing Libraries on Library APIs
 
 One powerful mechanism that dynamic libraries enable is to *interpose* on library function calls.
 Your program might believe that it calls `malloc` when it invokes the function "malloc", but you can orchestrate it so that it instead calls a `malloc` in your library!
@@ -147,7 +147,7 @@ malloc(size_t sz)
 }
 ```
 
-We do the same for `free`.
+We do the same for `free`, and should do the same also for `calloc` and other memory allocation functions.
 
 **Question:** Why can't we just call `malloc` directly instead of doing this complex thing with `dlsym`?
 
@@ -159,17 +159,16 @@ $ make
 $ LD_PRELOAD=./libmalloclog.so ./main.bin
 malloc(4) -> 0x55fe6cd492a0
 free(0x55fe6cd492a0)
+...
 ```
 
 This shows us that dynamic libraries are *programmable* and that we can use them in interesting ways to coordinate between libraries, provide new functionalities, and to interpose on functionalities.
 For example, many of the largest companies use `LD_PRELOAD` to swap out the `malloc` implementation for one that is higher performance.
 
+**Questions:**
+
+- What else can you think to do with the ability to interpose on *any* library functions?
+- How might we implement some of the `valgrind` functionality using the ability to interpose on library functions?
+
 Note that running a program that uses `LD_PRELOAD` environment variables are more difficult to use in `gdb`.
 The [`ldpreload_w_gdb.sh`](https://github.com/gwu-cs-sysprog/lectures/tree/main/09/malloclog/ldpreload_w_gdb.sh) script demonstrates how to use both technologies together.
-
-## System Calls
-
-We've talked about the many resources that are provided by the *system*.
-These include files, pipes, and domain sockets.
-But we've been vague about what the system is.
-Though we'll leave the details for a later course, lets dive in to what constitutes the "system" a little bit.

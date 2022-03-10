@@ -2,6 +2,7 @@ all: main.bin libmalloclog.so
 	@:
 
 run: all
+	$(info LD_PRELOAD=./libmalloclog.so ./main.bin)
 	$(shell LD_PRELOAD=./libmalloclog.so ./main.bin)
 
 %.o: %.c

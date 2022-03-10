@@ -629,7 +629,7 @@ Dynamic libraries enable us to do a lot better.
 The contents memory for the library is the same regardless the process it is present in, and an Operating System has a neat trick: it can make the same memory appear in multiple processes if it is identical *and* cannot be modified^[This sharing of library memory across processes is why dynamic libraries are also called *shared libraries.*].
 As such, dynamic libraries typically only require memory for each library *once* in the system (only $X$), as opposed for each process.
 
-![A graphical depiction of how library memory gets added into a program using static libraries. The program is only dependent on a single object within the library, so we only need to compile that object into the resulting executable program.](figures/08_staticmem.svg)
+![A graphical depiction of how library memory gets added into a program using dynamic libraries. The libraries are only linked into the processes when they are executed. When that happens, the same memory for the library is `mmap`ed into each process, thus the system only requires memory for a *single* copy of the library.](figures/08_dynamicmem.svg)
 
 ## Static vs. Dynamic Library Memory Usage Summary
 

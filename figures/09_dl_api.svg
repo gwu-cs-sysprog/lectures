@@ -191,9 +191,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.86299268"
-     inkscape:cx="373.13596"
-     inkscape:cy="82.67493"
+     inkscape:zoom="2.4409119"
+     inkscape:cx="664.45501"
+     inkscape:cy="192.75112"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -223,7 +223,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -396,34 +396,34 @@
     <rect
        style="opacity:0.95;fill:#76ff7c;fill-opacity:1;stroke:#004508;stroke-width:0.25;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect817-8-4-2-9-5-2-1"
-       width="39.687492"
-       height="23.8125"
-       x="224.89584"
-       y="74.749985" />
+       width="51.593754"
+       height="23.812504"
+       x="218.95378"
+       y="74.749924" />
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.41111112px;line-height:1.25;font-family:'Bold Oblique';-inkscape-font-specification:'Bold Oblique, ';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="230.1875"
-       y="80.61216"
+       x="224.24544"
+       y="80.612099"
        id="text1559-9-9-6"><tspan
          sodipodi:role="line"
          id="tspan1557-6-3-9"
-         x="230.1875"
-         y="80.61216"
+         x="224.24544"
+         y="80.612099"
          style="font-weight:bold;font-size:4.23333311px;stroke-width:0.26458332">interposelib:</tspan><tspan
          sodipodi:role="line"
-         x="230.1875"
-         y="85.903824"
+         x="224.24544"
+         y="85.903763"
          style="font-size:4.23333311px;stroke-width:0.26458332"
          id="tspan4689">malloc(...) {</tspan><tspan
          sodipodi:role="line"
-         x="230.1875"
-         y="91.195496"
+         x="224.24544"
+         y="91.195435"
          style="font-size:4.23333311px;stroke-width:0.26458332"
-         id="tspan4691">    libcmalloc()</tspan><tspan
+         id="tspan4691">    dlsym(...,&quot;malloc&quot;)</tspan><tspan
          sodipodi:role="line"
-         x="230.1875"
-         y="96.48716"
+         x="224.24544"
+         y="96.487099"
          style="font-size:4.23333311px;stroke-width:0.26458332"
          id="tspan4693">}</tspan></text>
     <path
@@ -579,7 +579,7 @@
          style="font-size:4.23333311px;stroke-width:0.26458332">malloc(...);</tspan></text>
     <path
        style="fill:none;stroke:#000000;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#Arrow1Mend-8-3-79)"
-       d="m 232.83333,66.812433 c -7.9375,2.645834 -18.52083,10.583334 -5.29166,15.875"
+       d="m 232.83333,66.812433 c -7.9375,2.645834 -17.19791,5.29166 -9.26041,15.874994"
        id="path2895-8-7-0"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
