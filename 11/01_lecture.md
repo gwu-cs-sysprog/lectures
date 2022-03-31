@@ -467,16 +467,30 @@ $ ls -l get_uidgid
 
 Notice the `s` values to denote the `set-*-bits`.
 
+Lets test this set uid stuff!
+
+```
+$ cp get_uidgid /tmp/
+$ chmod 4755 /tmp/get_uidgid
+```
+
+Now you should all have access to the file, with it being set as set-uid.
+
 **Question:**
 
-- Use the previous program as groups, one user compiling the file on the server, and the other running it.
+- Compile and run the `get_uidgid` program.
+	What would you expect to happen?
     What do you observe?
 	Recall that you can use `id` to print out both of your ids and groups.
-	You might want to `cp get_uidgid ~` to make it more easily accessible from your home directory
+- Run the `get_uidgid` program I placed in `/tmp/`.
+    What is the expected output?
+	What do you observe?
 - What happens if we enable the program to create files while using the `set-*-id` bits?
-    Use the following program, set it as setuid, and have on of your peers create files, and `ls -l` to see who owns them.
+	Run the following program in your home directory, passing as arguments the names of files you want to create.
+	Check out the owner of the files.
+    The following program, that is setuid in `/tmp/`, and have on of your peers create files, and `ls -l` to see who owns them.
 
-	```c
+	``` c
 	#include <stdio.h>
 	#include <stdlib.h>
 	#include <unistd.h>
@@ -563,7 +577,6 @@ main(void)
 
 - Run this program yourself.
 	What do think will happen if you have a peer run it on the server after you set the `set-uid` bit?
-	Run it and see!
 
 ## Applications of Identify and Permission Management
 
