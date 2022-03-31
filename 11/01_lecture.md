@@ -96,42 +96,6 @@ Fantastic.
 It will pair well with my pseudo-typewriter.
 Cool.
 
-### The password and group file
-
-Groupings are defined in two places.
-The first is a file called `/etc/passwd` which manages all the users of the system.
-Here is the `/etc/passwd` entry on my local system (the server uses another means to store user info):
-
-```
-$ cat /etc/passwd | grep gparmer
-gparmer:x:1000:1000:Gabe Parmer,,,:/home/ycombinator:/bin/bash
-   |    |   |     |      |                 |             |
-   V    |   V     |      V                 V             V
- user   | user id |  human-readable id  home directory  shell to use upon login
-        V         V
-    password    group id
-```
-
-We can lookup our username and associate it with a numerical user id, and a group id for that user.
-These numbers are what the system uses to track users, but UNIX nicely converts these numbers into names for our convenience.
-The file additionally holds the path to the user's home directory, and their shell.
-These are used upon the user logging in: the login logic will switch to the user's home directory, and execute their shell.
-The `password` entry is deprecated.
-The translation between userid and username is in the password file.
-The translation between groupid and group name is in the group file, `/etc/group`.
-Here is the entry for the administrators on the class' server:
-
-```
-$ grep CS_Admins /etc/group
-CS_Admins:x:1004:aaviv,timwood,gparmer,...
-```
-
-There you can see that the users `aaviv`, `timwood`, and `gparmer` are all in the group of administrators.
-
-**Question:**
-Take a moment to explore these files and the commands.
-See what groups you are in.
-
 ### File Permissions
 
 The *permissions* associated with each file/directory specify who should be able to have the following access:
@@ -264,6 +228,7 @@ Any other user on the system would also be able to execute the program.
 - You and a classmate should sit down together, and use `chmod` to concretely understand when you can access each other's files.
     Remember, you can find out where your files are with `pwd`, what groups you're in with `groups`.
 	Which files can another user can access at that path with sufficient permissions?
+	You can use the `/tmp/` directory to store files that you can both mutually access, permissions allowing.
 
 ### Changing File/Directory Owner and Group
 
@@ -346,33 +311,36 @@ Remember, that we inherit the uid/gid on fork, thus when the shell runs the prog
 
 ### User and Group Strings
 
-The user information beyond just their id is stored in the `/etc/passwd` file.
-All users are defined in `/etc/passwd` with lines like such:
+If the UNIX programmatic APIs provide access to user and group *identifiers* (i.e. integers), how is it that we can see strings corresponding to these numeric values?
+The mapping of the identifiers to strings are defined in two places.
+The first is a file called `/etc/passwd` which manages all the users of the system.
+Here is the `/etc/passwd` entry on my local system (the server uses another means to store user info):
 
 ```
-.-- user name         .-- full name   .--- home directory
-|                     |               |
-v                     v               v
-aviv:x:35001:10120:Adam Aviv {}:/home/scs/aviv:/bin/bash
-        ^     ^                                   ^
-uid ----'     '--- gid (Default)                  '--- default shell
+$ cat /etc/passwd | grep gparmer
+gparmer:x:1000:1000:Gabe Parmer,,,:/home/ycombinator:/bin/bash
+   |    |   |     |      |                 |             |
+   V    |   V     |      V                 V             V
+ user   | user id |  human-readable id  home directory  shell to use upon login
+        V         V
+    password    group id
 ```
 
-This is `aviv`'s entry in the  `passwd` file.
-It stores their user name, user id, default group id, full name, home directory, and default shell.
-The latter two are useful when logging in: the login services will `chdir` to the home directory, and `exec` the shell.
-Every user has a unique username, user id, and default group; however, a user can be assigned to multiple groups.
-Thus, group information is in the `/etc/group` file, and here is entry for `aviv`'s default group:
+We can lookup our username and associate it with a numerical user id, and a group id for that user.
+These numbers are what the system uses to track users, but UNIX nicely converts these numbers into names for our convenience.
+The file additionally holds the path to the user's home directory, and their shell.
+These are used upon the user logging in: the login logic will switch to the user's home directory, and execute their shell.
+The `password` entry is deprecated.
+The translation between userid and username is in the password file.
+The translation between groupid and group name is in the group file, `/etc/group`.
+Here is the entry for the administrators on the class' server:
 
 ```
-.-- group name
-|
-v
-scs:*:10120:webadmin,www-data,lucas,slack
-       ^    \___________________________/
-gid ---'                |
-                        '- Additional users in that group
+$ grep CS_Admins /etc/group
+CS_Admins:x:1004:aaviv,timwood,gparmer,...
 ```
+
+There you can see that the users `aaviv`, `timwood`, and `gparmer` are all in the group of administrators.
 
 All of this information, including identifiers, and human-readable strings can be retrieved with `id`.
 
@@ -380,6 +348,10 @@ All of this information, including identifiers, and human-readable strings can b
 $ id
 uid=1000(gparmer) gid=1000(gparmer) groups=1000(gparmer),4(adm),24(cdrom),27(sudo),30(dip),46(plugdev),120(lpadmin),131(lxd),132(sambashare)
 ```
+
+**Question:**
+Take a moment to explore these files and the commands.
+See what groups you are in.
 
 ## Application-Specific Privileges using set-user-id/set-group-id
 
@@ -441,7 +413,7 @@ bits user |  other
 When we look at the `ls -l` output of the program, the permission string reflects these settings with an "s" in the execute part of the string for user and group.
 
 ```
-aviv@saddleback: lec-23-demo $ ls -l get_uidgid
+$ ls -l get_uidgid
 -rwsr-s--x 1 aviv scs 8778 Mar 30 16:45 get_uidgid
 ```
 
@@ -487,10 +459,10 @@ main(void)
 As the owner of the file, after compilation, the permissions can be set to add set-user-id:
 
 ```
-$ gcc 11/test_setid.c -o test_setid
-$ chmod 6755 test_setid
-$ ls -l test_setid
--rwsr-sr-x   1 gparmer        gparmer     16880 2022-03-29 08:30 test_setid
+$ gcc 11/get_uidgid.c -o get_uidgid
+$ chmod 6755 get_uidgid
+$ ls -l get_uidgid
+-rwsr-sr-x   1 gparmer        gparmer     16880 2022-03-29 08:30 get_uidgid
 ```
 
 Notice the `s` values to denote the `set-*-bits`.
@@ -500,7 +472,7 @@ Notice the `s` values to denote the `set-*-bits`.
 - Use the previous program as groups, one user compiling the file on the server, and the other running it.
     What do you observe?
 	Recall that you can use `id` to print out both of your ids and groups.
-	You might want to `cp test_setid ~` to make it more easily accessible from your home directory
+	You might want to `cp get_uidgid ~` to make it more easily accessible from your home directory
 - What happens if we enable the program to create files while using the `set-*-id` bits?
     Use the following program, set it as setuid, and have on of your peers create files, and `ls -l` to see who owns them.
 
@@ -637,10 +609,8 @@ We can see this as the case if I were to run the `get_euidegid` program using `s
 First notice that it is no longer set-group or set-user:
 
 ```
-aviv@saddleback: lec-23-demo $ ls -l get_euidegid
--rwxr-x--x 1 aviv scs 8730 Mar 31 08:31 get_euidegid
-aviv@saddleback: lec-23-demo $ sudo ./get_euidegid
-[sudo] password for aviv:
+$ sudo ./get_euidegid
+[sudo] password for gparmer:
  uid=0  gid=0
 euid=0 egid=0
 ```
@@ -649,16 +619,19 @@ After sudo authenticated me, the program's effective and real user identificatio
 
 #### sudoers
 
-Who has permission to run sudo commands?
+Who has permission to run `sudo` commands?
 This is important because on many modern unix systems, like ubuntu, there is no default root password.
+
+**Question:**
+
+- Why don't we just have a `root` account with a password instead of having `sudo` and `su`?
+
 Instead certain users are deemed to be sudoers or privileged users.
 These are set in a special configuraiton file called the `/etc/sudoers`.
 
 ```
 aviv@saddleback: lec-23-demo $ cat /etc/sudoers
 cat: /etc/sudoers: Permission denied
-aviv@saddleback: lec-23-demo $ sudo cat /etc/sudo
-sudoers    sudoers.d/
 aviv@saddleback: lec-23-demo $ sudo cat /etc/sudoers
 #
 # This file MUST be edited with the 'visudo' command as root.
@@ -692,23 +665,24 @@ root	ALL=(ALL:ALL) ALL
 #includedir /etc/sudoers.d
 ```
 
-Notice that only root has access to read this file, and since I am a sudoer on saddleback I can get access to it. If you look carefully, you can perform a basic parse of the settings. The root user has full sudo permissions, and other sudoer's are determine based on group membership. Users in the sudo or admin group may run commands as root, and I am a member of the sudo group:
+Notice that only root has access to read this file, and since I am a `sudoer` on the system I can get access to it.
+If you look carefully, you can perform a basic parse of the settings.
+The root user has full `sudo` permissions, and other sudoer's are determine based on group membership.
+Users in the `sudo` or `admin` group may run commands as `root`, and I am a member of the `sudo` group:
 
 ```
-aviv@saddleback: lec-23-demo $ id
-uid=35001(aviv) gid=10120(scs) groups=10120(scs),27(sudo),15000(mids),15001(ic221)
+$ id
+uid=1000(gparmer) gid=1000(gparmer) groups=1000(gparmer),4(adm),24(cdrom),27(sudo),30(dip),46(plugdev),120(lpadmin),131(lxd),132(sambashare)
 ```
 
-However, on a lab machine, I do not have such group settings:
+**Question:**
 
-```
-aviv@mich302csd01u: ~ $ id
-uid=35001(aviv) gid=10120(scs) groups=10120(scs),15000(mids)
-```
+- How do you think that `sudo` is implemented?
+    What mechanisms from this week's lecture is it using to provide the requested functionality?
 
 ####  Assignment Submission
 
-What if we did assignment submission by simply executing a program that copied a directory into the instructor's home directory?
+What if we implemented an assignment submission program that copied a student's directory into the instructor's home directory?
 For example, if you wanted to submit the directory of code at `my_hw/` for homework `HW1`,
 
 ```
@@ -717,4 +691,16 @@ $ ./3410_submit HW1 my_hw
 
 This program, run by you, has your user and group permissions, but it is able to take your submission and copy/save those submissions to my home directory, with my permissions at a location where you do not have access to write.
 How is that possible?
-Of course, using the `set-uid/gid` bits!
+
+Naively, we'd have a problem:
+
+- The submission program is written and provided by the instructor.
+- The students would be executing the program, thus it would execute with their identity.
+- We don't want the submitted data to be visible to *any* students.
+- *However*, if the students run the submission program, it will run as their uid/gid, and 1. it won't have access to the instructor's home directory, and 2. any files it creates (during the copy) will belong to the user.
+
+Yikes.
+
+**Question:**
+
+- How could we go about implementing a homework submission program?
