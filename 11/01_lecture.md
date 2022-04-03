@@ -485,10 +485,8 @@ Now you should all have access to the file, with it being set as set-uid.
 - Run the `get_uidgid` program I placed in `/tmp/`.
     What is the expected output?
 	What do you observe?
-- What happens if we enable the program to create files while using the `set-*-id` bits?
-	Run the following program in your home directory, passing as arguments the names of files you want to create.
-	Check out the owner of the files.
-    The following program, that is setuid in `/tmp/`, and have on of your peers create files, and `ls -l` to see who owns them.
+- What happens if we enable a program to create files while using the `set-*-id` bits?
+    Lets use the following program that will create a file named after each command line arguments.
 
 	``` c
 	#include <stdio.h>
@@ -513,6 +511,23 @@ Now you should all have access to the file, with it being set as set-uid.
 		return 0;
 	}
 	```
+
+	Run the following program in your home directory (can also be found in `create_files.c`), passing as arguments the names of files you want to create: `./create_files blah` will create a file `blah`.
+	Check out the owner of the files (`ls -l blah`).
+	I've also set up the file as **setuid** on the server in `/tmp/create_files`.
+	Try running the following
+
+	```
+	$ /tmp/create_files /tmp/blah
+	$ ls -l /tmp/blah
+	...
+	$ /tmp/create_files ~/blah
+	...
+	```
+
+    What do you think the output for the first `...` will be -- who is the owner of the file?
+	The second?
+	What are the outputs, and why?
 
 #### Programmatically Downgrading/Upgrading Capabilities
 
