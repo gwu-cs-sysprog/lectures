@@ -1,28 +1,30 @@
 
 # UNIX Security: Users, Groups, and Filesystem Permissions
 
-> **This material directly adapted from Prof. Aviv's [material](https://classes.adamaviv.com/ic221/s18/units/01/unit.html#org26c0ea7).**
+> **This material adapted from Prof. Aviv's [material](https://classes.adamaviv.com/ic221/s18/units/01/unit.html#org26c0ea7).**
 
 We've seen how the filesystem is used to store and name files and channels, and we've seen the APIs to access directories and files.
 If everyone had access to every else's files, then there would be no way to secure your information.
-Thus, systems provide means to control different user's *access* to different files and directories.
+Thus, the kernel provides means to control different user's *access* to different files and directories.
+This means that I cannot access your files, and vice-versa!
 
 To understand the core concept of *access control* in UNIX, we have to understand
 
-1. how UNIX thinks, implements, and organizes users,
+1. how UNIX thinks about, implements, and organizes users and groups of users,
 2. how files and directories provide various access permissions to different users and how to alter those permissions, and
 3. how services, even when executed by a user, can have heightened access to system resources.
 
 ## File and Directory Permissions
 
-Lets first remind ourselves of the properties of a file that are returned by running `ls -l`:
+The filesystem stores files and directories are somehow associated with each of us, separately.
+Lets check out the properties of a file that are returned by running `ls -l`:
 
 ```
 .- Directory?
 |    .-------Permissions                   .- Directory Name
 | ___|___     .----- Owner                 |
 v/       \    V     ,---- Group            V
-drwxr-x--x 4 aviv scs 4096 Dec 17 15:14 imma_directory
+drwxr-x--x 4 aviv scs 4096 Dec 17 15:14 im_a_directory
 -rw------- 1 aviv scs 400  Dec 19  2013 .ssh/id_rsa.pub
                        ^   \__________/    ^
 File Size -------------'       |           '- File Name
@@ -31,7 +33,7 @@ File Size -------------'       |           '- File Name
    Last Modified --------------'
 ```
 
-An example from the class' server, we create a file, a directory, and see the results:
+An example from the class' server where we create a file, a directory, and see the results:
 
 ```
 $ echo hi > file.txt
@@ -41,33 +43,38 @@ $ ls -l
 drwxr-xr-x 2 gparmer dialout 4096 Mar 18 12:20 hello
 ```
 
-There are two important parts to this discussion: the owner/group and the permissions.
-The owner and the permissions are directly related to each other.
-Often permissions are assigned based on user status to the file, either being the owner or part of a group of users who have certain access to the file.
+We see that each file and directory has a owner and group associated with it.
+
+**Question:**
+
+- What do you think this means?
+    Why do files have owners and groups?
 
 ### File Ownership and Groups
 
-The owner of a file is the user that is directly responsible for the file and has special status with respect to the file permission.
-Users can also be grouped together in group, a collection of users who posses the same permissions.
-A file also has a group designation to specify which permission should apply.
+The *owner* of a file is the *user* that is directly responsible for the file and has special status with respect to the file permissions.
+Users can also be collected together into a set called a *group*, a collection of users who posses the same permissions.
+A file is associated with a group.
+A file's or directory's owners and groups have different permissions to access the file.
+Before we dive into that, lets understand how to understand users and groups.
 
-You all are already aware of your username. You use it all the time, and it should be a part of your command prompt.
-To have UNIX tell you your username and connection information on this machine, use the command, who am i:
-
-```
-$ who
-gparmer  pts/1        2022-03-18 12:12 (128.164...)
-```
-
-You can use the whoami (no spaces) command to print only your username:
+You all are already aware of your username.
+You can get your username with the `whoami` command:
 
 ```
 $ whoami
 gparmer
 ```
 
-The first part of the output is the username, for me that is aviv, for you it will be your username.
-The rest of the information in the output refers to the terminal, the time the terminal was created, and from which host you are connected.
+To have UNIX tell you your username and connection information on this machine, use the command, `who`:
+
+```
+$ who
+gparmer  pts/1        2022-03-18 12:12 (128.164...)
+```
+
+The first part of the output is the username.
+The rest of the information in the output refers to the terminal you're using (it is a "pseudo-terminal device", something that pretends it is a typewriter from the 60s), the time the terminal was created, and from which host you are connected.
 
 You can determine which groups you are in using the groups command.
 
@@ -86,12 +93,227 @@ ycombinator adm cdrom sudo dip plugdev lpadmin sambashare
 
 The good news is that I can use my `cdrom`.
 Fantastic.
+It will pair well with my pseudo-typewriter.
 Cool.
 
-### The password and group file
+### File Permissions
 
-Groupings are defined in two places.
-The first is a file called /etc/passwd which manages all the users of the system.
+The *permissions* associated with each file/directory specify who should be able to have the following access:
+
+- `r` - the ability to *read* the file, or *read the contents* of a directory.
+- `w` - the ability to *write* to the file, or update the contents of a directory.
+- `x` - the ability to *execute* a file (i.e. a program), or `chdir` into a directory.
+
+We think about different users as having different sets of these permissions to access files and directories.
+When we see the permissions string for a file, we see three sets of these `rwx` permissions:
+
+```
+-rw-r--r-- 1 gparmer dialout    3 Mar 18 12:19 file.txt
+```
+
+Here we have three sets of permissions `rw-` (read and write), `r--` (read only), and `r--` (read only).
+These three sets of permissions each specify the access permissions for the *owner*, the *group*, and everyone else's *global* permissions.
+
+```
+ .-- Directory Bit
+|
+|       ,--- Global Permission (i.e. "every else")
+v      / \
+-rwxr-xr-x
+ \_/\_/
+  |  `--Group Permission
+  |
+   `-- Owner Permission
+```
+
+Given this, now we can understand the permissions for each file in:
+
+```
+ls -l 11/perm_example/
+total 0
+-rw-r--r-- 1 gparmer gparmer 0 Mar 25 18:43 bar
+-rw-rw-r-- 1 gparmer gparmer 0 Mar 25 18:43 baz
+-rwx------ 1 gparmer gparmer 0 Mar 25 18:42 foo
+```
+
+*Question:*
+
+- *Who* has *what access permissions* to which files?
+
+### Numerical Representation of Permissions
+
+Each permission has a *numerical representation*.
+We represent it in *octal*, which is a fancy way to say that we think of each digit of our numerical representation as being between `0-7` -- it is "base 8" (in contrast to the normal digits numbers we use every day that are "base 10").
+Thus, each of the three sets of permissions is `3` bits.
+
+Each of the three permissions, `r`, `w`, and `x` correspond to the most-significant to the least significant bits in each octal digit.
+For example:
+
+```
+rwx -> 1 1 1 -> 7
+r-x -> 1 0 1 -> 5
+--x -> 0 0 1 -> 1
+rw- -> 1 1 0 -> 6
+```
+
+On the left we see a permission, its bit representation, and the associated octal digit.
+The shorthand, you can think of this is this:
+
+- `r = 4` as it is represented with the most significant bit
+- `w = 2` as the second bit
+- `x = 1` as it is the least significant bit
+
+Thus the octal digit is simply the addition of each of these numeric values for each access right.
+We can combine these digits to encapsulate permissions for the owner, group, and everyone else:
+
+```
+-rwxrwxrwx -> 111 111 111 -> 7 7 7
+-rwxrw-rw- -> 111 110 110 -> 7 6 6
+-rwxr-xr-x -> 111 101 101 -> 7 5 5
+```
+
+So now we know how to interpret, and understand these permission values, and how to represent them as digits.
+
+### Updating File/Directory Permissions
+
+To change a file permission, you use the `chmod` command, or the `chmod` system call.
+In each, we specify the file to update, and the new permissions in octal.
+Lets play around with permission and see their impact:
+
+```
+$ gcc helloworld.c -o helloworld.bin
+$ ls -l helloworld.bin
+-rwxrwxr-x 1 gparmer gparmer 41488 Mar 22 08:52 helloworld.bin
+$ ./helloworld.bin
+hello world!
+```
+
+I can execute the program, and I could read the program, for example using `nm`.
+I could even overwrite the file.
+
+> Note: on the server, the default permissions are more restrictive --
+> `-rwxr-xr-x 1 gparmer dialout 16464 Mar 25 19:16 helloworld.bin`.
+> We don't want anyone other than us writing to the file on a shared server!
+
+What if I removed all permissions for everyone but the owner, and even removed my own ability to execute?
+
+```
+$ chmod 600 helloworld.bin
+$ ls -l helloworld.bin
+-rw------- 1 gparmer gparmer 41488 Mar 22 08:52 helloworld.bin
+$ ./helloworld.bin
+-bash: ./helloworld.bin: Permission denied
+```
+
+We removed our own ability to execute the file, so we no longer can!
+Note that permission `6` is `4 + 2` which is `r` + `w`.
+If I wanted on the system to be able to execute the program:
+
+```
+$ chmod 711 helloworld.bin
+$ ls -l helloworld.bin
+-rwx--x--x 1 gparmer gparmer 41488 Mar 22 08:52 helloworld.bin
+$ ./helloworld.bin
+hello world!
+```
+
+Recall, `7 = 4 + 2 + 1` which is `r` + `w` + `x`.
+We can see that we've given everyone on the system execute permissions, so the file is again about to execute!
+Any other user on the system would also be able to execute the program.
+
+**Questions:**
+
+- How do you think permissions change access to directories?
+    Try out setting the permissions of a directory (recall `mkdir`), and seeing what accesses cannot be made if permissions are removed.
+- You and a classmate should sit down together, and use `chmod` to concretely understand when you can access each other's files.
+    Remember, you can find out where your files are with `pwd`, what groups you're in with `groups`.
+	Which files can another user can access at that path with sufficient permissions?
+	You can use the `/tmp/` directory to store files that you can both mutually access, permissions allowing.
+
+### Changing File/Directory Owner and Group
+
+We've seen that each file and directory is associated with a user, and with a group.
+Which means that, of course, we can change those settings!
+Two commands (and their corresponding system call: `chown`):
+
+- `chown <user> <file/directory>` - change owner of the file/directory to the user
+- `chgrp <group> <file/directory>` - change group of the file to the group
+
+UNIX limits who is able to execute these operations.
+
+- Only a *superuser* called `root` is allowed to `chown` a file or directory.
+    `root` is special in that they are able to change the permissions of any file/directory, and most of the most sensitive files on the system are owned by root.
+	For example, the devices (think, hard-drives holding the filesystem, monitors, and network devices) are only accessible by `root` (check out `/dev/*`).
+- Only the *owner* of a file (and `root`) is allowed to change the group of a file, and only to a group that user is in (recall `groups`).
+
+We can see this:
+
+```
+$ chown root helloworld.bin
+chown: changing ownership of 'helloworld.bin': Operation not permitted
+```
+
+**Question:**
+
+- Why do you think we aren't allowed to change the owner of a file, nor change the group to one in which we don't belong?
+
+## Security and Programming with Users and Groups
+
+We've seen that a lot of UNIX security centers around users, groups, and the corresponding permissions associated with files and directories.
+When a process is `fork`ed, it *inherits* the user and group of the parent process.
+Thus, when you're typing at a shell, the *shell process* is what really is executing as your user id, and when you create programs, they inherit your user id.
+These are the core of the security primitives, so lets dive into a little more detail.
+
+#### APIs for Accessing a Program's Privilege Settings
+
+If every process has a user and group, we must be able to access them, right?
+There are two basic system calls for retrieving user and group information within a program.
+
+- `uid_t getuid(void)` - Returns the real user id of the calling process.
+- `gid_t getgid(void)` - Returns the real group id of the calling process.
+
+Let's look at an example program.
+
+```c
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+int
+main(int argc, char * argv[])
+{
+	uid_t uid;
+	gid_t gid;
+
+	uid = getuid();
+	gid = getgid();
+
+	printf("uid=%d gid=%d\n", uid, gid);
+
+	return 0;
+}
+```
+
+Every user has different identifiers as does each group.
+If another user where to run the same program, they'd get a different value.
+
+**Question:**
+
+- In groups, one of you compile this program, and the other run it!
+    Use `chmod` to make sure that they can!
+	What do you observe?
+- If the kernel thinks of users as numeric identifiers, how does `whoami` print out a *human-readable string*?
+    Use `strace whoami` to come up with a strong guess.
+- How do we get human-readable groups with `groups` (investigate with `strace groups`)?
+
+Interestingly, whomever *executes* the program will have their uid/gid printed out; it won't use the uid/gid of the owner of the program.
+Remember, that we inherit the uid/gid on fork, thus when the shell runs the program, it uses our shell's (thus our) uid/gid.
+
+### User and Group Strings
+
+If the UNIX programmatic APIs provide access to user and group *identifiers* (i.e. integers), how is it that we can see strings corresponding to these numeric values?
+The mapping of the identifiers to strings are defined in two places.
+The first is a file called `/etc/passwd` which manages all the users of the system.
 Here is the `/etc/passwd` entry on my local system (the server uses another means to store user info):
 
 ```
@@ -120,372 +342,55 @@ CS_Admins:x:1004:aaviv,timwood,gparmer,...
 
 There you can see that the users `aaviv`, `timwood`, and `gparmer` are all in the group of administrators.
 
+All of this information, including identifiers, and human-readable strings can be retrieved with `id`.
+
+```
+$ id
+uid=1000(gparmer) gid=1000(gparmer) groups=1000(gparmer),4(adm),24(cdrom),27(sudo),30(dip),46(plugdev),120(lpadmin),131(lxd),132(sambashare)
+```
+
 **Question:**
 Take a moment to explore these files and the commands.
 See what groups you are in.
 
-### File Permissions
-
-We can now turn our attention to the permission string.
-A permission is simply a sequence of 9 bits broken into 3 octets of 3 bits each.
-An octet is a base 8 number that goes from 0 to 7, and 3 bits uniquely define an octet since all the numbers between 0 and 7 can be represented in 3 bits.
-
-Within an octet, there are three permission flags, read, write and execute.
-These are often referred to by their short hand, r, w, and x.
-The setting of a permission to on means that the bit is 1.
-Thus for a set of possible permission states, we can uniquely define it by an octal number:
-
-```
-rwx -> 1 1 1 -> 7
-r-x -> 1 0 1 -> 5
---x -> 0 0 1 -> 1
-rw- -> 1 1 0 -> 6
-```
-
-A full file permission consists of the octet set in order of user, group, and global permission.
-
-```
- .-- Directory Bit
-|
-|       ,--- Global Permission (i.e. "every else")
-v      / \
--rwxr-xr-x
- \_/\_/
-  |  `--Group Permission
-  |
-   `-- Owner Permission
-```
-
-These define the permission for the user of the file, what users in the same group of the file, and what everyone else can do.
-For a full permission, we can now define it as 3 octal numbers:
-
-```
--rwxrwxrwx -> 111 111 111 -> 7 7 7
--rwxrw-rw- -> 111 110 110 -> 7 6 6
--rwxr-xr-x -> 111 101 101 -> 7 5 5
-```
-
-To change a file permission, you use the chmod command and indicate the new permission through the octal.
-For example, in part5 directory, there is an executable file hello_world.
-Let's try and execute it.
-To do so, we insert a `./` in the front to tell the shell to execute the local file.
-
-```
-$ gcc helloworld.c -o helloworld
-$ chmod 600 hello world
-$ ./helloworld
--bash: ./helloworld: Permission denied
-```
-
-The shell returns with a permission denied.
-That's because the execute bit is not set.
-
-```
-$ ls -l helloworld
--rw------- 1 ycombinator ycombinator 16704 Mar 18 13:28 helloworld
-```
-
-Let's start by making the file just executable by the user, the permission 700.
-And now we can execute the file:
-
-```
-$ chmod 700 helloworld
-$ ls -l helloworld
--rwx------ 1 ycombinator ycombinator 16704 Mar 18 13:28 helloworld
-$ ./helloworld
-Hello World!
-```
-
-This file can only be executed by the user, not by anyone else because the permissions for the group and the world are still `0`.
-To add group and world permission to execute, we use the permission setting `711`:
-
-```
-$ chmod 711 helloworld
-$ ls -l helloworld
--rwx--x--x 1 aviv scs 7856 Dec 23 13:51 helloworld
-```
-
-At times using octets can be cumbersome, for example, when you want to set all the execute or read bits but don't want to calculate the octet.
-In those cases you can use shorthands.
-
-- `r`, `w`, `x` shorthands for permission bit read, write and execute
-- The `+` indicates to add a permission, as in `+x` or `+w`
-- The `-` indicates to remove a permission, as in `-x` or `-w`
-- `u`, `g`, `o` shorthands for permission bit user, group, and other
-- a shorthand refers to all, applying the permission to user, group, and other
-
-Then we can change the permission
-
-```
-chmod +x file   <-- set all the execute bits
-chmod a+r file  <-- set the file world readable
-chmod -r  file  <-- unset all the read bits
-chmod gu+w file <-- set the group and user write bits to true
-```
-
-Depending on the situation, either the octets or the shorthands are preferred.
-
-### Changing File Ownership and Group
-
-The last piece of the puzzle is how do we change the ownership and group of a file.
-Two commands:
-
-- `chown <user> <file/directory>` - change owner of the file/directory to the user
-- `chgrp <group> <file/directory>` - change group of the file to the group
-
-Permission to change the owner of a file is reserved only for the super user for security reasons.
-However, changing the group of the file is reserved only for the owner.
-
-```
-$ ls -l
-total 16
--rwxr-x--- 1 aviv scs 9133 Dec 29 10:39 helloworld
--rw-r----- 1 aviv scs   99 Dec 29 10:39 helloworld.cpp
-$ chgrp mids helloworld
-$ ls -l
-total 16
--rwxr-x--- 1 aviv mids 9133 Dec 29 10:39 helloworld
--rw-r----- 1 aviv scs    99 Dec 29 10:39 helloworld.cpp
-```
-
-Note now the hello world program is in the mids group.
-I can still execute it because I am the owner:
-
-```
-$ ./helloworld
-Hello World
-```
-
-However if I were to change the owner, to say, `pepin`, we get the following error:
-
-```
-$ chown pepin helloworld
-chown: changing ownership of ‘helloworld’: Operation not permitted
-```
-
-Consider why this might be.
-If any user can change the ownership of a file, then they could potentially upgrade or downgrade the permissions of files inadvertently, violating a security requirement.
-As such, only the super user, or the administrator, can change ownership settings.
-
-## Security and Programming with Users and Groups
-
-Through this class we have seen a number of security settings provided by the operating system. Formost, we discussed users and groups, file permissions, the terminal login, and finally the concept of system calls generally and how that system is designed to protect the user from itself.
-
-Let's take a moment to review some of these concepts and the O.S. security settings thereof.
-
-### Users and Groups
-
-All users are defined in the /etc/passwd file with lines like such:
-
-```
-.-- user name         .-- full name   .--- home directory
-|                     |               |
-v                     v               v
-aviv:x:35001:10120:Adam Aviv {}:/home/scs/aviv:/bin/bash
-        ^     ^                                   ^
-uid ----'     '--- gid (Default)                  '--- default shell
-```
-
-This is my passwd entry. It stores my user name, my user id, my default group id, my full name, my home directory, and my default shell. Every user has a unique username, user id, and default group; however, a user can be assigned to multiple groups. Group information is fined in the /etc/group directory, and here is entry for my default group:
-
-```
-.-- group name
-|
-v
-scs:*:10120:webadmin,www-data,lucas,slack
-       ^    \___________________________/
-gid ---'                |
-                        '- Additional users in that group
-```
-
-From the command line, the tool id will print this information, as well as groups
-
-```
-aviv@saddleback: ~ $ id
-uid=35001(aviv) gid=10120(scs) groups=10120(scs),27(sudo),15000(mids)
-aviv@saddleback: ~ $ groups
-scs sudo mids
-```
-
-One thing you might notice is that I am in the sudo group … on this computer, at least. We'll come back to this later.
-
-### Permissions
-
-Access to files are permission-ed based on the user and group designation of the accessing agent. Typically, this is a user, but the same designations are assigned to running processes. The permissions of a file can be observed using ls -l or stat:
-
-```
-aviv@saddleback: demo $ ls -l
-total 4
--rwxr--r-- 1 aviv scs    0 Mar 27 09:41 a
--rw--wx--- 1 aviv scs    0 Mar 27 09:41 b
--------rwx 1 aviv scs    0 Mar 27 09:41 c
-drwxr-x--- 2 aviv scs 4096 Mar 27 09:41 d
-aviv@saddleback: demo $ stat b
-  File: ‘b’
-  Size: 0         	Blocks: 0          IO Block: 524288 regular empty file
-Device: 1ch/28d	Inode: 34996239    Links: 1
-Access: (0630/-rw--wx---)  Uid: (35001/    aviv)   Gid: (10120/     scs)
-Access: 2015-03-27 09:41:22.884094861 -0400
-Modify: 2015-03-27 09:41:22.884094861 -0400
-Change: 2015-03-27 09:41:41.292753637 -0400
-```
-And if we look at a particular mode portion, let's recall how the permissions are identified:
-
-```
-user   other       .- group
-  |     |          |
- .-.   .-.         v
--rwxr--r-- 1 aviv scs    0 Mar 27 09:41 a
-^   '-'       ^
-|    |        '-- user/owner
-|   group
-|
-'- Directory Bit
-```
-
-When an operation is performed on the file, such as reading, writing, or executing, the user taking the action is compared to the permission.
-If the right permissions are set, and the user matches those permissions, the action can be taken.
-For example, a user that is not aviv may still read the file if they are in group scs.
-More, even a user who meets neither criteria, the owner or group of the file, can still read the file because the other read permission is set.
-
-Permissions of files can be changed using three commands:
-
-- `chmod` : change the permissions string of the file which can only be done by the owner of the file (or super user).
-- `chgrp` : change the group of the file which can only be done by the owner of the file (or super user).
-- `chown` : change the owner of the file which can only be done by the super user.
-
-The super user for unix systems is referred as `root`.
-It has full privileges and can do whatever it wants.
-Creating multiple levels of permissions by dividing users from one privilege to another is a key security concept.
-A key question is how does this occur?
-To understand this process, we have to start with when the user logs in.
-
-### Terminal Login and Password Checking
-
-The log procedure is not a huge focus of this lesson; however, what happens after login is incredibly relevant. Recall from the lectures on the tty that when a user "calls" a tty the program getty will execute login. Following the diagram:
-
-```
- runs as root
-.......................................
-:  .-------.                          :
-:  | getty |                          :
-:  '-------'                          :
-:      |                              :
-:    exec() <-------.                 :
-:      |            |                 :
-: (1)  v            | (failed)        :
-:  .--------.       |     ............:
-:  | login  | ------'     :
-:  '--------'             :                    runs as the user
-:      | (success)        :   ..................................
-:      |      ............:   :                                :
-:      |      :   ............: .-------. (3)                  :
-:     fork() -:---:- exec() --> | shell |                      :
-:.............: ^ :             '-------'                      :
- (2)            | :                  |                  .----. :
-  changes ______| :               fork() --- exec() --> | ls | :
-    user          :                                     '----' :
-                  :............................................:
-```
-
-At (1), the log procedure is going to authentic a user by asking for a password.
-While it would seem logical for passwords to be stored in /etc/passwd, it isn't.
-The reason /etc/passwd is named such is that it used to store password; however, that is no longer the case.
-Now passwords are stored are in the file /etc/shadow which is carefully protected, and passwords are not stored in plain text in /etc/shadow but rather stored using secure hashes.
-
-Of more interest to this lesson is what happens if the user successfully logs into the system.
-The log in procedure needs to run in a privileged state so that passwords can be checked from /etc/shadow.
-Only the root user has access to read/write the file, but we do not want it to be the case that when the user's shell starts up he/she gets the same permissions as the root user.
-To prevent that, there is a deescalation of privilege level by setting the effective user of the shell program to the user the that just logged onto the system – occurring at step (2).
-By the time the shell executes commands, the user is running — occurring at step (3).
-
-### Users/Group Capabilities of Programs
-
-Running programs inherit the permissions of the user who execute it, but we will see how that might change.
-To start, let us first look at the system programming constructs for observing and testing the users permission, and the errors associated with permission.
-Following, we can look at how to escalate or change the permission settings.
-
-#### Observing the privilege settings of programs
-
-There are two basic system calls for retrieving useer and group information for an execution program.
-
-- `uid_t getuid(void)` - Returns the real user id of the calling process.
-- `gid_t getgid(void)` - Returns the real group id of the calling process.
-
-Let's look at an example program.
-
-```c
-/*get_uidgid.c*/
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-int main(int argc, char * argv[]){
-
-  uid_t uid;
-  gid_t gid;
-
-  uid = getuid();
-
-  gid = getgid();
-
-  printf("uid=%d gid=%d\n", uid, gid);
-
-}
-```
-
-When executing, my user id and group id is printed to the terminal:
-
-```
-m179998@saddleback: git $ ~aviv/lec-23-demo/get_uidgid
-uid=179998 gid=15000
-```
-
-These values are mine.
-If you were to run the same program, you would get a different value.
-For example, I have a test student account m17998 and if I run this program as that user:
-
-```
-m159998@saddleback: git $ ~aviv/lec-23-demo/get_uidgid
-uid=35013 gid=15000
-m159998@saddleback: git $ ls -l ~aviv/lec-23-demo/get_uidgid
--rwxr-x--x 1 aviv scs 8622 Mar 30 10:40 /home/scs/aviv/lec-23-demo/get_uidgid
-```
-
-Even though the program is owned by the user aviv, the execution of the program as the process takes on the permissions of the user that runs the program, which is m179998 in this demo.
-However, this could be changed.
-
-#### Extra permission modes for set-user-id/set-group-id
-
-There is also an obvious need to be able to set the user/group privileges of a running program.
-For example, consider the submission system we have been using all semester.
-You all run a program in my home directory:
-
-```
-~aviv/bin/ic221-submit
-```
-
-This program, run by you, has your user and group permissions, but it is able to take your submission and copy/save those submissions to my home directory, with my permissions at a location where you do not have access to write.
-How is that possible?
-
-If you could somehow change the user/group setting of the running program to my user/group priviledge, then you could write to my home directory.
-This is essentially how the submission system works.
-
-To have a program run with a different user's capabilities requires additional permissions on the program beyond just that the user can execute the program.
-These permissions are called the set-bit and if we look at the man page for chmod, the set-bit is composed of three permission bits we previously ignored:
-
-A numeric mode is from one to four octal digits (0-7), derived by adding up the bits with values 4, 2, and 1.
-Omitted digits are assumed to be leading zeros.
-*The first digit selects the set user ID (4) and set group ID (2) and restricted deletion or sticky (1) attributes.*
-The second digit selects permissions for the user who owns the file: read (4), write (2), and execute (1); the third selects permissions for other users in the file's group, with the same values; and the fourth for other users not in the file's group, with the same values.
+## Application-Specific Privileges using set-user-id/set-group-id
+
+Systems that support multiple users are quite complex.
+They have services used by many users, but that must be protected from the potentially accidental or malicious actions of users.
+These programs require more privileges than a user to do their job.
+A few examples:
+
+- *Logging* is a very important functionality in systems.
+    It enables services to log actions that are taken, for example, users logging in to `ssh` and clients connecting to webservers.
+    The logs are stored in files (often in `/var/log/`), and users must *not* be able to directly modify (and potentially corrupt) the logs.
+	But they must be able to append to the logs.
+	How can we support this contradiction when a logging process will run with our user id when we execute it!?
+- *Coordinating actions* such as running commands regularly, or at specific points in time.
+    The programs `at` and `cron` enable exactly this!
+	They require adding entries into system files (e.g. `crontab`) to record the actions, but one user must not corrupt the entires of another user.
+	Again, we want to both be able to add entries to the files, but cannot modify the file!
+
+We already know one way to solve this problem.
+We can write a service, and have clients *request* (e.g. via IPC and domain sockets) it perform actions on our behalf.
+So long as a service runs as a different user, its files will be in accessible from clients.
+
+However, there is another way to solve the above contradictions.
+We really want a program to run with a *different* user's permissions -- those that go beyond our own.
+We want the *logger* to run with the permissions of the logging user, and we want `cron` to run with the permissions of the `cron` service.
+This is possible with the set-uid-bits (and set-gid-bits).
+
+The `set-*-bits` can be seen in the `man chmod` manual page.
+We're used to permissions being three digits (for the owner, the group, and everyone else), but it can be specified as *four* digits.
+The most significant digit can be set on executable binaries, and will result in the binary executing with the owner's uid/gid.
 
 That is, we previously assumed a permission string contained 3 octal digits, but really there are 4 octal digits.
 The missing octal digit is that for the set-bits.
 There are three possible set-bit settings and they are combined in the same way as other permissions:
 
-- `4` or `s+u` - set-user-id : sets the program's effective user id to the owner of the program
-- `2` or `s+g`- set-group-id : sets the program's effective group id to the group of the program
-- `1` or `t` - the sticky bit : used to denote the memory loading of a program or directory
+- `4` - *set-user-id*: sets the program's effective user id to the owner of the program
+- `2` - *set-group-id*: sets the program's effective group id to the group of the program
+- `1` - *the sticky bit*: which, when set on a directory, prevents others from deleting files from that directory.
+    We won't cover the stick bit.
 
 These bits are used in much the same way as the other permission modes.
 For example, we can change the permission of our get_uidgid program from before like so:
@@ -505,168 +410,128 @@ bits user |  other
   6   7   5   1
 ```
 
-When we look at the ls -l output of the program, the permission string reflects these settings with an "s" in the execute part of the string for user and group.
+When we look at the `ls -l` output of the program, the permission string reflects these settings with an "s" in the execute part of the string for user and group.
 
 ```
-aviv@saddleback: lec-23-demo $ ls -l get_uidgid
+$ ls -l get_uidgid
 -rwsr-s--x 1 aviv scs 8778 Mar 30 16:45 get_uidgid
 ```
 
 #### Real vs. Effective Capabilities
 
-With the set-bits, when the program runs, the capabilities of the program are effectively that of the owner and group of the program.
+With the set-bits, when the program runs, the capabilities of the program are effectively that of the owner and group of the *program*.
 However, the real user id and real group id remain that of the user who ran the program.
-This brings up the concept of effective vs. real identifiers:
+This brings up the concept of *effective* vs. *real* identifiers:
 
-- *real user id* (or *group id*) : the identifier of the actual user who executed a program
-- *effective user id* (or *group id*) : the idenifier for the capabilities or permissions settings of an executing program.
+- *real user id* (or *group id*): the identifier of the actual user who executed a program.
+- *effective user id* (or *group id*): the idenifier for the capabilities or permissions settings of an executing program.
 
-The system calls getuid() and getgid() return the real user and group identifiers, but we can also retrieve the effective user and group identifiers:
+The system calls `getuid` and `getgid` return the *real* user and group identifiers, but we can also retrieve the *effective* user and group identifiers with
 
-- `uid_t geteuid(void)` - return the effective user identifier for the calling process
-- `gid_t getegid(void)` - return the effective group identifer for the calling process
+- `uid_t geteuid(void)` - return the effective user identifier for the calling process.
+- `gid_t getegid(void)` - return the effective group identifer for the calling process.
 
-We now have enough to test set-bit programs using a the following program that prints both the real and effective user/group identities.
+We now have enough to test *set-x-bit* programs using a the following program that prints both the real and effective user/group identities.
 
-```c
-/*get_euidegid.c*/
+``` c
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 int
-main(int argc, char * argv[]){
+main(void)
+{
+	uid_t uid,euid;
+	gid_t gid,egid;
 
-  uid_t uid,euid;
-  gid_t gid,egid;
+	uid = getuid();
+	gid = getgid();
+	printf(" uid=%d  gid=%d\n",  uid,  gid);
 
-  uid = getuid();
-  gid = getgid();
-  printf(" uid=%d  gid=%d\n",  uid,  gid);
+	euid = geteuid();
+	egid = getegid();
+	printf("euid=%d egid=%d\n", euid, egid);
 
-  euid = geteuid();
-  egid = getegid();
-  printf("euid=%d egid=%d\n", euid, egid);
+	return 0;
 }
 ```
 
 As the owner of the file, after compilation, the permissions can be set to add set-user-id:
 
 ```
-aviv@saddleback: lec-23-demo $ make get_euidegid
-cc     get_euidegid.c   -o get_euidegid
-aviv@saddleback: lec-23-demo $ chmod u+s get_euidegid
-aviv@saddleback: lec-23-demo $ ls -l get_euidegid
--rwsr-x--x 1 aviv scs 8730 Mar 31 08:31 get_euidegid
+$ gcc 11/get_uidgid.c -o get_uidgid
+$ chmod 6755 get_uidgid
+$ ls -l get_uidgid
+-rwsr-sr-x   1 gparmer        gparmer     16880 2022-03-29 08:30 get_uidgid
 ```
 
-Now as the m179998 user, the program can be run, and we see that the effective user id of the program is aviv's id:
+Notice the `s` values to denote the `set-*-bits`.
+
+Lets test this set uid stuff!
 
 ```
-m179998@saddleback: ~ $ ~aviv/lec-23-demo/get_euidegid
- uid=179998  gid=15000
-euid=35001 egid=15000
-m179998@saddleback: ~ $ id
-uid=179998(m179998) gid=15000(mids) groups=15000(mids),15001(ic221)
-m179998@saddleback: ~ $ id aviv
-uid=35001(aviv) gid=10120(scs) groups=27(sudo),15000(mids),10120(scs),15001(ic221)
+$ cp get_uidgid /tmp/
+$ chmod 4755 /tmp/get_uidgid
 ```
 
-Continuing the example, we can see the other set-bit settings give different effective user/group settings:
+Now you should all have access to the file, with it being set as set-uid.
 
-```
-aviv@saddleback: lec-23-demo $ chmod g+s get_euidegid
-aviv@saddleback: lec-23-demo $ ls -l get_euidegid
--rwsr-s--x 1 aviv scs 8730 Mar 31 08:31 get_euidegid
+**Question:**
 
-m179998@saddleback: ~ $ ~aviv/lec-23-demo/get_euidegid
- uid=179998  gid=15000
-euid=35001 egid=10120
+- Compile and run the `get_uidgid` program.
+	What would you expect to happen?
+    What do you observe?
+	Recall that you can use `id` to print out both of your ids and groups.
+- Run the `get_uidgid` program I placed in `/tmp/`.
+    What is the expected output?
+	What do you observe?
+- What happens if we enable a program to create files while using the `set-*-id` bits?
+    Lets use the following program that will create a file named after each command line arguments.
 
-aviv@saddleback: lec-23-demo $ ls -l get_euidegid
--rwxr-s--x 1 aviv scs 8730 Mar 31 08:31 get_euidegid
+	``` c
+	#include <stdio.h>
+	#include <stdlib.h>
+	#include <unistd.h>
+	#include <fcntl.h>
 
-m179998@saddleback: ~ $ ~aviv/lec-23-demo/get_euidegid
- uid=179998  gid=15000
-euid=179998 egid=10120
-```
+	int
+	main(int argc, char * argv[])
+	{
+		int i, fd;
 
-And just to show how the effective user ID plays a role, let's consider what happens when we have set-group-id program that opens a file:
+		for(i = 0; i < argc; i++){
+			/* create an empty file */
+			if((fd = open(argv[i],O_CREAT,0666) > 0) > 0){
+				close(fd);
+			} else {
+				perror("open");
+			}
+		}
 
-```c
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <fcntl.h>
+		return 0;
+	}
+	```
 
-int
-main(int argc, char * argv[]){
+	Run the following program in your home directory (can also be found in `create_files.c`), passing as arguments the names of files you want to create: `./create_files blah` will create a file `blah`.
+	Check out the owner of the files (`ls -l blah`).
+	I've also set up the file as **setuid** on the server in `/tmp/create_files`.
+	Try running the following
 
-  int i,fd;
+	```
+	$ /tmp/create_files /tmp/blah
+	$ ls -l /tmp/blah
+	...
+	$ /tmp/create_files ~/blah
+	...
+	```
 
-  for(i=0;i<argc;i++){
-
-    //create an empty file
-    if( (fd = open(argv[i],O_CREAT,0666) > 0) ){
-      close(fd);
-    }else{
-      perror("open");
-    }
-  }
-
-  return 0;
-}
-```
-
-When we compile we can set this program to set-group-id:
-
-```
-aviv@saddleback: lec-23-demo $ make create_file
-cc     create_file.c   -o create_file
-aviv@saddleback: lec-23-demo $ chmod g+s create_file
-aviv@saddleback: lec-23-demo $ ls -l create_file
--rwxr-s--x 1 aviv scs 8620 Mar 31 08:41 create_file
-```
-
-Now, let's create a file as the m179998 user:
-
-```
-m179998@saddleback: ~ $ ~aviv/lec-23-demo/create_file a b c
-m179998@saddleback: ~ $ ls -l a b c
--rw-r----- 1 m179998 scs 0 Mar 31 08:42 a
--rw-r----- 1 m179998 scs 0 Mar 31 08:42 b
--rw-r----- 1 m179998 scs 0 Mar 31 08:42 c
-```
-
-Notice that the group of the file is scs not mids, which is the default group.
-
-However, see what happens if we make this program set-user-id instead:
-
-```
-aviv@saddleback: lec-23-demo $ chmod g-s create_file
-aviv@saddleback: lec-23-demo $ chmod u+s create_file
-aviv@saddleback: lec-23-demo $ ls -l create_file
--rwsr-x--x 1 aviv scs 8620 Mar 31 08:41 create_file
-```
-
-```
-m179998@saddleback: ~ $ rm -f a b c
-m179998@saddleback: ~ $ ~aviv/lec-23-demo/create_file a b c
-open: Permission denied
-open: Permission denied
-open: Permission denied
-m179998@saddleback: ~ $ ls -l a b c
-ls: cannot access a: No such file or directory
-ls: cannot access b: No such file or directory
-ls: cannot access c: No such file or directory
-```
-
-The operation is not permitted, and this is because the user aviv does not have the permission to write to the directory.
-But, what if we wanted to create a file in the director that is owned by aviv in a directory that the real user has permission to write to? What we need is a way to programmatically change the capabilities.
+    What do you think the output for the first `...` will be -- who is the owner of the file?
+	The second?
+	What are the outputs, and why?
 
 #### Programmatically Downgrading/Upgrading Capabilities
 
-The set-bits automatically start a program with the effective user or group id set; however, there are times when we might want to downgrade priviledge or change permission dynamically. There are two system calls to change user/group settings of an executing process:
+The set-bits automatically start a program with the effective user or group id set; however, there are times when we might want to *downgrade privilege* or change permission dynamically. There are two system calls to change user/group settings of an executing process:
 
 - `setuid(uid_t uid)` - change the effective user id of a process to uid
   `setgid(gid_t gid)` - change the effective group id of a proces to gid
@@ -683,79 +548,97 @@ Now we can look at a program that downgrades and upgrades a program dynamically:
 #include <unistd.h>
 
 int
-main()
+main(void)
 {
-  uid_t uid,euid;
-  gid_t gid,egid;
+	uid_t uid,euid;
+	gid_t gid,egid;
+	uid_t saved_euid;
 
-  uid_t saved_euid;
+	uid = getuid();
+	gid = getgid();
+	printf(" uid=%d  gid=%d\n",  uid,  gid);
 
-  uid = getuid();
-  gid = getgid();
-  printf(" uid=%d  gid=%d\n",  uid,  gid);
+	euid = geteuid();
+	egid = getegid();
+	printf("euid=%d egid=%d\n", euid, egid);
 
-  euid = geteuid();
-  egid = getegid();
-  printf("euid=%d egid=%d\n", euid, egid);
+	saved_euid=euid;
+	setuid(uid);
+	printf("---- setuid(%d) ----\n",uid);
 
+	uid = getuid();
+	gid = getgid();
+	printf(" uid=%d  gid=%d\n",  uid,  gid);
 
-  saved_euid=euid;
-  setuid(uid);
+	euid = geteuid();
+	egid = getegid();
+	printf("euid=%d egid=%d\n", euid, egid);
 
-  printf("---- setuid(%d) ----\n",uid);
+	setuid(saved_euid);
+	printf("---- setuid(%d) ----\n",saved_euid);
+	uid = getuid();
+	gid = getgid();
+	printf(" uid=%d  gid=%d\n",  uid,  gid);
 
-  uid = getuid();
-  gid = getgid();
-  printf(" uid=%d  gid=%d\n",  uid,  gid);
+	euid = geteuid();
+	egid = getegid();
+	printf("euid=%d egid=%d\n", euid, egid);
 
-  euid = geteuid();
-  egid = getegid();
-  printf("euid=%d egid=%d\n", euid, egid);
-
-
-  setuid(saved_euid);
-
-  printf("---- setuid(%d) ----\n",saved_euid);
-  uid = getuid();
-  gid = getgid();
-  printf(" uid=%d  gid=%d\n",  uid,  gid);
-
-  euid = geteuid();
-  egid = getegid();
-  printf("euid=%d egid=%d\n", euid, egid);
-
-  return 0;
+	return 0;
 }
 ```
 
-If we look at the output with the program set-user-id ran by m179998:
+**Question:**
 
-```
-m179998@saddleback: ~ $ ~aviv/lec-23-demo/setuid
- uid=179998  gid=15000
-euid=35001 egid=15000
----- setuid(179998) ----
- uid=179998  gid=15000
-euid=179998 egid=15000
----- setuid(35001) ----
- uid=179998  gid=15000
-euid=35001 egid=15000
-```
+- Run this program yourself.
+	What do think will happen if you have a peer run it on the server after you set the `set-uid` bit?
 
-### `sudo` and `su`
+## Applications of Identify and Permission Management
 
-With this understanding of how user and group id are assigned, we can turn our attention to two built in commands that perform these actions.
-In particular, sudo and su which will execute a command as a specified user or switch to a specified user.
+### Logging Events: Selectively Increasing Access Rights
+
+We previously covered the general desire to have a log in the system of the events for different activities.
+For example, logging when each user logs in, when clients make web requests of an http server, etc...
+
+We might support two high-level operations:
+
+1. adding a logging event, and
+2. reading the log.
+
+If we don't care to censor the log, we can support the second very easily by, for example, making the log file's group the `log` group, and giving read (`4`) permissions to the log for anyone in that group.
+Now any user in the `log `group can read the log.
+
+However, to support adding logging events to the log, we might use the set-uid-bit to ensure that a `log` program runs with the effictive user-id of the logger user.
+Thus, it will be able to append to the log in a straightforward manner.
+
+### Logging In: Carefully Decreasing Access Rights
+
+One example of how you might want to use the identity management APIs is when logging in.
+The process of logging in requires that the `login` program access sensitive files that include (encrypted) user passwords (`/etc/shadow`).
+Understandably, users don't generally have access to these files.
+Thus, the act of logging in requires programs running as `root` to read in username and password.
+Only if they match the proper values for a user, will the login logic then change uid/gid to the corresponding user and group id, and execute a shell for the user (as the user).
+See the figure for more details.
+
+![The login procedure on a system. On a system that uses a nameserver like `systemd`, it will ensure that terminals are available (either attached to the keyboard/monitor, or remote) by executing the [`getty` (link)](https://github.com/mirror/busybox/blob/master/loginutils/getty.c), or "get tty" program (or `ssh` for remote, or `gdm` for graphical) which makes available a terminal for a user to interact with. `getty` executes the [`login` (link)](https://github.com/mirror/busybox/blob/master/loginutils/login.c) program that reads the username and password from the user. If it is unable to find a match, it exits, letting `systemd` start again. If the username and password match what is in the `/etc/passwd` and `/etc/shadow` (password) files, it will change the user and group ids to those for the user in the `/etc/passwd` file, change to the home directory specified in that same file, and `exec` the corresponding shell.](figures/login.svg)
+
+### `sudo` and `su`: Increasing Access Rights
+
+There are many times in systems that we want to *increase* the privileges of a human.
+For example, for security, it is often *not possible* to login as *root*.
+But it is certainly true that sometimes humans need to be able to run commands as root.
+For example, updating some software, installing new software, creating new users, and many other operations, all require *root*.
+
+To control who is able to execute commands as *root*, the `sudo` and `su` programs enable restricted access to root privileges.
+Specifically, `sudo` and `su` will execute a command as a *specified user* or *switch to a specified user*.
 By default, these commands execute as the root user, and you need to know the root password or have sudo access to use them.
 
-We can see this as the case if I were to run the `get_euidegid` program using sudo.
+We can see this as the case if I were to run the `get_euidegid` program using `sudo`.
 First notice that it is no longer set-group or set-user:
 
 ```
-aviv@saddleback: lec-23-demo $ ls -l get_euidegid
--rwxr-x--x 1 aviv scs 8730 Mar 31 08:31 get_euidegid
-aviv@saddleback: lec-23-demo $ sudo ./get_euidegid
-[sudo] password for aviv:
+$ sudo ./get_euidegid
+[sudo] password for gparmer:
  uid=0  gid=0
 euid=0 egid=0
 ```
@@ -764,16 +647,19 @@ After sudo authenticated me, the program's effective and real user identificatio
 
 #### sudoers
 
-Who has permission to run sudo commands?
+Who has permission to run `sudo` commands?
 This is important because on many modern unix systems, like ubuntu, there is no default root password.
+
+**Question:**
+
+- Why don't we just have a `root` account with a password instead of having `sudo` and `su`?
+
 Instead certain users are deemed to be sudoers or privileged users.
 These are set in a special configuraiton file called the `/etc/sudoers`.
 
 ```
 aviv@saddleback: lec-23-demo $ cat /etc/sudoers
 cat: /etc/sudoers: Permission denied
-aviv@saddleback: lec-23-demo $ sudo cat /etc/sudo
-sudoers    sudoers.d/
 aviv@saddleback: lec-23-demo $ sudo cat /etc/sudoers
 #
 # This file MUST be edited with the 'visudo' command as root.
@@ -807,16 +693,42 @@ root	ALL=(ALL:ALL) ALL
 #includedir /etc/sudoers.d
 ```
 
-Notice that only root has access to read this file, and since I am a sudoer on saddleback I can get access to it. If you look carefully, you can perform a basic parse of the settings. The root user has full sudo permissions, and other sudoer's are determine based on group membership. Users in the sudo or admin group may run commands as root, and I am a member of the sudo group:
+Notice that only root has access to read this file, and since I am a `sudoer` on the system I can get access to it.
+If you look carefully, you can perform a basic parse of the settings.
+The root user has full `sudo` permissions, and other sudoer's are determine based on group membership.
+Users in the `sudo` or `admin` group may run commands as `root`, and I am a member of the `sudo` group:
 
 ```
-aviv@saddleback: lec-23-demo $ id
-uid=35001(aviv) gid=10120(scs) groups=10120(scs),27(sudo),15000(mids),15001(ic221)
+$ id
+uid=1000(gparmer) gid=1000(gparmer) groups=1000(gparmer),4(adm),24(cdrom),27(sudo),30(dip),46(plugdev),120(lpadmin),131(lxd),132(sambashare)
 ```
 
-However, on a lab machine, I do not have such group settings:
+**Question:**
+
+- How do you think that `sudo` is implemented?
+    What mechanisms from this week's lecture is it using to provide the requested functionality?
+
+####  Assignment Submission
+
+What if we implemented an assignment submission program that copied a student's directory into the instructor's home directory?
+For example, if you wanted to submit the directory of code at `my_hw/` for homework `HW1`,
 
 ```
-aviv@mich302csd01u: ~ $ id
-uid=35001(aviv) gid=10120(scs) groups=10120(scs),15000(mids)
+$ ./3410_submit HW1 my_hw
 ```
+
+This program, run by you, has your user and group permissions, but it is able to take your submission and copy/save those submissions to my home directory, with my permissions at a location where you do not have access to write.
+How is that possible?
+
+Naively, we'd have a problem:
+
+- The submission program is written and provided by the instructor.
+- The students would be executing the program, thus it would execute with their identity.
+- We don't want the submitted data to be visible to *any* students.
+- *However*, if the students run the submission program, it will run as their uid/gid, and 1. it won't have access to the instructor's home directory, and 2. any files it creates (during the copy) will belong to the user.
+
+Yikes.
+
+**Question:**
+
+- How could we go about implementing a homework submission program?

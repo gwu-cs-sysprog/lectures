@@ -15,8 +15,8 @@ To some extent this makes sense.
 
 **Question:**
 
-- The dynamic libraries we've seen provide many of the functions we've used, so why *couldn't* they provide all of the functionality we require!?
-    For example, why can't `read`, `open`, etc... all be simply provided by dynamic libraries?
+- The dynamic libraries we've seen provide many of the functions we've used, so why *couldn't* they provide *all* of the functionality we require!?
+    For example, why can't `read`, `open`, etc... all be simply provided solely by dynamic libraries?
 
 A few observations:
 
@@ -162,6 +162,14 @@ _start:              ; Note: the %rxx values are registers, $x are constants
 ```
 
 We compile this assembly with `make` (in `10/`).
+Program output:
+
+```
+hello world
+```
+
+We can see that the requirements of making a system call are quite minimal!
+A special instruction (on x86-64, `syscall`) provides the magical incantation to make what feels like a function call *to the kernel*.
 
 How does this work?
 Recall that ELF, the file format for objects and programs includes many pieces of information necessary to execute the program.
@@ -176,9 +184,10 @@ $ readelf -a ./asm_syscall  | grep "401000"
      6: 0000000000401000     0 NOTYPE  GLOBAL DEFAULT    1 _start
 ```
 
-We can see that the "entry point address" is `0x401000`, and we can see that the `_start` symbol has that address.
+We can see that the "entry point address" for the binary is `0x401000`, and we can see that the `_start` symbol has that address.
+The `exec` logic of the kernel will set the program to start executing at that `_start` address.
 
-Note that this same analysis rings true for the normal C system call code above (not the assembly)!
+Note that this same analysis rings true for the normal C system call code above (not only for the assembly)!
 The `_start` function is where all execution starts in each program.
 This explains why our program above labels its code with `_start`!
 
@@ -353,3 +362,80 @@ main(void)
 	return 0;
 }
 ```
+
+## Library vs. Kernel Trade-offs in Memory Allocation
+
+We've seen that
+
+1. the kernel is there to facilitate access to hardware resources (memory, processing, etc...),
+2. the kernel provides processes (`fork`, `exec`) and inter-process interactions (`wait`, `pipe`, etc...) as these functionalities require implementation beyond any single process,
+3. functions in dynamic libraries are much faster to invoke as system calls have significant overhead.
+
+This leads us to the conclusion that for performance, we'd like to implement as many functions as possible in libraries, and to rely on the kernel when processes require modifications (`exec`, `fork`), when there are multiple processes involved (IPC), or when the finite resources of the system must be split up between processes (`open`, `creat`, `sbrk`).
+
+Here, we're going to dive into the design of the *memory management* functionalities in UNIX to better understand the trade-offs.
+Specifically, *how does `malloc` and `free` work*!?
+
+### Library Tracking of Memory
+
+So `malloc`, `calloc`, `realloc`, and `free` are implemented in a library (in `libc`), and when we request memory from them, they might call `sbrk` (or `mmap` on some systems) to get memory from the kernel, but from that point on, they will manage that memory themselves.
+What does this mean?
+When the *heap* doesn't have enough free memory to satisfy a `malloc` request, we call the kernel to *expand the heap*.
+To do so, we ask the kernel for memory via `sbrk` or `mmap`, and we generally get a large chunk of memory.
+For example, we might ask `sbrk` for 64KB of memory with `mem = sbrk(1 << 16)`^[Note, this is just $2^16$, using shifts to emulate the power operator.].
+Then it is `malloc`'s job to split up that memory into the smaller chunks that we'll return in each subsequent call to `malloc`.
+When memory is `free`d, it is returned to the pool of memory which we'll consider for future allocations.
+Because we're *reusing* freed memory, we're avoiding system calls when the heap contains enough `free`d memory to satisfy a request.
+
+![In (a), we see the heap with red rectangles that designate allocated memory. (b) we get a `malloc` request. First we check to see if there is any span of unallocated memory we can use to satisfy the request. (c) shows what we must avoid: the overlapping of two different allocations. As we cannot find a sufficient span of memory to satisfy the `malloc` request, in (d), we expand the heap using `sbrk`. (e) shows how we can satisfy the request from the newly expanded heap memory. ](figures/10_mem_splitting.svg)
+
+This is what it means that our `malloc`/`free` code in the `libc` library need to track the memory in the heap.
+We need to track *where allocated memory is located* and *where freed spans of memory are located*, to enable intelligent allocation decisions for future `malloc` calls.
+
+**Questions:**
+
+- What data-structures should we use to track allocated/freed memory?
+- Do you foresee any challenges in using data-structures to track memory?
+
+### Malloc Data-structures
+
+The `malloc` and `free` implementation must track which chunks of memory are allocated, and which are freed, but it cannot use `malloc` to allocate data-structures.
+That would result in `malloc` calling itself recursively, and infinitely!
+If `malloc` requires memory allocation for its tracking data-structures, who tracks the memory for the tracking data-structures?
+Yikes.
+
+We solve this problem by allocating the tracking data-structures along with the actual memory allocation itself.
+That is to say, we allocate a *header* that is a struct defined by `malloc` that is *directly before* an actual memory allocation.
+Because the header is part of the same contiguous memory chunk, we allocate the header at the same time as we allocate memory!
+When memory is freed, we use the header to track the chunk of memory (the header plus the free memory directly following the header) in a linked list of free chunks of memory called a *freelist*.
+
+![Memory allocations through various sets of details. The red boxes are allocated memory, white box is memory that we've retrieved in the heap from `sbrk`, the green boxes are the *headers* data-structures that track free chunks of memory we can use for future allocations, and they are arranged in a linked list called *freelist*, and orange boxes are headers for allocated chunks of memory thta track how large that allocation is so that when we `free` it, we know large the chunk of freed memory will be.](figures/10_malloc.svg)
+
+- (a) the heap with some memory allocated, and some free spans of memory.
+- (b) we need to make a data-structure to track where the free spans of memory are, so we add a structure into each of the free chunks, and use it to construct a linked list of the free chunks.
+- (c) When we `malloc`, we can find the free chunk large enough for the allocation, remove it from the freelist, ...
+- (d) ...and return it!
+- (e) If we want to free that memory, we must understand somehow (i.e. must have a structure that tracks) the size of the allocation, so that we can add it back onto the freelist.
+- (f) We can track the size of each allocation in a *header* directly before the memory we return.
+    We are tracking the memory in the same contiguous span of memory we use for the allocation!
+- (g) So when we free, we're just adding that memory back onto the freelist.
+- (h) If we ever receive a `malloc` request that can't be satisfied by the freelist, *only then* do we make a system call to allocate more heap.
+
+### Exercise: `smalloc`
+
+Look at the [`10/smalloc.c` (link)](https://github.com/gwu-cs-sysprog/lectures/blob/main/10/smalloc.c) file for a simple implementation of a `malloc`/`free` that assumes *only allocations of a specific size*.
+This means that we don't need to track the sizes of allocations and free chunks in the headers, simplifying our implementation.
+Build, and run the program:
+
+```
+$ make
+$ ./smalloc.bin
+```
+
+It currently implements this simple `malloc`!
+Read through the `smalloc` and `sfree` functions, and the `main`.
+Answer `QUESTION 1-3`.
+Then, move on to `QUESTION 4`.
+In `expand_heap`, we make the system call to allocate more memory from the system with `sbrk`.
+We need to set up that newly allocated heap memory to include memory chunks that we can allocate with `smalloc`.
+Answering how this is done is the core of `QUESTION 4`.

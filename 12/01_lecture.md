@@ -1,7 +1,7 @@
 
 # Security: Attacks on System Programs
 
-> **This material directly adapted from Prof. Aviv's [material](https://classes.adamaviv.com/ic221/s18/units/07/unit.html#org67f4730).**
+> **This material adapted from Prof. Aviv's [material](https://classes.adamaviv.com/ic221/s18/units/07/unit.html#org67f4730).**
 
 It is an unfortunate truth of security that all programs have faults because humans have faults — human's write programs.
 As such, we will take some time to understand the kinds of mistakes you, me, and all programmers may make that can lead to security violations.
@@ -109,7 +109,7 @@ DESCRIPTION
        blocked, and SIGINT and SIGQUIT will be ignored.
 ```
 
-That is, the `system()` function will run an arbitrary shell command.
+That is, the `system()` function will run an arbitrary shell command, inheriting all of the file descriptors of the caller of `system`.
 Let's look at a very simple example, a "hello world" that uses two commands.
 
 ``` c
