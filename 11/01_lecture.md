@@ -534,15 +534,15 @@ Now you should all have access to the file, with it being set as set-uid.
 The set-bits automatically start a program with the effective user or group id set; however, there are times when we might want to *downgrade privilege* or change permission dynamically. There are two system calls to change user/group settings of an executing process:
 
 - `setuid(uid_t uid)` - change the effective user id of a process to uid
-  `setgid(gid_t gid)` - change the effective group id of a proces to gid
+- `setgid(gid_t gid)` - change the effective group id of a proces to gid
 
-The requirements of `setuid()` (for all users other than root) is that the effective user id can be changed to the real user id of the program or to an effective user id as described in the set-bits.
-The root user, however, can downgrade to any user id and upgrade back to the root user.
+The requirements of `setuid()` (for all users other than root) is that the effective user id can be changed to the *real user id of the program* or to an *effective user id as described in the set-bits*.
+The root user, however, can *downgrade to any user id* and upgrade back to the root user.
 For `setgid()` the user can chance the group id to any group the user belongs to or as allowed by the set-group-id bit.
 
 Now we can look at a program that downgrades and upgrades a program dynamically:
 
-```c
+``` c
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -591,7 +591,7 @@ main(void)
 **Question:**
 
 - Run this program yourself.
-	What do think will happen if you have a peer run it on the server after you set the `set-uid` bit?
+	What do think will happen if you run a `set-uid` program?
 
 ## Applications of Identify and Permission Management
 
