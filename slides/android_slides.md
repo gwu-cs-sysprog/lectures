@@ -1,6 +1,6 @@
 ---
 title: "UNIX Personalities: Android"
-author: "Gabe Parmer 👋, research by [Sean McBride](https://github.com/bushidocodes)"
+author: "Gabe Parmer 👋, research by Sean McBride"
 ---
 
 #  UNIX's World View
@@ -215,7 +215,9 @@ Zygote: single process that is the *parent* of *all* Apps and Services.
 
 - Loads all java packages into the zygote
 - Listens for App/Service-creation requests
-- `fork`s the new App/Service, executes its java code
+- `fork`s the new App/Service
+- `setuid` to the App's `uid` (zygote is `root`)
+- Executes App/Service's java code
 
 ## Zygote Memory Savings
 
@@ -481,6 +483,8 @@ For functionality: `void startActivity (Intent intent)`
 - [the `InputManager` multiplexes](https://developer.android.com/reference/android/view/inputmethod/InputMethodManager.html) user input between
 - [`InputMethod`s (link)](https://developer.android.com/reference/android/inputmethodservice/InputMethodService) are things like on-screen keyboards that are Services activated by intents from the `InputManager`
 
+    - Provide the `INPUT_METHOD_SERVICE` intent
+
 ## Intent/Activity Permissions
 
 - Binder provides `uid`/`pid` of client
@@ -523,12 +527,70 @@ public class ActivityManager {
 
 #  POSIX vs. Android
 
-##  POSIX vs. Android
+##  POSIX vs. Android Summary
 
 | POSIX                      | Android                                   |
 |----------------------------|-------------------------------------------|
-| User-centric               | App-centric                               |
-| Everything's a file        | Everything's App (JVM) execution          |
+| User-centric               | App-centric, per-App permissions          |
 | Security through FS        | Security through permission manifests     |
+| Shared resources on FS     | Shared resources via Services             |
+| Everything's a file        | Everything's App (JVM) execution          |
 | Shell + `pipe` composition | Composition via App IPC through `Intent`s |
-|                            | Binder-based IPC w/ passed `uid`/`pid`    |
+
+## App-Centric
+
+- A user (`uid`) for each App/Service
+- File system directory per App
+- Binder IPC gives us `uid`/`pid` of calling App
+- Each App has a permission manifest
+- `PermissionManager` lets us query App permissions
+
+$\to$ foundation for per-App access control/privileges
+
+## Shared Resources Through Services
+
+- `SystemManager` nameserver maps unique `name` to a Service
+- Apps use IPC to request resources from Services
+
+	- Contacts
+	- Shared documents
+	- Hardware (location, screen, networking, etc...)
+
+## Everything is App/Service Execution
+
+Zygote as the parent of each App
+
+- pre-loads all class libraries
+- a service awaiting App creation requests on a domain socket
+- App creation = `fork`
+- uses `setuid` to restrict App's privileges
+
+## Composition via `Intent`s
+
+Apps and Services are activated by *intents*.
+
+- Polymorphic
+
+    - Code for homescreen? Provide `PRE_BOOT_COMPLETED` intent.
+	- On-screen keyboard? Provide `INPUT_METHOD_SERVICE` intent.
+
+- Drives App/Service activation
+
+    - If the intent provide isn't running, start it!
+
+- Communication driven by the `IntentManager`
+
+	- nameserver for intents
+	- in some sense, provides similar purpose to the shell
+
+## Android's UNIX
+
+Similar set of system calls to normal UNIX system...
+
+...augmented with pervasive use of IPC...
+
+...to coordinate between Apps and Services...
+
+...while checking per-App permissions...
+
+...all driven by the special trust relationship of untrusted Apps.
