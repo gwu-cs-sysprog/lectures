@@ -525,17 +525,7 @@ public class ActivityManager {
 }
 ```
 
-#  POSIX vs. Android
-
-##  POSIX vs. Android Summary
-
-| POSIX                      | Android                                   |
-|----------------------------|-------------------------------------------|
-| User-centric               | App-centric, per-App permissions          |
-| Security through FS        | Security through permission manifests     |
-| Shared resources on FS     | Shared resources via Services             |
-| Everything's a file        | Everything's App (JVM) execution          |
-| Shell + `pipe` composition | Composition via App IPC through `Intent`s |
+#  Summary: POSIX vs. Android
 
 ## App-Centric
 
@@ -582,6 +572,16 @@ Apps and Services are activated by *intents*.
 
 	- nameserver for intents
 	- in some sense, provides similar purpose to the shell
+
+##  POSIX vs. Android Summary
+
+| POSIX                      | Android                                   |
+|----------------------------|-------------------------------------------|
+| User-centric               | App-centric, per-App permissions          |
+| Security through FS        | Security through permission manifests     |
+| Shared resources on FS     | Shared resources via Services             |
+| Everything's a file        | Everything's App (JVM) execution          |
+| Shell + `pipe` composition | Composition via App IPC through `Intent`s |
 
 ## Android's UNIX
 
