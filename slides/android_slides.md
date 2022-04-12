@@ -582,10 +582,39 @@ Apps and Services are activated by *intents*.
 
     - If the intent provide isn't running, start it!
 
-- Communication driven by the `IntentManager`
+- Communication driven by the `ActivityManager`
 
 	- nameserver for intents
 	- in some sense, provides similar purpose to the shell
+
+## UNIX vs. Android: Access to Resources
+
+UNIX:
+
+- $open(String path) \to int descriptor$
+
+    - Access check based on `uid`/`gid`
+
+- $descriptor_table(int descriptor) \to char[] file$
+
+## UNIX vs. Android: Access to Resources
+
+Android:
+
+- $open(String path) \to int descriptor$
+
+    - Access check based on `uid`/`gid`
+
+- $descriptor_table(int descriptor) \to char[] file$
+
+*and*
+
+- $ActivityManager(String Intent) \to BinderChannel$
+
+	- Permission checking with `PackageManager`
+
+- BinderChannel(fn, args...) \to Service
+
 
 ##  POSIX vs. Android Summary
 
