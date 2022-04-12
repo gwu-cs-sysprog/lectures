@@ -5,7 +5,7 @@ author: "Gabe Parmer 👋, research by Sean McBride"
 
 #  UNIX's World View
 
-## UNIX's User-Centricity
+## UNIX's User-Centrality
 
 - Users that belong to groups,
 - own and access files,
@@ -229,9 +229,9 @@ Zygote: single process that is the *parent* of *all* Apps and Services.
 <center><img src="figures/android/zygote_flowchart.png" height="550px"></center>
 ![A [great video](https://www.youtube.com/watch?v=5SQP0qfUDjI&list=TLPQMDkwNDIwMjLUVCspTvNY9A) discussing bootup. Source: zybuluo.com](figures/android/zygote_flowchart.png)
 
-# Application Centricity
+# Application Centrality
 
-## App-Centricity: Application Sandbox
+## App-Centrality: Application Sandbox
 
 1. Apps have `uid`/`gid`s, not users
 2. Apps have "home directories" for private storage
@@ -269,7 +269,13 @@ All of the system's potential [permissions](https://developer.android.com/refere
 
 App and Service permissions are tracked and queried:
 
-- `PermissionManager`
+- `PermissionManager` + `PackageManager`
+
+```
+return AppGlobals.getPackageManager()
+	.checkUidPermission(permission, uid);
+```
+
 
 ## App Filesystem Access
 
@@ -354,7 +360,7 @@ $\to$ cross App/Service "function invocations"
 - `uid/gid` of Apps using connection can be queried
 
     - Example: does the App have group `AID_INPUT` to be able to input?
-    - Example: pass uid to `PermissionManager`: "*are they allowed?*"
+    - Example: pass uid to `Package/PermissionManager`: "*are they allowed?*"
 
 ## Binder Communication Authentication
 
@@ -478,12 +484,20 @@ For functionality: `void startActivity (Intent intent)`
 
 ![`CurrentApp` launches `NextApp` through an intent provided by `NextApp`. Credit: [video](https://www.youtube.com/watch?v=5SQP0qfUDjI&list=TLPQMDkwNDIwMjLUVCspTvNY9A)](figures/android/app_launch.png)
 
-## ActivityManager Examples
+## ActivityManager Example
 
-- [the `InputManager` multiplexes](https://developer.android.com/reference/android/view/inputmethod/InputMethodManager.html) user input between
-- [`InputMethod`s (link)](https://developer.android.com/reference/android/inputmethodservice/InputMethodService) are things like on-screen keyboards that are Services activated by intents from the `InputManager`
+- [the `InputManager` multiplexes](https://developer.android.com/reference/android/view/inputmethod/InputMethodManager.html) user input between `InputMethod`s.
 
-    - Provide the `INPUT_METHOD_SERVICE` intent
+    - Think: where are we getting our `stdin`?
+	    Up to the system to decide if `stdin` is a pipe, or a terminal.
+		Polymorphic!
+
+- [`InputMethod`s (link)](https://developer.android.com/reference/android/inputmethodservice/InputMethodService) are things like on-screen keyboards that are Services activated by intents from the `InputManager`.
+
+    - Provides the `INPUT_METHOD_SERVICE` intent
+	- This class is much like "file descriptor `0`"; we know it will give us input.
+
+- App $\to$ `ActivityManager`(`INPUT_METHOD_SERVICE`) $\to$ `InputMethod`
 
 ## Intent/Activity Permissions
 
@@ -533,7 +547,7 @@ public class ActivityManager {
 - File system directory per App
 - Binder IPC gives us `uid`/`pid` of calling App
 - Each App has a permission manifest
-- `PermissionManager` lets us query App permissions
+- `Package/PermissionManager` lets us query App permissions
 
 $\to$ foundation for per-App access control/privileges
 
