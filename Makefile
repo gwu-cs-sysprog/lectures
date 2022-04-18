@@ -16,6 +16,8 @@ PANDOC = pandoc
 PANDOC_BOOK = --toc --number-sections --listings --template=$(TEMPLATEDIR)/eisvogel.tex
 PANDOC_WEBPAGE = --toc --number-sections --listings --template=$(TEMPLATEDIR)/elegant_bootstrap_menu.html
 
+INSTALLDIR = ../gwu-cs-sysprog.github.io/
+
 OUTPUT_PREFIX=lectures
 
 all: doc
@@ -41,7 +43,7 @@ examples: $(CBIN)
 $(INLINE_EXEC)_clean:
 	@rm -f $(INLINE_EXEC)_tmp.c $(INLINE_EXEC)_tmp 2> /dev/null
 
-$(AGG): $(TITLE) $(sort $(wildcard ??/*.md))
+$(AGG): $(TITLE) $(sort $(wildcard ??/??_*.md))
 	cat $^ | awk -f tools/exec_inline_code.awk > $@
 
 build_code: examples $(AGG)
@@ -51,6 +53,12 @@ html: build_code
 
 pdf: build_code
 	$(PANDOC) $(AGG) $(PANDOC_BOOK) -o $(OUTPUT_PREFIX).pdf
+
+install: html
+	make -C slides
+	cp lectures.html $(INSTALLDIR)/index.html
+	cp figures/* $(INSTALLDIR)/figures/
+	cp -r slides/*_slides.html slides/reveal slides/figures $(INSTALLDIR)/slides/
 
 doc: html pdf
 

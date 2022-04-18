@@ -550,8 +550,8 @@ Now we can look at a program that downgrades and upgrades a program dynamically:
 int
 main(void)
 {
-	uid_t uid,euid;
-	gid_t gid,egid;
+	uid_t uid, euid;
+	gid_t gid, egid;
 	uid_t saved_euid;
 
 	uid = getuid();
@@ -590,8 +590,7 @@ main(void)
 
 **Question:**
 
-- Run this program yourself.
-	What do think will happen if you run a `set-uid` program?
+- What do think will happen if you have a peer run it on the server after you set the `set-uid` bit?
 
 ## Applications of Identify and Permission Management
 
