@@ -7,11 +7,27 @@ author: "Gabe Parmer 👋, research by Sean McBride"
 
 ## Users
 
+- System includes all users
+- All users can see each other (`who`)
+- All processes are visible (`ps aux`)
+
 ## Filesystem & Access Control
+
+- All users share the same filesystem
+- Permissions/ownership control which files are accessible to which users
+- `path` $\to$ file/directory
 
 ## Dependency Management
 
+Dependencies
+
+- Dynamic libraries (which version?, is it installed?)
+- Services (databases, webservers, GUI frameworks)
+
 ## `root`
+
+- Universal access
+-
 
 # Containers World View
 
@@ -74,6 +90,8 @@ What are UNIX *namespaces*? In Linux: read more in `man namespaces`.
 - `network_namespaces(7)` - Networking identity and addresses
 - `uts_namespaces(7)` - System identity (`hostname`)
 
+The [`unshare` system call](https://www.kernel.org/doc/html/latest/userspace-api/unshare.html) unshares namespaces in the next forked child.
+
 ## `pid` Example
 
 Containers can have overlapping `pid`s, and cannot address other container's `pid`s!
@@ -86,7 +104,27 @@ $ kill -9 1234
 
 ...cannot kill `1234` if it is in another container!
 
+```
+unshare(CLONE_NEWPID);
+if (fork() == 0) {
+	assert(getpid() == 1);
+	execv("/bin/init");
+}
+```
+
 ## User Example
+
+- Each container can have a root!
+- User `1234` in one container is not the same user in another!
+
+```
+unshare(CLONE_NEWUSER);
+if (fork() == 0) {
+	setuid(0); /* I'm root now!...in my own little domain */
+	assert(getuid() == 0);
+	execv("/bin/init");
+}
+```
 
 ## Filesystem Example
 
@@ -94,10 +132,14 @@ $ kill -9 1234
 
 Now all files I can access are in the *subdirectory* `path`.
 
-```c
+```
 chroot("/home/gparmer/myroot/");
 chdir("/");
-execv("/bin/init");
+unshare(CLONE_NEWPID | CLONE_NEWUSER);
+if (fork() == 0) {
+	/* assuming `init` was originally in /home/gparmer/myroot/bin/init */
+	execv("/bin/init");
+}
 ```
 
 Linux uses [`pivot_root(new_root, old_path)` (link)](https://man7.org/linux/man-pages/man2/pivot_root.2.html) instead of `chroot` [(why)](https://lists.linuxcontainers.org/pipermail/lxc-devel/2011-September/002065.html).
@@ -105,7 +147,20 @@ See the [code](https://github.com/opencontainers/runc/blob/main/libcontainer/roo
 
 # Docker Service
 
-# Filesystem Layering
+## Docker is a service
+
+![Docker service receives requests to manipulate containers. Credit: https://docs.docker.com](figures/containers/docker_architecture.svg)
+
+## Docker Orchestration
+
+Service (`daemon`) created by `systemd`
+
+- `dockerd`
+- awaits commands on a domain socket @ `/var/run/docker.sock`
+
+	- start new containers with a specification
+	- terminate containers
+	- check in on a container
 
 # Containers Summary
 
