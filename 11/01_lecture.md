@@ -536,13 +536,13 @@ The set-bits automatically start a program with the effective user or group id s
 - `setuid(uid_t uid)` - change the effective user id of a process to uid
 - `setgid(gid_t gid)` - change the effective group id of a proces to gid
 
-The requirements of `setuid()` (for all users other than root) is that the effective user id can be changed to the real user id of the program or to an effective user id as described in the set-bits.
-The root user, however, can downgrade to any user id and upgrade back to the root user.
+The requirements of `setuid()` (for all users other than root) is that the effective user id can be changed to the *real user id of the program* or to an *effective user id as described in the set-bits*.
+The root user, however, can *downgrade to any user id* and upgrade back to the root user.
 For `setgid()` the user can chance the group id to any group the user belongs to or as allowed by the set-group-id bit.
 
 Now we can look at a program that downgrades and upgrades a program dynamically:
 
-```c
+``` c
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>

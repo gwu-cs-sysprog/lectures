@@ -291,7 +291,7 @@ This time when we run the system_cat program, it will run bash as the set-user-i
 $ whoami
 hacker-mchackyface
 $ ./system_cat
-$ whoami
+$ whoami  <---- new shell!
 gparmer
 $
 ```
