@@ -10,6 +10,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <stdlib.h>
+#include <string.h>
 
 int
 domain_socket_client_create(const char *file_name)

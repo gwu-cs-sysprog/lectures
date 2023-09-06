@@ -1,0 +1,37 @@
+/*
+ * Simple CODE
+*/
+.reveal sc {
+    font-family: var(--r-code-font);
+    background-color:powderblue;
+    text-transform: none;
+    tab-size: 2;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  
+  /*
+   * Simple CODE BOLD
+  */
+  .reveal scb {
+    font-family: var(--r-code-font);
+    background-color:powderblue;
+    text-transform: none;
+    font-weight: bold;
+    tab-size: 2;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  
+  /*
+   * Simple CODE SMALL FONT SIZE
+  */
+  .reveal scsf {
+    font-family: var(--r-code-font);
+    background-color:powderblue;
+    text-transform: none;
+    font-size: 0.55em;
+    tab-size: 2;
+    padding-left: 10px;
+    padding-right: 10px;
+  }

@@ -1,8 +1,8 @@
 ---
-title: "GWU CSCi 3410: Systems Programming"
-author: [Gabriel Parmer]
+title: "GWU CSCi 2410: Systems Programming"
+author: [Gabriel Parmer, Sibin Mohan]
 keywords: [UNIX, POSIX, C, Systems]
-subtitle: "Version 2021-12-25"
+subtitle: "Version 2023-09-05"
 titlepage: true
 titlepage-color: "1034A6"
 titlepage-text-color: "FFFFFF"

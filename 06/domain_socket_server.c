@@ -6,17 +6,26 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "domain_sockets.h"
 
 #define MAX_BUF_SZ 1024
 
-void
-onexit_remove_domain_socket(int status, void *filename)
+char filename_arg[256] = {'\0'} ;
+
+/* Modified by Sibin on Sept. 06, 2023.
+ * changing from on_exit() that is nonstandard to atexit()
+ * function signature changed to match that of atexit()
+ * 
+ * Use the global arg for the filename to unlink
+ */
+// void onexit_remove_domain_socket(int status, void *filename)
+void atexit_remove_domain_socket()
 {
-	if (filename) {
-		unlink(filename);
-		free(filename);
+	if ( !strcmp(filename_arg, "") ) {
+		unlink(filename_arg);
+		// free(filename_arg);
 	}
 }
 
@@ -35,7 +44,15 @@ main(int argc, char *argv[])
 		perror("server domain socket creation");
 		return EXIT_FAILURE;
 	}
-	on_exit(onexit_remove_domain_socket, strdup(argv[1]));
+
+	/* Modified by Sibin on Sept. 06, 2023.
+	 * changing from on_exit() that is nonstandard to atexit()
+	 * copy the filename to a global
+	 * register the atexit() function
+	 */
+	// on_exit(onexit_remove_domain_socket, strdup(argv[1]));
+	strcpy( filename_arg, argv[1] ) ;
+	atexit( atexit_remove_domain_socket ) ;
 
 	while (1) {
 		int  new_client;
