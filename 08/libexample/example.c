@@ -1,5 +1,6 @@
 #include <example.h>
-#include <malloc.h>
+// #include <malloc.h>
+#include <stdlib.h>
 
 int var = 2;
 /* do NOT do this in real code */

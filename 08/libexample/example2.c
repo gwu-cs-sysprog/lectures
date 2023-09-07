@@ -1,5 +1,6 @@
 #include <example2.h>
-#include <malloc.h>
+// #include <malloc.h>
+#include <stdlib.h>
 
 /* holding nose: never ever do this */
 char li2[] =

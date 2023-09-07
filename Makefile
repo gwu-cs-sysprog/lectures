@@ -13,10 +13,10 @@ TITLE = title.md
 # Note: html templates replicated from https://github.com/ryangrose/easy-pandoc-templates
 TEMPLATEDIR = templates
 PANDOC = pandoc
-PANDOC_BOOK = --toc --number-sections --listings --template=$(TEMPLATEDIR)/eisvogel.tex
+PANDOC_BOOK = --pdf-engine=xelatex --toc --number-sections --listings --template=$(TEMPLATEDIR)/eisvogel.tex
 PANDOC_WEBPAGE = --toc --number-sections --listings --template=$(TEMPLATEDIR)/elegant_bootstrap_menu.html
 
-INSTALLDIR = ../gwu-cs-sysprog.github.io/
+INSTALLDIR = ../gwu-cs-sysprog.github.io
 
 OUTPUT_PREFIX=lectures
 

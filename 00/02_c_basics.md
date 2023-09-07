@@ -1,8 +1,11 @@
-### You already know **C** 
+
+## Intro to C
+
+### You already know **C** {-}
 
 well, some of it anyways...
 
-### C constructs [familiar (w.r.t. Java)]
+### C constructs [if you're familiar with Java, Python, etc.]
 
 |construct|syntax|
 |--------|--------|    
@@ -13,9 +16,9 @@ well, some of it anyways...
 |functions| `ret_val` **`func_name`** `(args){}`|
 |||
 
-\* **no range checks!!**
+\* **no range checks!!**: C will let you access an array beyond the maximum size that you have specified while creating it. The effects of such access are **implementation specific** -- each platform/operating system will handle it differently. Note that on platforms that don't have memory protection, this can cause some serious problems!
 
-### what's different [from java]
+### What's different [from java] {-}
 
 * no object-oriented programming
 * no function overloading
@@ -25,9 +28,9 @@ well, some of it anyways...
 * **compiled** not interpreted
 * **pointers!!!**
 
-### compound types
+### Compound types
 
-**contiguous memory** layouts
+**contiguous memory** layouts: objects within these data types are laid out in memory, next to each other. This becomes important when you're trying to use pointers to access various elements.
 
 |type|usage|
 |--------|--------|  
@@ -37,5 +40,6 @@ well, some of it anyways...
 | array | pointer to contiguous memory |
 |||
 
+#### **no (built-in) boolean!** {-}
 
-### **no (built-in) boolean!**
+C does not have a built in boolean data type. We can mimic it by using integer values (<scb>0</scb> is `false` while any other non-zero values is `true`).

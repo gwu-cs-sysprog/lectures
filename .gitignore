@@ -59,3 +59,23 @@ dkms.conf
 
 */*.bin
 *.pdf
+08/libexample/prog_dynamic
+08/libexample/prog_naive
+08/libexample/prog_static
+08/libexample/prog2_dynamic
+08/libexample/prog2_naive
+08/libexample/prog2_static
+
+*.scss
+*.css
+*.js
+*.json
+*.eot
+*.woff
+*.ttf
+*.html
+*.wav
+slides/reveal/dist/theme/fonts/league-gothic/LICENSE
+.gitignore
+slides/reveal/.github/FUNDING.yml
+slides/reveal/dist/theme/fonts/source-sans-pro/LICENSE
