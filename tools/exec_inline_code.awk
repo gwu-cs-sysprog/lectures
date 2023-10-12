@@ -7,6 +7,8 @@ BEGIN {
 	# currently only support c
 	if ($0 ~ /^```c DNE/)
 	{
+		# if the code segment has a "DNE"
+		# then DO NOT EXECUTE the code block
 		inside_inlined_code_block = 0	
 	}
 	else if ($0 ~ /^```c/) {
