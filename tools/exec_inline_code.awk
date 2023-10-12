@@ -1,20 +1,35 @@
 BEGIN {
 	inside_inlined_code_block = 0
+	dne = 0  
 }
 
 {
-	print $0
 	# currently only support c
+
+	# if the code segment has a "DNE"
+	# then DO NOT EXECUTE the code block
 	if ($0 ~ /^```c DNE/)
 	{
-		# if the code segment has a "DNE"
-		# then DO NOT EXECUTE the code block
-		inside_inlined_code_block = 0	
+		# set the DNE flag
+		dne = 1 ;
+
+		# remove the DNE text from $0
+		gsub(/DNE/,"", $0)
 	}
-	else if ($0 ~ /^```c/) {
-		inside_inlined_code_block = 1
-		close("inline_exec_tmp.c")
-		system("rm inline_exec_tmp.c")
+
+	print $0
+
+	if ($0 ~ /^```c/) {
+		if( dne != 1 )
+		{
+			inside_inlined_code_block = 1
+			close("inline_exec_tmp.c")
+			system("rm inline_exec_tmp.c")
+		}
+		else
+		{
+			inside_inlined_code_block = 0
+		}
 	} else if ($0 ~ /^```[:space:]*$/) {
 		# terminating a code block?
 		# lets run the code, and insert its output

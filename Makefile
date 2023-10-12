@@ -57,7 +57,7 @@ pdf: build_code
 install: html
 	make -C slides
 	cp lectures.html $(INSTALLDIR)/index.html
-	cp figures/* $(INSTALLDIR)/figures/
+	cp -r figures/* $(INSTALLDIR)/figures/
 	cp -r slides/*_slides.html slides/reveal slides/figures $(INSTALLDIR)/slides/
 
 doc: html pdf
