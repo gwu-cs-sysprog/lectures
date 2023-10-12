@@ -471,7 +471,7 @@ It is a "generic pointer that cannot be dereferenced*.
 Note that dereferencing a `void *` pointer shouldn't work as `void ` is not a valid variable type (e.g. `void *a; *a = 10;` doesn't make much sense because `*a` is type `void`).
 
 ```c
-#include <malloc.h>
+#include <stdlib.h>
 
 int
 main(void)
@@ -521,7 +521,7 @@ A few things to keep in mind:
 - *Allocation error.*
     You *must* check the return value of memory allocation functions for `NULL`, and handle the error appropriately.
 ```c
-#include <malloc.h>
+#include <stdlib.h>
 
 int
 main(void)
@@ -540,7 +540,7 @@ main(void)
 	The memory might have already been re-allocated due to another call to `malloc`, and is used for something completely different in your program.
 	It is up to you as a programmer to avoid `free`ing memory until all references to it are dropped.
 ```c
-#include <malloc.h>
+#include <stdlib.h>
 
 int
 main(void)
@@ -558,7 +558,7 @@ main(void)
     If you remove all references to memory, but *don't* `free` it, then the memory will *never* get freed.
 	This is a memory leak.
 ```c
-#include <malloc.h>
+#include <stdlib.h>
 
 int
 main(void)
@@ -576,7 +576,7 @@ main(void)
     If you `free` the memory twice, bad things can happen.
 	You could confuse the memory allocation logic, or you could accidentally `free` an allocation made after the first `free` was called.
 ```c
-#include <malloc.h>
+#include <stdlib.h>
 
 int
 main(void)
@@ -592,38 +592,3 @@ main(void)
 ```
 
 `valgrind` will help you debug the last three of these issues, and later in the class, we'll develop a library to help debug the first.
-
-## Function Pointers
-
-It is not uncommon for programs to require some *dynamic* behavior.
-A data structure might need to do different types of comparisons between its data (depending on what data is being stored).
-This means that a generic data-structure (think: a hash-table) needs to somehow compare equality of the data objects it stores *without knowing what they are*!
-In Java, think about the `equals` method.
-Each object can define its own `equals` method to compare between objects of the same type.
-
-In C, this is implemented using *function pointers*.
-These are pointers to functions of a particular type.
-They can be passed as arguments to functions, and can be dereferenced to call the function.
-Let look at an example from `man 3 lsearch`:
-
-```
-void *lfind(const void *key, const void *base, size_t *nmemb, size_t size,
-            int(*compar)(const void *, const void *));
-```
-
-This is a function to *find* a value in an array.
-The implementation needs to understand how to compare a `key` with each of the items in the array.
-For this purpose, the `compar` function pointer is the last argument.
-
-### Typedefs
-
-Function pointer syntax is not natural in C.
-Thus, it is common to use a `typedef` to create the type name for a function pointer for a given API.
-The syntax for this is perhaps *even less natural*, but only needs be done once.
-
-```
-typedef int (*compare_fn_t)(const void *, const void *);
-void *lfind(const void *key, const void *base, size_t *nmemb, size_t size, compare_fn_t compar);
-```
-
-Now the function declaration is more clear, and the `_fn_t` postfix, by convention, denotes a function pointer.

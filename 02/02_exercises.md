@@ -17,7 +17,7 @@ The current implementations do *not* adhere to these specifications.
 
 ```c
 #include <string.h>
-#include <malloc.h>
+#include <stdlib.h>
 
 /*
  * Lets just use a single key/value as a proxy for an entire kv/store.

@@ -43,7 +43,7 @@ examples: $(CBIN)
 $(INLINE_EXEC)_clean:
 	@rm -f $(INLINE_EXEC)_tmp.c $(INLINE_EXEC)_tmp 2> /dev/null
 
-$(AGG): $(TITLE) $(sort $(wildcard ??/??_*.md))
+$(AGG): $(TITLE) $(sort $(wildcard ??/??*.md))
 	cat $^ | awk -f tools/exec_inline_code.awk > $@
 
 build_code: examples $(AGG)

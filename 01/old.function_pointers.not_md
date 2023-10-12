@@ -1,0 +1,35 @@
+
+## Function Pointers
+
+It is not uncommon for programs to require some *dynamic* behavior.
+A data structure might need to do different types of comparisons between its data (depending on what data is being stored).
+This means that a generic data-structure (think: a hash-table) needs to somehow compare equality of the data objects it stores *without knowing what they are*!
+In Java, think about the `equals` method.
+Each object can define its own `equals` method to compare between objects of the same type.
+
+In C, this is implemented using *function pointers*.
+These are pointers to functions of a particular type.
+They can be passed as arguments to functions, and can be dereferenced to call the function.
+Let look at an example from `man 3 lsearch`:
+
+```
+void *lfind(const void *key, const void *base, size_t *nmemb, size_t size,
+            int(*compar)(const void *, const void *));
+```
+
+This is a function to *find* a value in an array.
+The implementation needs to understand how to compare a `key` with each of the items in the array.
+For this purpose, the `compar` function pointer is the last argument.
+
+### Typedefs
+
+Function pointer syntax is not natural in C.
+Thus, it is common to use a `typedef` to create the type name for a function pointer for a given API.
+The syntax for this is perhaps *even less natural*, but only needs be done once.
+
+```
+typedef int (*compare_fn_t)(const void *, const void *);
+void *lfind(const void *key, const void *base, size_t *nmemb, size_t size, compare_fn_t compar);
+```
+
+Now the function declaration is more clear, and the `_fn_t` postfix, by convention, denotes a function pointer.

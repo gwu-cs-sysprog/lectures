@@ -180,7 +180,7 @@ $nm ptrie.o
                  U strlen
 ```
 
-We can see that the `ptrie.o` object depends on other objects for all of the functions we're using from `stdio.h`, `malloc.h`, and `string.h`, provides all of the functions that are part of the public API (e.g. `ptrie_add`), and some other symbols (e.g. `ptrie_add_internal`) that *cannot be linked* to other object files.
+We can see that the `ptrie.o` object depends on other objects for all of the functions we're using from `stdio.h`, `stdlib.h`, and `string.h`, provides all of the functions that are part of the public API (e.g. `ptrie_add`), and some other symbols (e.g. `ptrie_add_internal`) that *cannot be linked* to other object files.
 
 After we link the `ptrie` into the test (with `gcc ... tests/01_add.o ptrie.o -o tests/01_add.test`),
 

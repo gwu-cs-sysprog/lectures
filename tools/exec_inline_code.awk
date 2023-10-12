@@ -5,7 +5,11 @@ BEGIN {
 {
 	print $0
 	# currently only support c
-	if ($0 ~ /^```c/) {
+	if ($0 ~ /^```c DNE/)
+	{
+		inside_inlined_code_block = 0	
+	}
+	else if ($0 ~ /^```c/) {
 		inside_inlined_code_block = 1
 		close("inline_exec_tmp.c")
 		system("rm inline_exec_tmp.c")
