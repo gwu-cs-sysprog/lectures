@@ -60,7 +60,8 @@ install: html
 	cp -r figures/* $(INSTALLDIR)/figures/
 	cp -r slides/*_slides.html slides/reveal slides/figures $(INSTALLDIR)/slides/
 
-doc: html pdf
+# doc: html pdf
+doc: html
 
 clean: $(INLINE_EXEC)_clean
 	rm -f $(AGG) $(OUTPUT_PREFIX).pdf $(OUTPUT_PREFIX).html $(CBIN)
