@@ -795,7 +795,7 @@ One of the things that helps the most is to understand a few common *patterns* a
 
 ### Return Values
 
-Function's often need to return multiple values.
+Functions often need to return multiple values.
 C does not provide a means to return more than one value, thus is forced to use pointers.
 To understand this, lets look at the multiple ways that pointers can be used as function arguments.
 
@@ -921,6 +921,7 @@ main(void)
 	return 0;
 }
 ```
+<!-- COMBINED ERROR NOTES WITH NEW MATERIAL IN ANOTHER FILE BY SIBIN in OCT 2023!
 
 ### Errors
 
@@ -1023,6 +1024,7 @@ ERRORS
 ```
 
 This explains why we got the error we did.
+-->
 
 ### Memory Ownership
 
