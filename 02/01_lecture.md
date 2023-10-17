@@ -788,6 +788,8 @@ You can see in this example how you must compare strings for equality using `str
 
 ## API Design and Concerns
 
+[Slides](https://sibin.github.io/teaching/csci2410-gwu-systems_programming/fall_2023/slides/reveal_slides/api_design.html#/)
+
 When programming in C, you'll see quite a few APIs.
 Throughout the class, we'll see quite a few APIs, most documented in `man` pages.
 It takes some practice in reading `man` pages to get what you need from them.
