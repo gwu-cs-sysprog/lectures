@@ -8,7 +8,7 @@ BEGIN {
 
 	# if the code segment has a "DNE"
 	# then DO NOT EXECUTE the code block
-	if ($0 ~ /^```c DNE/)
+	if ($0 ~ /^```c DNE/ || $0 ~ /^```C DNE/ )
 	{
 		# set the DNE flag
 		dne = 1 ;
