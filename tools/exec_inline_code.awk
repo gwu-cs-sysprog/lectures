@@ -5,6 +5,7 @@ BEGIN {
 
 {
 	# currently only support c
+	dne = 0
 
 	# if the code segment has a "DNE"
 	# then DO NOT EXECUTE the code block
