@@ -495,7 +495,7 @@ int main()
 {
     struct calendar today ; // creating an object of type "calendar"
 
-    printf( "size of struct calendar: %d\n", sizeof(today) ) ;
+    printf( "size of struct calendar: %lu\n", sizeof(today) ) ;
 
     // let's initialize the object, "today"
     // remember, no "constructors"
@@ -515,13 +515,6 @@ int main()
 
 Program output:
 ```
-inline_exec_tmp.c: In function main:
-inline_exec_tmp.c:16:40: warning: format %d expects argument of type int, but argument 2 has type long unsigned int [-Wformat=]
-   16 |     printf( "size of struct calendar: %d\n", sizeof(today) ) ;
-      |                                       ~^     ~~~~~~~~~~~~~
-      |                                        |     |
-      |                                        int   long unsigned int
-      |                                       %ld
 size of struct calendar: 16
 date: 9/5/2024	 day: 5
 
@@ -553,7 +546,7 @@ struct calendar{
     int _month ;
     int _year ;
     // int _day_of_week ; // 1 -- sunday, 2 -- monday, etc.
-    weekdays _day_of_week ;
+    enum weekdays _day_of_week ;
 } ;
 
 int main()
@@ -581,10 +574,9 @@ int main()
 
 Program output:
 ```
-inline_exec_tmp.c:12:5: error: unknown type name weekdays
-   12 |     weekdays _day_of_week ;
-      |     ^~~~~~~~
-make[1]: *** [Makefile:33: inline_exec_tmp] Error 1
+size of struct calendar: 16
+date: 9/5/2024	 day: 4
+
 ```
 
 But, to be honest, this is not very useful. It _still_ prints out a _number_ instead of a string, like "monday", "tuesday", etc.
@@ -736,6 +728,15 @@ Syntax is similar to `struct` but the _effects_ are very different.
 #include <stdio.h>
 
 
+struct calendar{
+    int _date ;
+    int _month ;
+    int _year ;
+    // int _day_of_week ; // 1 -- sunday, 2 -- monday, etc.
+    // weekdays _day_of_week ;
+    char _day_of_week[10] ;
+} ;
+
 union info{
     int _age ;
     double _weight ;
@@ -744,6 +745,8 @@ union info{
 int main()
 {
     union info my_info ;
+
+    struct calendar today ; // creating an object of type "calendar"
 
     // look at the output of this sizeof!
     printf( "size of struct = %lu\t size of union = %lu\n", 
@@ -765,12 +768,11 @@ int main()
 
 Program output:
 ```
-inline_exec_tmp.c: In function main:
-inline_exec_tmp.c:15:20: error: today undeclared (first use in this function)
-   15 |             sizeof(today), sizeof(my_info) ) ;
-      |                    ^~~~~
-inline_exec_tmp.c:15:20: note: each undeclared identifier is reported only once for each function it appears in
-make[1]: *** [Makefile:33: inline_exec_tmp] Error 1
+size of struct = 24	 size of union = 8
+
+ age = 23452345	 weight = 0.000000
+age = 0	 weight = 999999.000000
+
 ```
 
 As we see, we can only use one of the fields at any point in time. Unions aren't very common today bit still do find use in may systems with limited memory, _e.g.,_ embedded systems. 
@@ -982,7 +984,7 @@ main(void)
 Program output:
 ```
 Integers: 2147483647, 9223372036854775807, 4294967295, *
-Hex and pointers: 7fffffffffffffff, 0x55c208612149
+Hex and pointers: 7fffffffffffffff, 0x55bbeaaba149
 Strings: hello world
 ```
 
@@ -1161,8 +1163,8 @@ int main(void) {
 
 Program output:
 ```
-0th index: 0x7ffdc7860650 == 0x7ffdc7860650; 6 == 6
-nth index: 0x7ffdc7860654 == 0x7ffdc7860654; 7 == 7
+0th index: 0x7ffe7125c1f0 == 0x7ffe7125c1f0; 6 == 6
+nth index: 0x7ffe7125c1f4 == 0x7ffe7125c1f4; 7 == 7
 ```
 
 Making this a little more clear, lets understand how C accesses the `n`th item.
@@ -1197,7 +1199,7 @@ main(void)
 
 Program output:
 ```
-nth index: 0x7ffdc3388be4 == 0x7ffdc3388be4; 7 == 7
+nth index: 0x7ffd0db89994 == 0x7ffd0db89994; 7 == 7
 ```
 
 We can see that *pointer arithmetic* (i.e. doing addition/subtraction on pointers) does the same thing as array indexing plus a dereference.
@@ -1232,10 +1234,10 @@ main(void)
 
 Program output:
 ```
-idx 0 @ 0x7ffdcb5605d0 & 0x7ffdcb5605e4
-idx 1 @ 0x7ffdcb5605d4 & 0x7ffdcb5605e5
-idx 2 @ 0x7ffdcb5605d8 & 0x7ffdcb5605e6
-idx 3 @ 0x7ffdcb5605dc & 0x7ffdcb5605e7
+idx 0 @ 0x7ffe0f32ae70 & 0x7ffe0f32ae84
+idx 1 @ 0x7ffe0f32ae74 & 0x7ffe0f32ae85
+idx 2 @ 0x7ffe0f32ae78 & 0x7ffe0f32ae86
+idx 3 @ 0x7ffe0f32ae7c & 0x7ffe0f32ae87
 ```
 
 Note that the pointer for the integer array (`a`) is being incremented by 4, while the character array (`b`) by 1.
@@ -1531,10 +1533,10 @@ print_values(void)
 Program output:
 ```
 Addresses:
-a   @ 0x560e346e4010
-b   @ 0x560e346e4014
-c   @ 0x560e346e4020
-end @ 0x560e346e4039
+a   @ 0x55c388805010
+b   @ 0x55c388805014
+c   @ 0x55c388805020
+end @ 0x55c388805039
 &end - &a = 41
 
 Initial values:
@@ -1542,7 +1544,7 @@ a     = 1
 b     = 2
 c.c_a = 3
 c.c_b = 0
-c.c_c = 0x560e346e4014
+c.c_c = 0x55c388805014
 
 Print out the variables as raw memory
 
@@ -1656,8 +1658,8 @@ main(void)
 
 Program output:
 ```
-0: 4 @ 0x5621d99e704c
-1: 2 @ 0x5621d99e7044
+0: 4 @ 0x558a79c7104c
+1: 2 @ 0x558a79c71044
 2: 0 @ (nil)
 ```
 
@@ -1865,7 +1867,7 @@ inline_exec_tmp.c:36:5: warning: implicit declaration of function bubble_sort; d
    36 |     bubble_sort( my_array, array_size ) ;
       |     ^~~~~~~~~~~
       |     bubble_sort_int
-/usr/bin/ld: /tmp/ccYF3AiQ.o: in function `main':
+/usr/bin/ld: /tmp/ccJP3rA2.o: in function `main':
 /home/sibin/Teaching/CSCI_2401/lectures/inline_exec_tmp.c:36: undefined reference to `bubble_sort'
 collect2: error: ld returned 1 exit status
 make[1]: *** [Makefile:33: inline_exec_tmp] Error 1
@@ -2659,16 +2661,16 @@ Program output:
 ```
 0: 194
 1: 0
-2: -2097280345
-3: 32764
-4: -2097280346
-5: 32764
-6: -755895747
-7: 22060
-8: -740572440
-9: 32520
-10: -755895824
-11: 22060
+2: -1713494585
+3: 32766
+4: -1713494586
+5: 32766
+6: 947651133
+7: 22019
+8: 310096616
+9: 32754
+10: 947651056
+11: 22019
 ```
 
 Yikes.
@@ -3113,7 +3115,7 @@ main(void)
 Program output:
 ```
 blahblahblah
-0x55e5c8a8c004 == 0x55e5c8a8c004 != 0x55e5c8a8e011
+0x561f11337004 == 0x561f11337004 != 0x561f11339011
 ```
 
 The C compiler and linker are smart enough to see that if you have already used a string with a specific value (in this case `"clone"`), it will avoid allocating a copy of that string, and will just reuse the previous value.
@@ -6839,9 +6841,9 @@ int main(void)
 
 Program output:
 ```
-3495235: We've been asked to terminate. Exit!
-3495234: Parent asking child (3495235) to terminate
-3495234: Child process 3495235 has exited.
+3498761: We've been asked to terminate. Exit!
+3498760: Parent asking child (3498761) to terminate
+3498760: Child process 3498761 has exited.
 ```
 
 *Note:* You want to run this a few times on your system to see the output.
@@ -8141,7 +8143,7 @@ Program output:
 - F output_tmp.dat (0)
 - D 01
 - F Makefile (1971)
-- F lectures.html (970756)
+- F lectures.html (967897)
 - D 99
 - D 00
 - D 11
@@ -8164,7 +8166,7 @@ Program output:
 - D figures
 - F title.md (333)
 - F README.md (35)
-- F aggregate.md (252222)
+- F aggregate.md (251632)
 - D 08
 - D slides
 - D 05
@@ -8609,8 +8611,8 @@ main(void)
 
 Program output:
 ```
-3495520: 3495520
-3495521: 3495521
+3499046: 3499046
+3499047: 3499047
 ```
 
 
@@ -8797,15 +8799,15 @@ main(void)
 Program output:
 ```
 Server: New client connected with new file descriptor 4.
-1. Client 3495541 connected to server.
-2. Client 3495541 request sent message to server.
-Server received message (sz 38): "Citizen 3495541: Penny for Pawsident!". Replying!
-3. Client 3495541 reply received from server: Citizen 3495541: Penny for Pawsident!
+1. Client 3499067 connected to server.
+2. Client 3499067 request sent message to server.
+Server received message (sz 38): "Citizen 3499067: Penny for Pawsident!". Replying!
+3. Client 3499067 reply received from server: Citizen 3499067: Penny for Pawsident!
 Server: New client connected with new file descriptor 4.
-1. Client 3495542 connected to server.
-2. Client 3495542 request sent message to server.
-Server received message (sz 38): "Citizen 3495542: Penny for Pawsident!". Replying!
-3. Client 3495542 reply received from server: Citizen 3495542: Penny for Pawsident!
+1. Client 3499068 connected to server.
+2. Client 3499068 request sent message to server.
+Server received message (sz 38): "Citizen 3499068: Penny for Pawsident!". Replying!
+3. Client 3499068 reply received from server: Citizen 3499068: Penny for Pawsident!
 ```
 
 The server's call to `accept` is the key difference of domain sockets from named pipes.
@@ -10586,9 +10588,9 @@ main(void)
 Program output:
 ```
 
-malloc + free overhead (cycles): 1329
+malloc + free overhead (cycles): 1314
 
-mmap + munmap overhead (cycles): 36607
+mmap + munmap overhead (cycles): 36381
 ```
 
 > What is a "cycle"?
@@ -10646,11 +10648,11 @@ main(void)
 Program output:
 ```
                                                                                                                                                                                                                                                                 
-write overhead (cycles): 15334
+write overhead (cycles): 15574
                                                                                                                                                                                                                                                                 
-fwrite (stream) overhead (cycles): 151
+fwrite (stream) overhead (cycles): 148
                                                                                                                                                                                                                                                                 
-fwrite + fflush overhead (cycles): 15304
+fwrite + fflush overhead (cycles): 15423
 ```
 
 ## Library vs. Kernel Trade-offs in Memory Allocation
