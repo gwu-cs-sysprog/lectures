@@ -4,11 +4,11 @@
 
 ## Computer Organization 
 
-Find the [slides](https://sibin.github.io/teaching/csci2410-gwu-systems_programming/fall_2023/slides/reveal_slides/comparch.html).
+Find the [slides](https://sibin.github.io/teaching/csci2410-gwu-systems_programming/fall_2024/slides/reveal_slides/comparch.html).
 
 
-## Memory Hierarchies
+<!--## Memory Hierarchies
 
-Find the [slides](https://sibin.github.io/teaching/csci2410-gwu-systems_programming/fall_2023/slides/reveal_slides/memory.html#/10).
+Find the [slides](https://sibin.github.io/teaching/csci2410-gwu-systems_programming/fall_2023/slides/reveal_slides/memory.html#/10).-->
 
 
