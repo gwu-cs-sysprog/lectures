@@ -9,6 +9,7 @@
 
 ## Types
 
+<!--
 ### [Basic types](https://en.wikipedia.org/wiki/C_data_types)
 
 - `char` - think "one byte".
@@ -53,8 +54,11 @@ main(void)
 ```
 
 You can choose the values explicitly (e.g. `enum grades { MON = 1, TUES = 2, WED = 3, THURS = 4, FRI = 5};`).
+-->
 
 **Modifiers**
+
+Most `C` types can have modifiers attached to them, _i.e._, one of,
 
 - `unsigned` - variables that cannot be negative.
     Given that variables have a fixed bit-width, they can use the extra bit ("negative" no longer needs to be tracked) to instead represent numbers twice the size of `signed` variants.
@@ -171,8 +175,9 @@ main(void)
 }
 ```
 
-### Compound types
+### More about Compound types (`struct` and `union`)
 
+<!--
 - `struct` - A collection of different values.
     Example: objects with many different fields.
 - `union` - *One* of a set of values.
@@ -183,6 +188,9 @@ The size of a `union` is the *maximum* size of its fields.
 In contrast, the `struct` is the *sum* of the sizes of each of its fields.
 
 #### Example
+-->
+
+Consider the following exmaple:
 
 ```c
 #include <stdio.h>
