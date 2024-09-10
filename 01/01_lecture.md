@@ -268,6 +268,8 @@ What other examples can you think of where you might want `union`s?
 >
 > More on `->` in the next section.
 
+
+<!--
 ### Pointers & Arrays
 
 Variables can have be pointer types (e.g. `int *a`).
@@ -284,7 +286,7 @@ a---+
 A pointer, `int *b = &a` should be imagined as a pointer:
 
 ```
-b ---> a---+
+b -> a---+
        | 6 |
        +---+
 ```
@@ -324,11 +326,13 @@ main(void)
 Pointers are *necessary* as they enable us to build *linked* data-structures (linked-lists, binary trees, etc...).
 Languages such as Java assume that *every single* object variable is a pointer, and since *all object variables* are pointers, they don't need special syntax for them.
 
+-->
+
 Arrays are simple contiguous data items, all of the same type.
 `int a[4] = {6, 7, 8, 9}` should be imagined as:
 
 ```
-a ---> +---+---+---+---+
+a -> +---+---+---+---+
        | 6 | 7 | 8 | 9 |
        +---+---+---+---+
 ```
