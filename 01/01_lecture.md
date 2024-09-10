@@ -1,11 +1,20 @@
 
-# Intermediate C
+## Intermediate C
 
+## Objectives
+
+- diving into some details about C
+- format strings
+- variable modifiers
+- nuances about compound types
+
+<!--
 ## Objectives
 
 - Recalling C types with a focus on pointers.
 - Focus on more advanced features like `void *`s and function pointers.
 - Practice thinking about C programs as memory.
+-->
 
 ## Types
 
