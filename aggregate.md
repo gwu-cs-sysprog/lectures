@@ -180,12 +180,6 @@ Hence, **programmers need **not** worry about other programs!**
 
 # Intro to C
 
-<details>
-<summary>[Notes]</summary>
-
-> - Start by talking through slides
-</details>
-
 **You already know **C**!**
 
 well, some of it anyways...
@@ -272,13 +266,6 @@ The _initial_ part of the output will look something like this (run the above co
 <img src="figures/man_printf_output.png" width="500">
 
 
-<details>
-<summary>[Notes]</summary>
-
-> - show man 3 printf example
-> - compare against just man printf
-</details>
-
 ### Header Files
 
 * include libraries in your program
@@ -337,13 +324,6 @@ These are the basic data types defined by the C language:
     * architectures (ARM, IBM, INTEL)
     * 32-bit vs 64-bit
 * \* Similarly, the size of the `float` and `double` data types are not defined by C. Different compilers (and platforms) implement them with different sizes. 
-
-<details>
-<summary>[Notes]</summary>
-
-> - stop with slides here
-> - switch to code examples
-</details>
 
 ### Code Samples{-}
 
@@ -412,13 +392,6 @@ Memory sizes of variables...
 
 
 ### Compound types | `struct`, `enum`, `unions`
-
-<details>
-<summary>[Notes]</summary>
-
-> - switch to slides for the compound types
-> - switch back to code examples
-</details>
 
 The C standard defines multiple **compound** data types, _viz._,
 
@@ -532,7 +505,7 @@ So, we could define something like,
 enum weekdays{ sunday, monday, tuesday, wednesday, thursday, friday, saturday } ;
 ```
 
-and use if in the code as follows,
+and use it in the code as follows,
 
 ```c
 // this is a single line comment
@@ -577,6 +550,11 @@ Program output:
 size of struct calendar: 16
 date: 9/5/2024	 day: 4
 
+```
+
+You can choose the values in an `enum` explicitly, _e.g._.
+```c 
+enum grades { MON = 1, TUES = 2, WED = 3, THURS = 4, FRI = 5};
 ```
 
 But, to be honest, this is not very useful. It _still_ prints out a _number_ instead of a string, like "monday", "tuesday", etc.
@@ -701,13 +679,6 @@ date: 9/5/2024	 day: thursday
 
 ```
 
-<details>
-<summary>[Notes]</summary>
-
-> - switch to slides for the C string/array slides
-> - switch back to code examples
-</details>
-
 strings in `C` &rarr; an **array** of characters that are `null` terminated, _i.e._, `\0`. So the `day_of_week' field looks like this.
 
 <img src="figures/string_array_basic.png" width="700">
@@ -783,16 +754,26 @@ As we see, we can only use one of the fields at any point in time. Unions aren't
 
 
 
-# Intermediate C
+## Intermediate C
 
+## Objectives
+
+- diving into some details about C
+- format strings
+- variable modifiers
+- nuances about compound types
+
+<!--
 ## Objectives
 
 - Recalling C types with a focus on pointers.
 - Focus on more advanced features like `void *`s and function pointers.
 - Practice thinking about C programs as memory.
+-->
 
 ## Types
 
+<!--
 ### [Basic types](https://en.wikipedia.org/wiki/C_data_types)
 
 - `char` - think "one byte".
@@ -851,8 +832,11 @@ MON = 0, TUES = 1, ..., FRI = 4
 ```
 
 You can choose the values explicitly (e.g. `enum grades { MON = 1, TUES = 2, WED = 3, THURS = 4, FRI = 5};`).
+-->
 
 **Modifiers**
+
+Most `C` types can have modifiers attached to them, _i.e._, one of,
 
 - `unsigned` - variables that cannot be negative.
     Given that variables have a fixed bit-width, they can use the extra bit ("negative" no longer needs to be tracked) to instead represent numbers twice the size of `signed` variants.
@@ -984,12 +968,13 @@ main(void)
 Program output:
 ```
 Integers: 2147483647, 9223372036854775807, 4294967295, *
-Hex and pointers: 7fffffffffffffff, 0x55bbeaaba149
+Hex and pointers: 7fffffffffffffff, 0x55ed669cb149
 Strings: hello world
 ```
 
-### Compound types
+### More about Compound types (`struct` and `union`)
 
+<!--
 - `struct` - A collection of different values.
     Example: objects with many different fields.
 - `union` - *One* of a set of values.
@@ -1000,6 +985,9 @@ The size of a `union` is the *maximum* size of its fields.
 In contrast, the `struct` is the *sum* of the sizes of each of its fields.
 
 #### Example
+-->
+
+Consider the following exmaple:
 
 ```c
 #include <stdio.h>
@@ -1074,6 +1062,8 @@ What other examples can you think of where you might want `union`s?
 >
 > More on `->` in the next section.
 
+
+<!--
 ### Pointers & Arrays
 
 Variables can have be pointer types (e.g. `int *a`).
@@ -1090,7 +1080,7 @@ a---+
 A pointer, `int *b = &a` should be imagined as a pointer:
 
 ```
-b ---> a---+
+b -> a---+
        | 6 |
        +---+
 ```
@@ -1136,11 +1126,13 @@ value updated to 1
 Pointers are *necessary* as they enable us to build *linked* data-structures (linked-lists, binary trees, etc...).
 Languages such as Java assume that *every single* object variable is a pointer, and since *all object variables* are pointers, they don't need special syntax for them.
 
+-->
+
 Arrays are simple contiguous data items, all of the same type.
 `int a[4] = {6, 7, 8, 9}` should be imagined as:
 
 ```
-a ---> +---+---+---+---+
+a -> +---+---+---+---+
        | 6 | 7 | 8 | 9 |
        +---+---+---+---+
 ```
@@ -1163,8 +1155,8 @@ int main(void) {
 
 Program output:
 ```
-0th index: 0x7ffe7125c1f0 == 0x7ffe7125c1f0; 6 == 6
-nth index: 0x7ffe7125c1f4 == 0x7ffe7125c1f4; 7 == 7
+0th index: 0x7ffc8aba8ee0 == 0x7ffc8aba8ee0; 6 == 6
+nth index: 0x7ffc8aba8ee4 == 0x7ffc8aba8ee4; 7 == 7
 ```
 
 Making this a little more clear, lets understand how C accesses the `n`th item.
@@ -1199,7 +1191,7 @@ main(void)
 
 Program output:
 ```
-nth index: 0x7ffd0db89994 == 0x7ffd0db89994; 7 == 7
+nth index: 0x7ffdf55e8484 == 0x7ffdf55e8484; 7 == 7
 ```
 
 We can see that *pointer arithmetic* (i.e. doing addition/subtraction on pointers) does the same thing as array indexing plus a dereference.
@@ -1234,10 +1226,10 @@ main(void)
 
 Program output:
 ```
-idx 0 @ 0x7ffe0f32ae70 & 0x7ffe0f32ae84
-idx 1 @ 0x7ffe0f32ae74 & 0x7ffe0f32ae85
-idx 2 @ 0x7ffe0f32ae78 & 0x7ffe0f32ae86
-idx 3 @ 0x7ffe0f32ae7c & 0x7ffe0f32ae87
+idx 0 @ 0x7ffd13d5b4a0 & 0x7ffd13d5b4b4
+idx 1 @ 0x7ffd13d5b4a4 & 0x7ffd13d5b4b5
+idx 2 @ 0x7ffd13d5b4a8 & 0x7ffd13d5b4b6
+idx 3 @ 0x7ffd13d5b4ac & 0x7ffd13d5b4b7
 ```
 
 Note that the pointer for the integer array (`a`) is being incremented by 4, while the character array (`b`) by 1.
@@ -1469,6 +1461,266 @@ make[1]: *** [Makefile:30: inline_exec] Aborted
 
 `valgrind` will help you debug the last three of these issues, and later in the class, we'll develop a library to help debug the first.
 
+# Pointers and Arrays
+
+[Slides](https://sibin.github.io/teaching/csci2410-gwu-systems_programming/fall_2024/slides/reveal_slides/pointers.html)
+
+
+what is a "**pointer**"?
+
+<img src="figures/pointers/pointer_dog.jpeg" height="300">
+
+<quote><small>_"Pointing dogs, sometimes called bird dogs, 
+<br>are a type of gundog typically used in finding game."_</small></quote>
+
+### Remember this?
+
+<img src="figures/register_addressing/register_addressing5.png" width="300">
+
+<br>
+
+ok...hold on to that...
+
+### What happens when we _declare_ a variable?
+
+```C 
+int i = 100 ;
+```
+
+A visual representation of the above:
+<br>
+<img src="figures/pointers/pointers1.png" width="100"> 
+
+Let's break it down a bit,
+
+<img src="figures/pointers/pointers2.png" width="300"> 
+
+<br>
+The various elements from the above figure:
+
+|||
+|-------|-------|
+|variable **name**| `i`|
+|stored at **address**| `0x16677f710`|
+|**value**| `100`|
+||
+
+<br>
+Let's revisit this...
+
+<img src="figures/register_addressing/register_addressing5.png" width="300">
+
+<br>
+
+so it _could_ look something like,
+
+<img src="figures/pointers/pointers2a.png" width="300">
+
+note that `0x16677f710` is the **address** _i.e._, the **location** in memory for the variable , `i`.
+
+Now, _what_ is a **pointer**, say `ptr`?
+
+<img src="figures/pointers/pointers3.png" width="400"> 
+
+<br>
+
+Well, a pointer "**points to**" &rarr; another object..in effect, <font style="background-color: #FFEC8B;"> points to a **memory location**!`</font>
+
+So, the pointer, _e.g._, `ptr`,
+
+<img src="figures/pointers/pointers5.png" width="400"> 
+
+stores the **address** of the object it points to!
+
+**Final** view of a pointer, `ptr` pointing to a variable, `i`,
+
+<img src="figures/pointers/pointers7.png" width="400">
+
+<br>
+
+The various elements from the above figure:
+
+|||
+|-------|-------|
+|variable **name**| `i`|
+|stored at **address**| `0x16677f710`|
+|**value**| `100`|
+|**pointer name**| `ptr`|
+|**pointer value**| `0x16677f710`, _i.e._, `i`|
+||
+
+### How do we declare/use pointers?
+
+```C 
+int i = 100 ;
+int* ptr = &i ;
+```
+
+where,
+
+<img src="figures/pointers/pointers9.png" width="300">
+
+Note, that the "address of", `&` operator takes a variable and **returns its address**.
+
+If you print out the pointer, `printf("%p", ptr)`, you'll get the _address_ (_i.e._, the arrow). 
+
+Consider the following code example:
+
+```c
+#include <stdio.h>
+
+int main()
+{
+    int i = 100 ;
+    int* p_int; // declare a pointer, NOT initialized
+
+    printf( "i = %d\t p_int = %p\n", i, p_int ) ;
+    
+    p_int = &i ; //initialize pointer to point to address of 'i'
+
+    printf( "i = %d\t p_int = %p\t address of i = %p\n\n", i, p_int, &i ) ;
+
+    printf( "\n" ) ;
+    return 0 ;
+}
+
+```
+
+Program output:
+```
+inline_exec_tmp.c: In function main:
+inline_exec_tmp.c:8:5: warning: p_int is used uninitialized in this function [-Wuninitialized]
+    8 |     printf( "i = %d\t p_int = %p\n", i, p_int ) ;
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+i = 100	 p_int = 0x7ffcae5a9a60
+i = 100	 p_int = 0x7ffcae5a995c	 address of i = 0x7ffcae5a995c
+
+
+```
+
+To *follow the arrow*, _i.e._, get the value in the location _pointed to_ by it (or to modify the actual value), you must **dereference** the pointer as follows: `*ptr`.
+
+For the above code, if we change the following line, 
+```C 
+printf( "i = %d\t p_int = %p\t address of i = %p\t value at i = %d\n\n", i, p_int, &i, *p_int ) ;
+```
+the output changes to:
+```
+i = 100  p = 0x7fffffffe338      address of i = 0x7fffffffe338   value at i = 100
+```
+
+What happens when you run the following?
+
+```c 
+#include <stdio.h>
+
+int main()
+{
+    int i = 100 ;
+    int* p_int; // declare a pointer, NOT initialized
+
+    printf( "i = %d\t p_int = %p\n", i, p_int ) ;
+    
+    p_int = &i ; //initialize pointer to point to address of 'i'
+
+    printf( "i = %d\t p = %p\t address of i = %p\t value at i = %d\n\n", i, p_int, &i, *p_int ) ;
+
+    int j = 200 ;
+    p_int = j ; // works but NOT what we want
+
+    printf( "i = %d\t p_int = %p\t address of i = %p\n\n", i, p_int, &i ) ;
+    printf( "value at p_int = %d\n", *p_int ) ;
+
+    printf( "\n" ) ;
+    return 0 ;
+}
+```
+
+What can you do to fix the above code to make it compile?
+
+Now, if we want to change the value of `i` from `100` to `200`, _using the pointer_, we do:
+
+```C
+#include <stdio.h>
+
+int main()
+{
+    int i = 100 ;
+    int* p_int; // declare a pointer, NOT initialized
+
+    printf( "i = %d\t p_int = %p\n", i, p_int ) ;
+    
+    p_int = &i ; //initialize pointer to point to address of 'i'
+
+    printf( "i = %d\t p = %p\t address of i = %p\t value at i = %d\n\n", i, p_int, &i, *p_int ) ;
+
+    *p_int = 200 ;
+    printf( "i = %d\t p_int = %p\t address of i = %p\t value at i = %d\n\n", i, p_int, &i, *p_int ) ;
+
+    printf( "\n" ) ;
+    return 0 ;
+}
+```
+
+Pointers are necessary as they enable us to build linked data-structures (linked-lists, binary trees, etc...). Languages such as Java assume that every single object variable is a pointer, and since all object variables are pointers, they don't need special syntax for them.
+
+## Pointers and Modifiers
+
+We can use modifiers in front of types, _e.g.,_ `const double pi = 3.14 ;` which means that the variable `pi` _cannot_ be modified in the program. Try the following program:
+
+```C
+#include <stdio.h>
+
+int main()
+{
+    const double pi = 3.14 ;
+    pi = 728.0 ;
+
+    printf( "\n" ) ;
+    return 0 ;
+}
+```
+
+But, we can declare a pointer to it! We can even _dereference_ it and access the value.
+
+```C
+#include <stdio.h>
+
+int main()
+{
+    const double pi = 3.14 ;
+    // pi = 728.0 ; BAD!
+   
+    const double* p_double = &pi ;
+
+    printf( "p_double points to the value = %f\n", *p_double ) ;   
+
+    printf( "\n" ) ;
+    return 0 ;
+}
+```
+
+Will this work?
+```c 
+*p_double = 728 ;
+```
+
+
+The modifiers can be applied to the _pointers_ themselves and not only the variables they point to. So, the following are _**all** valid C statements_:
+
+```c 
+    double d ; // a regular 'double'
+    double* p_d ; // a pointer to a 'double'
+    const double cd ; // a 'constant' double
+    const double* p_cd ; // a pointer to double that is constant
+    double* const c_pd ; // a 'constant pointer' to a double
+    const double* const c_p_cd ; // a constant pointer to a double that is a constant
+```
+
+
+## Arrays
+
+Arrays are a **contiguous** collection of data items, _all of the same type_.
 ## Exercises
 
 ### C is a Thin Language Layer on Top of Memory
@@ -1533,10 +1785,10 @@ print_values(void)
 Program output:
 ```
 Addresses:
-a   @ 0x55c388805010
-b   @ 0x55c388805014
-c   @ 0x55c388805020
-end @ 0x55c388805039
+a   @ 0x555739313010
+b   @ 0x555739313014
+c   @ 0x555739313020
+end @ 0x555739313039
 &end - &a = 41
 
 Initial values:
@@ -1544,7 +1796,7 @@ a     = 1
 b     = 2
 c.c_a = 3
 c.c_b = 0
-c.c_c = 0x55c388805014
+c.c_c = 0x555739313014
 
 Print out the variables as raw memory
 
@@ -1658,8 +1910,8 @@ main(void)
 
 Program output:
 ```
-0: 4 @ 0x558a79c7104c
-1: 2 @ 0x558a79c71044
+0: 4 @ 0x559edf49704c
+1: 2 @ 0x559edf497044
 2: 0 @ (nil)
 ```
 
@@ -1867,7 +2119,7 @@ inline_exec_tmp.c:36:5: warning: implicit declaration of function bubble_sort; d
    36 |     bubble_sort( my_array, array_size ) ;
       |     ^~~~~~~~~~~
       |     bubble_sort_int
-/usr/bin/ld: /tmp/ccJP3rA2.o: in function `main':
+/usr/bin/ld: /tmp/ccdaHogz.o: in function `main':
 /home/sibin/Teaching/CSCI_2401/lectures/inline_exec_tmp.c:36: undefined reference to `bubble_sort'
 collect2: error: ld returned 1 exit status
 make[1]: *** [Makefile:33: inline_exec_tmp] Error 1
@@ -2661,16 +2913,16 @@ Program output:
 ```
 0: 194
 1: 0
-2: -1713494585
-3: 32766
-4: -1713494586
-5: 32766
-6: 947651133
-7: 22019
-8: 310096616
-9: 32754
-10: 947651056
-11: 22019
+2: -1546230761
+3: 32764
+4: -1546230762
+5: 32764
+6: 1635893821
+7: 21872
+8: 659854056
+9: 32517
+10: 1635893744
+11: 21872
 ```
 
 Yikes.
@@ -3115,7 +3367,7 @@ main(void)
 Program output:
 ```
 blahblahblah
-0x561f11337004 == 0x561f11337004 != 0x561f11339011
+0x560bee643004 == 0x560bee643004 != 0x560bee645011
 ```
 
 The C compiler and linker are smart enough to see that if you have already used a string with a specific value (in this case `"clone"`), it will avoid allocating a copy of that string, and will just reuse the previous value.
@@ -6841,9 +7093,9 @@ int main(void)
 
 Program output:
 ```
-3498761: We've been asked to terminate. Exit!
-3498760: Parent asking child (3498761) to terminate
-3498760: Child process 3498761 has exited.
+1527151: We've been asked to terminate. Exit!
+1527150: Parent asking child (1527151) to terminate
+1527150: Child process 1527151 has exited.
 ```
 
 *Note:* You want to run this a few times on your system to see the output.
@@ -8143,7 +8395,7 @@ Program output:
 - F output_tmp.dat (0)
 - D 01
 - F Makefile (1971)
-- F lectures.html (967897)
+- F lectures.html (965611)
 - D 99
 - D 00
 - D 11
@@ -8166,7 +8418,7 @@ Program output:
 - D figures
 - F title.md (333)
 - F README.md (35)
-- F aggregate.md (251632)
+- F aggregate.md (257834)
 - D 08
 - D slides
 - D 05
@@ -8611,8 +8863,8 @@ main(void)
 
 Program output:
 ```
-3499046: 3499046
-3499047: 3499047
+1527433: 1527433
+1527434: 1527434
 ```
 
 
@@ -8799,15 +9051,15 @@ main(void)
 Program output:
 ```
 Server: New client connected with new file descriptor 4.
-1. Client 3499067 connected to server.
-2. Client 3499067 request sent message to server.
-Server received message (sz 38): "Citizen 3499067: Penny for Pawsident!". Replying!
-3. Client 3499067 reply received from server: Citizen 3499067: Penny for Pawsident!
+1. Client 1527455 connected to server.
+2. Client 1527455 request sent message to server.
+Server received message (sz 38): "Citizen 1527455: Penny for Pawsident!". Replying!
+3. Client 1527455 reply received from server: Citizen 1527455: Penny for Pawsident!
+1. Client 1527456 connected to server.
 Server: New client connected with new file descriptor 4.
-1. Client 3499068 connected to server.
-2. Client 3499068 request sent message to server.
-Server received message (sz 38): "Citizen 3499068: Penny for Pawsident!". Replying!
-3. Client 3499068 reply received from server: Citizen 3499068: Penny for Pawsident!
+2. Client 1527456 request sent message to server.
+Server received message (sz 38): "Citizen 1527456: Penny for Pawsident!". Replying!
+3. Client 1527456 reply received from server: Citizen 1527456: Penny for Pawsident!
 ```
 
 The server's call to `accept` is the key difference of domain sockets from named pipes.
@@ -10588,9 +10840,9 @@ main(void)
 Program output:
 ```
 
-malloc + free overhead (cycles): 1314
+malloc + free overhead (cycles): 1336
 
-mmap + munmap overhead (cycles): 36381
+mmap + munmap overhead (cycles): 36918
 ```
 
 > What is a "cycle"?
@@ -10648,11 +10900,11 @@ main(void)
 Program output:
 ```
                                                                                                                                                                                                                                                                 
-write overhead (cycles): 15574
+write overhead (cycles): 15354
                                                                                                                                                                                                                                                                 
 fwrite (stream) overhead (cycles): 148
                                                                                                                                                                                                                                                                 
-fwrite + fflush overhead (cycles): 15423
+fwrite + fflush overhead (cycles): 15892
 ```
 
 ## Library vs. Kernel Trade-offs in Memory Allocation
