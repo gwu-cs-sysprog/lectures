@@ -968,7 +968,7 @@ main(void)
 Program output:
 ```
 Integers: 2147483647, 9223372036854775807, 4294967295, *
-Hex and pointers: 7fffffffffffffff, 0x557af6176149
+Hex and pointers: 7fffffffffffffff, 0x55df710d7149
 Strings: hello world
 ```
 
@@ -1155,8 +1155,8 @@ int main(void) {
 
 Program output:
 ```
-0th index: 0x7ffc25bc5690 == 0x7ffc25bc5690; 6 == 6
-nth index: 0x7ffc25bc5694 == 0x7ffc25bc5694; 7 == 7
+0th index: 0x7ffdeb3412c0 == 0x7ffdeb3412c0; 6 == 6
+nth index: 0x7ffdeb3412c4 == 0x7ffdeb3412c4; 7 == 7
 ```
 
 Making this a little more clear, lets understand how C accesses the `n`th item.
@@ -1191,7 +1191,7 @@ main(void)
 
 Program output:
 ```
-nth index: 0x7ffde1eda8b4 == 0x7ffde1eda8b4; 7 == 7
+nth index: 0x7ffe9911fb34 == 0x7ffe9911fb34; 7 == 7
 ```
 
 We can see that *pointer arithmetic* (i.e. doing addition/subtraction on pointers) does the same thing as array indexing plus a dereference.
@@ -1226,10 +1226,10 @@ main(void)
 
 Program output:
 ```
-idx 0 @ 0x7ffeea1158e0 & 0x7ffeea1158f4
-idx 1 @ 0x7ffeea1158e4 & 0x7ffeea1158f5
-idx 2 @ 0x7ffeea1158e8 & 0x7ffeea1158f6
-idx 3 @ 0x7ffeea1158ec & 0x7ffeea1158f7
+idx 0 @ 0x7fff51087e50 & 0x7fff51087e64
+idx 1 @ 0x7fff51087e54 & 0x7fff51087e65
+idx 2 @ 0x7fff51087e58 & 0x7fff51087e66
+idx 3 @ 0x7fff51087e5c & 0x7fff51087e67
 ```
 
 Note that the pointer for the integer array (`a`) is being incremented by 4, while the character array (`b`) by 1.
@@ -1347,7 +1347,7 @@ Indexing into arrays (`a[b]`) and arrows (`a->b`) are redundant syntactic featur
 
 Generally, you should always try and stick to the array and arrow syntax were possible, as it makes your intention much more clear when coding than the pointer arithmetic and dereferences.
 
-## Memory Allocation
+<!--## Memory Allocation
 
 Dynamic memory allocations
 
@@ -1460,7 +1460,7 @@ make[1]: *** [Makefile:30: inline_exec] Aborted
 ```
 
 `valgrind` will help you debug the last three of these issues, and later in the class, we'll develop a library to help debug the first.
-<style>
+--><style>
 #box {
   fill: lightyellow;
   stroke: black;
@@ -1605,8 +1605,8 @@ inline_exec_tmp.c: In function main:
 inline_exec_tmp.c:8:5: warning: p_int is used uninitialized in this function [-Wuninitialized]
     8 |     printf( "i = %d\t p_int = %p\n", i, p_int ) ;
       |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-i = 100	 p_int = 0x7ffe76b8c300
-i = 100	 p_int = 0x7ffe76b8c1fc	 address of i = 0x7ffe76b8c1fc
+i = 100	 p_int = 0x7ffccdd085d0
+i = 100	 p_int = 0x7ffccdd084cc	 address of i = 0x7ffccdd084cc
 
 
 ```
@@ -1902,6 +1902,398 @@ Program output:
 100
 
 ```
+## Pointers | Memory Allocation
+
+[Slides](https://sibin.github.io/teaching/csci2410-gwu-systems_programming/fall_2024/slides/reveal_slides/memory_allocation.html)
+
+
+Typically, in `C`, there are **two** types of memory allocations:
+
+* static
+* dynamic
+
+
+
+### Static Memory Allocation
+
+* most **definitions** we encounter
+* all local, global, file scope variables
+
+|Examples|
+|--------|
+| `int i ;`|
+| `struct student st ;`|
+| `char name[128] ;`|
+| `const double* pd ;`|
+|...|
+||
+
+* memory allocated at **<font style="background-color: #FFEC8B;">compile time</font>**
+* compiler needs to to **exactly** how much memory
+* the following is illegal:
+char array<font style="color:white ; background-color: darkred; font-weight: bold;">[n]</font> ;
+
+* the value of *n* can **change at run time**
+* *e.g.*, we can do `n = 200 ;` 
+* **before** the array is defined
+
+[caveat: newer `C` compilers may allow it. Avoid doing this.]
+
+### Dynamic Memory Allocation
+
+* everything allocated using `malloc` [and other calls as we shall see]
+* memory allocated at **<font style="background-color: #FFEC8B;">run time</font>**
+ `char* pc = (char*) malloc( 128*sizeof(char) ) ;`
+
+* `128 bytes` of memory allocated **dynamically**
+* this is completely **legal**:
+(char*) malloc( <font style="color:white ; background-color: darkgreen; font-weight: bold;">n</font>*sizeof(char) )` 
+* value of *n* **can** change at run time
+
+
+### `C` Standard Library Functions for Memory Allocation
+
+|function name|bytes allocated|inititalize?|
+|--------|--------|--------|
+|`malloc(size)`|`size`| no|
+|`calloc<br>(nmemb,size)`|`nmemb*size`<br>|`0`|
+|`realloc<br>(*ptr,size)`|grow/shrink<br>`*ptr` to `size<Scb>|orig `*ptr`|
+|`free(*ptr)`|n/a| n/a|
+||
+
+all defined in `<stdlib.h>`.
+
+#### `size_t`
+
+* unsigned integer data type 
+* lots of system calls use `size_t`
+* not a real data type 
+* `typedef` is used &rarr; depends on platform!
+
+|platform|`size_t`|
+|--------|--------|
+|32 bit|`unsigned int`|
+|64 bit|`unsigned long long int`|
+
+#### `malloc`
+
+Signature: `void *malloc(size_t size);`
+
+* allocate **raw memory** of `size_t size` bytes
+* **no** initialization
+* "data" is whatever is in memory
+* use `memset()` to set memory to `0`
+* returns &rarr; **pointer to newly allocated memory**
+
+
+```C
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+
+// ALWAYS good to define array sizes as such constants
+#define ARRAY_SIZE 16
+
+int main()
+{
+    // random size
+    int* temp = (int*) malloc( 12323445 ) ;
+
+    int* pi = (int*) malloc( sizeof(int) * ARRAY_SIZE ) ;
+    assert(pi) ; // check that a valid address was returned
+
+    pi[0] = 233 ;
+
+    printf( "After malloc\n") ;
+    for( unsigned int i = 0 ; i < ARRAY_SIZE ; ++i )
+        printf( "pi[%d] = %d\t", i, pi[i] ) ;
+    printf( "\n" ) ;
+
+    // remember to release the memory!
+    free(pi) ;
+    free(temp) ;
+
+    printf("\n") ;
+    return 0 ;
+}
+```
+
+
+#### `calloc`
+
+Signature: `void* calloc(size_t nmemb, size_t size);`
+
+* allocate **raw memory** of `nmemb*size` bytes
+* guaranteed to initialize memory to `0`
+* *e.g.*, `calloc(10, sizeof(int)) ;`
+    * creates memory for `10` integers
+    * each one set to `0`
+* returns &rarr; **pointer to newly allocated memory**
+
+
+```C
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+
+// ALWAYS good to define array sizes as such constants
+#define ARRAY_SIZE 16
+
+int main()
+{
+    // replace with calloc()
+    // int* pi = (int*) malloc( sizeof(int) * ARRAY_SIZE ) ;
+    int* pi = (int*) calloc( ARRAY_SIZE, sizeof(int) )  ; // notice the difference in args
+    assert(pi) ; // check that a valid address was returned
+
+    pi[0] = 233 ;
+
+    printf( "After malloc\n") ;
+    for( unsigned int i = 0 ; i < ARRAY_SIZE ; ++i )
+        printf( "pi[%d] = %d\t", i, pi[i] ) ;
+    printf( "\n" ) ;
+
+    printf("\n") ;
+    return 0 ;
+}
+```
+Compare the differences, _if any_, in the outputs of the above two pieces of code. 
+
+#### `realloc`
+
+Signature: `void* realloc(void *ptr, size_t size);`
+
+* **reallocate** the memory pointed to by `ptr`
+* *i.e.,* grow/shrink it to the **new** `size`
+* grows/shrink *in place* if possible
+* if not enough space to grow, 
+* allocate **new** memory of `size` (create a new pointer, `ptr2`)
+* copy _as much_ of old data as possible, *i.e.,* from `ptr` &rarr; `ptr2`
+* free old pointer, *i.e.,* `ptr`
+* returns &rarr; one of,
+    * `*ptr` if the new size fits
+    * `*ptr2`, *i.e.,* pointer to new allocation
+
+There are some "oddities" you need to be aware of while using `realloc()`:
+
+* if original allocation was using `calloc()` &rarr; remember it sets the memory to `0`
+* `realloc` **will not** set *extended* memory to `0`
+* *e.g.,* 
+    * if `calloc` created a 10 byte array, `pa`
+    * initialized to `0`
+    * `realloc(pa, 20)`
+    * last `10` bytes **not** set to `0`
+
+Adapting the code example from earlier,
+```C
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+
+// ALWAYS good to define array sizes as such constants
+#define ARRAY_SIZE 16
+
+int main()
+{
+    // replace with calloc()
+    // int* pi = (int*) malloc( sizeof(int) * ARRAY_SIZE ) ;
+    int* pi = (int*) calloc( ARRAY_SIZE, sizeof(int) )  ; // notice the difference in args
+    assert(pi) ; // check that a valid address was returned
+
+    pi[0] = 233 ;
+
+    printf( "After malloc\n") ;
+    for( unsigned int i = 0 ; i < ARRAY_SIZE ; ++i )
+        printf( "pi[%d] = %d\t", i, pi[i] ) ;
+    printf( "\n" ) ;
+
+    // double the size o
+    realloc( pi, ARRAY_SIZE*2 ) ;
+
+    printf( "After realloc\n") ;
+    for( unsigned int i = 0 ; i < ARRAY_SIZE*2 ; ++i )
+        printf( "pi[%d] = %d\t", i, pi[i] ) ;
+    printf( "\n" ) ;
+
+    printf("\n") ;
+    return 0 ;
+}
+```
+
+
+#### ` free()`
+
+Signature: ` void free(void *ptr); `
+
+* **releases** memory block referenced by `ptr`
+    * other processes/OS can now use it
+* only works for _dynamically allocated_ memory
+    * **do not** try for static variables
+    * "_undefined_" behavior
+* no action if `ptr` is `NULL`
+* _does not_ return anything
+
+Modifying the above code block:
+
+```C
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+
+// ALWAYS good to define array sizes as such constants
+#define ARRAY_SIZE 16
+
+int main()
+{
+    // replace with calloc()
+    // int* pi = (int*) malloc( sizeof(int) * ARRAY_SIZE ) ;
+    int* pi = (int*) calloc( ARRAY_SIZE, sizeof(int) )  ; // notice the difference in args
+    assert(pi) ; // check that a valid address was returned
+
+    pi[0] = 233 ;
+
+    printf( "After malloc\n") ;
+    for( unsigned int i = 0 ; i < ARRAY_SIZE ; ++i )
+        printf( "pi[%d] = %d\t", i, pi[i] ) ;
+    printf( "\n" ) ;
+
+    // double the size o
+    realloc( pi, ARRAY_SIZE*2 ) ;
+
+    printf( "After realloc\n") ;
+    for( unsigned int i = 0 ; i < ARRAY_SIZE*2 ; ++i )
+        printf( "pi[%d] = %d\t", i, pi[i] ) ;
+    printf( "\n" ) ;
+
+    // I WANT TO BREAK FREE!
+    free(pi) ;
+
+    printf("\n") ;
+    return 0 ;
+}
+```
+
+A few things to keep in mind w.r.t. memory allocation in `C`:
+
+1. If you want to allocate an array, then you have to do the math yourself for the array size.
+    For example, `int *arr = malloc(sizeof(int) * n);` to allocate an array of `int`s with a length of `n`.
+1. `malloc` is **not guaranteed** to initialize its memory to `0`.
+    *You* must make sure that your array gets initialized.
+	It is not uncommon to do a `memset(arr, 0, sizeof(int) * n);` to set the memory `0`.
+1. `calloc` is guaranteed to initialize all its allocated memory to `0`.
+
+
+
+### Common Memory Allocation Errors
+
+
+Be aware of these issues as you use pointers and memory allocation/free. 
+
+Note: `valgrind` will help you debug the last three of these issues.
+
+1. **allocation error** &rarr; memory not allocated
+    * maybe not enough memory in system
+    * returns `NULL`
+    * check for the return value **before** use!
+
+```c
+#include <stdlib.h>
+
+int
+main(void)
+{
+	int *a = malloc(sizeof(int));
+	/* Error: did not check return value! */
+	*a = 1;
+	free(a);
+
+	return 0;
+}
+```
+
+Program output:
+```
+```
+
+
+2. **dangling pointer** &rarr; accessing free'd pointer
+    * mem may have been reallocated &rarr; someone else did a `malloc()` maybe
+    * bad things happen (crashes, *etc.*) 
+    * avoid `free()` until **all** references are done 
+
+
+```c
+#include <stdlib.h>
+
+int
+main(void)
+{
+	int *a = malloc(sizeof(int));
+	if (a == NULL) return -1;
+	free(a);
+
+	/* Error: accessing what `a` points to after `free`! */
+	return *a;
+}
+```
+
+Program output:
+```
+```
+
+3. **memory leaks** &rarr; allocate but forget to `free()`!
+    * memory **never** get freed/released
+    * over time, less memory available 
+    * can slow down/crash entire system!
+    * **always** pair a `free()` with an allocation     
+
+
+```c
+#include <stdlib.h>
+
+int
+main(void)
+{
+	int *a = malloc(sizeof(int));
+	if (!a) return -1;
+	a = NULL;
+	/* Error: never `free`d `a` and no references to it remain! */
+
+	return 0;
+}
+```
+
+Program output:
+```
+```
+
+4. **double free** &rarr; `free` memory twice
+    * bad (unpredictable) things happen!
+    * accidentally free memory used elsewhere
+    * memory allocation logic can crash!
+
+```c
+#include <stdlib.h>
+
+int
+main(void)
+{
+	int *a = malloc(sizeof(int));
+	if (!a) return -1;
+	free(a);
+	free(a);
+	/* Error: yeah, don't do that! */
+
+	return 0;
+}
+```
+
+Program output:
+```
+free(): double free detected in tcache 2
+make[1]: *** [Makefile:30: inline_exec] Aborted
+```
+
 ## Exercises
 
 ### C is a Thin Language Layer on Top of Memory
@@ -1966,10 +2358,10 @@ print_values(void)
 Program output:
 ```
 Addresses:
-a   @ 0x55eec2dad010
-b   @ 0x55eec2dad014
-c   @ 0x55eec2dad020
-end @ 0x55eec2dad039
+a   @ 0x55c817f9a010
+b   @ 0x55c817f9a014
+c   @ 0x55c817f9a020
+end @ 0x55c817f9a039
 &end - &a = 41
 
 Initial values:
@@ -1977,7 +2369,7 @@ a     = 1
 b     = 2
 c.c_a = 3
 c.c_b = 0
-c.c_c = 0x55eec2dad014
+c.c_c = 0x55c817f9a014
 
 Print out the variables as raw memory
 
@@ -2091,8 +2483,8 @@ main(void)
 
 Program output:
 ```
-0: 4 @ 0x558354a4904c
-1: 2 @ 0x558354a49044
+0: 4 @ 0x562539f1904c
+1: 2 @ 0x562539f19044
 2: 0 @ (nil)
 ```
 
@@ -2300,7 +2692,7 @@ inline_exec_tmp.c:36:5: warning: implicit declaration of function bubble_sort; d
    36 |     bubble_sort( my_array, array_size ) ;
       |     ^~~~~~~~~~~
       |     bubble_sort_int
-/usr/bin/ld: /tmp/ccphTXrY.o: in function `main':
+/usr/bin/ld: /tmp/ccibvE8q.o: in function `main':
 /home/sibin/Teaching/CSCI_2401/lectures-private/inline_exec_tmp.c:36: undefined reference to `bubble_sort'
 collect2: error: ld returned 1 exit status
 make[1]: *** [Makefile:33: inline_exec_tmp] Error 1
@@ -3094,16 +3486,16 @@ Program output:
 ```
 0: 194
 1: 0
-2: 1899454711
+2: -1318969769
 3: 32767
-4: 1899454710
+4: -1318969770
 5: 32767
-6: -355638723
-7: 22037
-8: 266502888
-9: 32752
-10: -355638800
-11: 22037
+6: -968129987
+7: 21879
+8: -918928664
+9: 32525
+10: -968130064
+11: 21879
 ```
 
 Yikes.
@@ -3548,7 +3940,7 @@ main(void)
 Program output:
 ```
 blahblahblah
-0x55f1b188c004 == 0x55f1b188c004 != 0x55f1b188e011
+0x5577d7f0b004 == 0x5577d7f0b004 != 0x5577d7f0d011
 ```
 
 The C compiler and linker are smart enough to see that if you have already used a string with a specific value (in this case `"clone"`), it will avoid allocating a copy of that string, and will just reuse the previous value.
@@ -6688,8 +7080,8 @@ int main(void)
 
 Program output:
 ```
-Parent got the message!
 Child sent whole message!
+Parent got the message!
 ```
 
 The *concurrency* of the system enables separate processes to be active at the same time, thus for the `write` and `read` to be transferring data through the pipe *at the same time*. This simplifies our code as we don't need to worry about sending chunks of our data.
@@ -7274,9 +7666,9 @@ int main(void)
 
 Program output:
 ```
-1874257: We've been asked to terminate. Exit!
-1874256: Parent asking child (1874257) to terminate
-1874256: Child process 1874257 has exited.
+2032470: We've been asked to terminate. Exit!
+2032469: Parent asking child (2032470) to terminate
+2032469: Child process 2032470 has exited.
 ```
 
 *Note:* You want to run this a few times on your system to see the output.
@@ -8575,8 +8967,8 @@ Program output:
 - D 04
 - F output_tmp.dat (0)
 - D 01
-- F Makefile (1971)
-- F lectures.html (989026)
+- F Makefile (2007)
+- F lectures.html (1025101)
 - D 99
 - D 00
 - D 11
@@ -8593,13 +8985,14 @@ Program output:
 - D 07
 - F inline_exec_tmp (60168)
 - F LICENSE (1522)
+- D code
 - D tools
 - D .git
 - D 06
 - D figures
 - F title.md (333)
 - F README.md (35)
-- F aggregate.md (261949)
+- F aggregate.md (271275)
 - D 08
 - D slides
 - D 05
@@ -9044,8 +9437,8 @@ main(void)
 
 Program output:
 ```
-1874847: 1874847
-1874848: 1874848
+2032758: 2032757
+2032757: 2032758
 ```
 
 
@@ -9232,15 +9625,15 @@ main(void)
 Program output:
 ```
 Server: New client connected with new file descriptor 4.
-1. Client 1875125 connected to server.
-2. Client 1875125 request sent message to server.
-Server received message (sz 38): "Citizen 1875125: Penny for Pawsident!". Replying!
-1. Client 1875126 connected to server.
-3. Client 1875125 reply received from server: Citizen 1875125: Penny for Pawsident!
+1. Client 2032796 connected to server.
+2. Client 2032796 request sent message to server.
+Server received message (sz 38): "Citizen 2032796: Penny for Pawsident!". Replying!
+1. Client 2032797 connected to server.
+2. Client 2032797 request sent message to server.
+3. Client 2032796 reply received from server: Citizen 2032796: Penny for Pawsident!
 Server: New client connected with new file descriptor 4.
-2. Client 1875126 request sent message to server.
-Server received message (sz 38): "Citizen 1875126: Penny for Pawsident!". Replying!
-3. Client 1875126 reply received from server: Citizen 1875126: Penny for Pawsident!
+Server received message (sz 38): "Citizen 2032797: Penny for Pawsident!". Replying!
+3. Client 2032797 reply received from server: Citizen 2032797: Penny for Pawsident!
 ```
 
 The server's call to `accept` is the key difference of domain sockets from named pipes.
@@ -11021,9 +11414,9 @@ main(void)
 Program output:
 ```
 
-malloc + free overhead (cycles): 1335
+malloc + free overhead (cycles): 1351
 
-mmap + munmap overhead (cycles): 36505
+mmap + munmap overhead (cycles): 36403
 ```
 
 > What is a "cycle"?
@@ -11081,11 +11474,11 @@ main(void)
 Program output:
 ```
                                                                                                                                                                                                                                                                 
-write overhead (cycles): 15752
+write overhead (cycles): 15384
                                                                                                                                                                                                                                                                 
 fwrite (stream) overhead (cycles): 147
                                                                                                                                                                                                                                                                 
-fwrite + fflush overhead (cycles): 15315
+fwrite + fflush overhead (cycles): 16141
 ```
 
 ## Library vs. Kernel Trade-offs in Memory Allocation
