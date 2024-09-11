@@ -518,7 +518,7 @@ Indexing into arrays (`a[b]`) and arrows (`a->b`) are redundant syntactic featur
 
 Generally, you should always try and stick to the array and arrow syntax were possible, as it makes your intention much more clear when coding than the pointer arithmetic and dereferences.
 
-## Memory Allocation
+<!--## Memory Allocation
 
 Dynamic memory allocations
 
@@ -613,3 +613,4 @@ main(void)
 ```
 
 `valgrind` will help you debug the last three of these issues, and later in the class, we'll develop a library to help debug the first.
+-->
