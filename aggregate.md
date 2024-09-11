@@ -968,7 +968,7 @@ main(void)
 Program output:
 ```
 Integers: 2147483647, 9223372036854775807, 4294967295, *
-Hex and pointers: 7fffffffffffffff, 0x56409afb6149
+Hex and pointers: 7fffffffffffffff, 0x557af6176149
 Strings: hello world
 ```
 
@@ -1155,8 +1155,8 @@ int main(void) {
 
 Program output:
 ```
-0th index: 0x7ffd433ad210 == 0x7ffd433ad210; 6 == 6
-nth index: 0x7ffd433ad214 == 0x7ffd433ad214; 7 == 7
+0th index: 0x7ffc25bc5690 == 0x7ffc25bc5690; 6 == 6
+nth index: 0x7ffc25bc5694 == 0x7ffc25bc5694; 7 == 7
 ```
 
 Making this a little more clear, lets understand how C accesses the `n`th item.
@@ -1191,7 +1191,7 @@ main(void)
 
 Program output:
 ```
-nth index: 0x7ffc43541f34 == 0x7ffc43541f34; 7 == 7
+nth index: 0x7ffde1eda8b4 == 0x7ffde1eda8b4; 7 == 7
 ```
 
 We can see that *pointer arithmetic* (i.e. doing addition/subtraction on pointers) does the same thing as array indexing plus a dereference.
@@ -1226,10 +1226,10 @@ main(void)
 
 Program output:
 ```
-idx 0 @ 0x7ffc6bc43ab0 & 0x7ffc6bc43ac4
-idx 1 @ 0x7ffc6bc43ab4 & 0x7ffc6bc43ac5
-idx 2 @ 0x7ffc6bc43ab8 & 0x7ffc6bc43ac6
-idx 3 @ 0x7ffc6bc43abc & 0x7ffc6bc43ac7
+idx 0 @ 0x7ffeea1158e0 & 0x7ffeea1158f4
+idx 1 @ 0x7ffeea1158e4 & 0x7ffeea1158f5
+idx 2 @ 0x7ffeea1158e8 & 0x7ffeea1158f6
+idx 3 @ 0x7ffeea1158ec & 0x7ffeea1158f7
 ```
 
 Note that the pointer for the integer array (`a`) is being incremented by 4, while the character array (`b`) by 1.
@@ -1605,8 +1605,8 @@ inline_exec_tmp.c: In function main:
 inline_exec_tmp.c:8:5: warning: p_int is used uninitialized in this function [-Wuninitialized]
     8 |     printf( "i = %d\t p_int = %p\n", i, p_int ) ;
       |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-i = 100	 p_int = 0x7ffe14c81c80
-i = 100	 p_int = 0x7ffe14c81b7c	 address of i = 0x7ffe14c81b7c
+i = 100	 p_int = 0x7ffe76b8c300
+i = 100	 p_int = 0x7ffe76b8c1fc	 address of i = 0x7ffe76b8c1fc
 
 
 ```
@@ -1891,30 +1891,16 @@ int main()
     printf( "%d\n", *(a+2) ) ;
     printf( "%d\n", *(p_a++) ) ;
 
-    printf( "\n ) ;
+    printf( "\n" ) ;
     return 0 ;
 }
 ```
 
 Program output:
 ```
-inline_exec_tmp.c: In function main:
-inline_exec_tmp.c:11:13: warning: missing terminating " character
-   11 |     printf( "\n ) ;
-      |             ^
-inline_exec_tmp.c:11:13: error: missing terminating " character
-   11 |     printf( "\n ) ;
-      |             ^~~~~~~
-inline_exec_tmp.c:12:5: error: expected expression before return
-   12 |     return 0 ;
-      |     ^~~~~~
-inline_exec_tmp.c:12:15: error: expected ; before } token
-   12 |     return 0 ;
-      |               ^
-      |               ;
-   13 | }
-      | ~              
-make[1]: *** [Makefile:33: inline_exec_tmp] Error 1
+300
+100
+
 ```
 ## Exercises
 
@@ -1980,10 +1966,10 @@ print_values(void)
 Program output:
 ```
 Addresses:
-a   @ 0x564ce3ec3010
-b   @ 0x564ce3ec3014
-c   @ 0x564ce3ec3020
-end @ 0x564ce3ec3039
+a   @ 0x55eec2dad010
+b   @ 0x55eec2dad014
+c   @ 0x55eec2dad020
+end @ 0x55eec2dad039
 &end - &a = 41
 
 Initial values:
@@ -1991,7 +1977,7 @@ a     = 1
 b     = 2
 c.c_a = 3
 c.c_b = 0
-c.c_c = 0x564ce3ec3014
+c.c_c = 0x55eec2dad014
 
 Print out the variables as raw memory
 
@@ -2105,8 +2091,8 @@ main(void)
 
 Program output:
 ```
-0: 4 @ 0x55e52b4fa04c
-1: 2 @ 0x55e52b4fa044
+0: 4 @ 0x558354a4904c
+1: 2 @ 0x558354a49044
 2: 0 @ (nil)
 ```
 
@@ -2314,7 +2300,7 @@ inline_exec_tmp.c:36:5: warning: implicit declaration of function bubble_sort; d
    36 |     bubble_sort( my_array, array_size ) ;
       |     ^~~~~~~~~~~
       |     bubble_sort_int
-/usr/bin/ld: /tmp/ccgHgnMo.o: in function `main':
+/usr/bin/ld: /tmp/ccphTXrY.o: in function `main':
 /home/sibin/Teaching/CSCI_2401/lectures-private/inline_exec_tmp.c:36: undefined reference to `bubble_sort'
 collect2: error: ld returned 1 exit status
 make[1]: *** [Makefile:33: inline_exec_tmp] Error 1
@@ -3108,16 +3094,16 @@ Program output:
 ```
 0: 194
 1: 0
-2: -1551092233
+2: 1899454711
 3: 32767
-4: -1551092234
+4: 1899454710
 5: 32767
-6: -2139905475
-7: 22074
-8: 1665118952
-9: 32679
-10: -2139905552
-11: 22074
+6: -355638723
+7: 22037
+8: 266502888
+9: 32752
+10: -355638800
+11: 22037
 ```
 
 Yikes.
@@ -3562,7 +3548,7 @@ main(void)
 Program output:
 ```
 blahblahblah
-0x55adf3d20004 == 0x55adf3d20004 != 0x55adf3d22011
+0x55f1b188c004 == 0x55f1b188c004 != 0x55f1b188e011
 ```
 
 The C compiler and linker are smart enough to see that if you have already used a string with a specific value (in this case `"clone"`), it will avoid allocating a copy of that string, and will just reuse the previous value.
@@ -7288,9 +7274,9 @@ int main(void)
 
 Program output:
 ```
-1837404: We've been asked to terminate. Exit!
-1837403: Parent asking child (1837404) to terminate
-1837403: Child process 1837404 has exited.
+1874257: We've been asked to terminate. Exit!
+1874256: Parent asking child (1874257) to terminate
+1874256: Child process 1874257 has exited.
 ```
 
 *Note:* You want to run this a few times on your system to see the output.
@@ -8590,7 +8576,7 @@ Program output:
 - F output_tmp.dat (0)
 - D 01
 - F Makefile (1971)
-- F lectures.html (981961)
+- F lectures.html (989026)
 - D 99
 - D 00
 - D 11
@@ -8613,7 +8599,7 @@ Program output:
 - D figures
 - F title.md (333)
 - F README.md (35)
-- F aggregate.md (262539)
+- F aggregate.md (261949)
 - D 08
 - D slides
 - D 05
@@ -9058,8 +9044,8 @@ main(void)
 
 Program output:
 ```
-1837676: 1837676
-1837675: 1837675
+1874847: 1874847
+1874848: 1874848
 ```
 
 
@@ -9246,15 +9232,15 @@ main(void)
 Program output:
 ```
 Server: New client connected with new file descriptor 4.
-1. Client 1837696 connected to server.
-2. Client 1837696 request sent message to server.
-Server received message (sz 38): "Citizen 1837696: Penny for Pawsident!". Replying!
-1. Client 1837697 connected to server.
-2. Client 1837697 request sent message to server.
-3. Client 1837696 reply received from server: Citizen 1837696: Penny for Pawsident!
+1. Client 1875125 connected to server.
+2. Client 1875125 request sent message to server.
+Server received message (sz 38): "Citizen 1875125: Penny for Pawsident!". Replying!
+1. Client 1875126 connected to server.
+3. Client 1875125 reply received from server: Citizen 1875125: Penny for Pawsident!
 Server: New client connected with new file descriptor 4.
-Server received message (sz 38): "Citizen 1837697: Penny for Pawsident!". Replying!
-3. Client 1837697 reply received from server: Citizen 1837697: Penny for Pawsident!
+2. Client 1875126 request sent message to server.
+Server received message (sz 38): "Citizen 1875126: Penny for Pawsident!". Replying!
+3. Client 1875126 reply received from server: Citizen 1875126: Penny for Pawsident!
 ```
 
 The server's call to `accept` is the key difference of domain sockets from named pipes.
@@ -11035,9 +11021,9 @@ main(void)
 Program output:
 ```
 
-malloc + free overhead (cycles): 1336
+malloc + free overhead (cycles): 1335
 
-mmap + munmap overhead (cycles): 36381
+mmap + munmap overhead (cycles): 36505
 ```
 
 > What is a "cycle"?
@@ -11095,11 +11081,11 @@ main(void)
 Program output:
 ```
                                                                                                                                                                                                                                                                 
-write overhead (cycles): 15307
+write overhead (cycles): 15752
                                                                                                                                                                                                                                                                 
-fwrite (stream) overhead (cycles): 148
+fwrite (stream) overhead (cycles): 147
                                                                                                                                                                                                                                                                 
-fwrite + fflush overhead (cycles): 15317
+fwrite + fflush overhead (cycles): 15315
 ```
 
 ## Library vs. Kernel Trade-offs in Memory Allocation
