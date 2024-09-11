@@ -968,7 +968,7 @@ main(void)
 Program output:
 ```
 Integers: 2147483647, 9223372036854775807, 4294967295, *
-Hex and pointers: 7fffffffffffffff, 0x55ed669cb149
+Hex and pointers: 7fffffffffffffff, 0x56409afb6149
 Strings: hello world
 ```
 
@@ -1155,8 +1155,8 @@ int main(void) {
 
 Program output:
 ```
-0th index: 0x7ffc8aba8ee0 == 0x7ffc8aba8ee0; 6 == 6
-nth index: 0x7ffc8aba8ee4 == 0x7ffc8aba8ee4; 7 == 7
+0th index: 0x7ffd433ad210 == 0x7ffd433ad210; 6 == 6
+nth index: 0x7ffd433ad214 == 0x7ffd433ad214; 7 == 7
 ```
 
 Making this a little more clear, lets understand how C accesses the `n`th item.
@@ -1191,7 +1191,7 @@ main(void)
 
 Program output:
 ```
-nth index: 0x7ffdf55e8484 == 0x7ffdf55e8484; 7 == 7
+nth index: 0x7ffc43541f34 == 0x7ffc43541f34; 7 == 7
 ```
 
 We can see that *pointer arithmetic* (i.e. doing addition/subtraction on pointers) does the same thing as array indexing plus a dereference.
@@ -1226,10 +1226,10 @@ main(void)
 
 Program output:
 ```
-idx 0 @ 0x7ffd13d5b4a0 & 0x7ffd13d5b4b4
-idx 1 @ 0x7ffd13d5b4a4 & 0x7ffd13d5b4b5
-idx 2 @ 0x7ffd13d5b4a8 & 0x7ffd13d5b4b6
-idx 3 @ 0x7ffd13d5b4ac & 0x7ffd13d5b4b7
+idx 0 @ 0x7ffc6bc43ab0 & 0x7ffc6bc43ac4
+idx 1 @ 0x7ffc6bc43ab4 & 0x7ffc6bc43ac5
+idx 2 @ 0x7ffc6bc43ab8 & 0x7ffc6bc43ac6
+idx 3 @ 0x7ffc6bc43abc & 0x7ffc6bc43ac7
 ```
 
 Note that the pointer for the integer array (`a`) is being incremented by 4, while the character array (`b`) by 1.
@@ -1460,6 +1460,19 @@ make[1]: *** [Makefile:30: inline_exec] Aborted
 ```
 
 `valgrind` will help you debug the last three of these issues, and later in the class, we'll develop a library to help debug the first.
+<style>
+#box {
+  fill: lightyellow;
+  stroke: black;
+  border:black;
+}
+
+#boxhighlight {
+  fill: red;
+  stroke: black;
+  border:black;
+}
+</style>
 
 # Pointers and Arrays
 
@@ -1592,8 +1605,8 @@ inline_exec_tmp.c: In function main:
 inline_exec_tmp.c:8:5: warning: p_int is used uninitialized in this function [-Wuninitialized]
     8 |     printf( "i = %d\t p_int = %p\n", i, p_int ) ;
       |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-i = 100	 p_int = 0x7ffcae5a9a60
-i = 100	 p_int = 0x7ffcae5a995c	 address of i = 0x7ffcae5a995c
+i = 100	 p_int = 0x7ffe14c81c80
+i = 100	 p_int = 0x7ffe14c81b7c	 address of i = 0x7ffe14c81b7c
 
 
 ```
@@ -1720,7 +1733,189 @@ The modifiers can be applied to the _pointers_ themselves and not only the varia
 
 ## Arrays
 
+
+We have seen arrays before...in the form of strings!
+
+<img src="figures/string_array_basic.png" width="700">
+
 Arrays are a **contiguous** collection of data items, _all of the same type_.
+
+so, if we _declare_ an integer array,
+
+```c 
+int a[5] = { 100, 200, 300, 400, 500 } ;
+```
+
+this is what it looks like in memory:
+
+`a` &rarr; 
+<svg>
+<g>
+<rect id="box" x="0" y="100" width="50" height="50"/>
+<text x="5" y="131" font-size="23">100</text>
+</g> 
+<g>
+<rect id="box" x="50" y="100" width="50" height="50"/>
+<text x="55" y="131" font-size="23">200</text>
+</g> 
+<g>
+<rect id="box" x="100" y="100" width="50" height="50"/>
+<text x="105" y="131" font-size="23">300</text>
+</g> 
+<g>
+<rect id="box" x="150" y="100" width="50" height="50"/>
+<text x="155" y="131" font-size="23">400</text>
+</g> 
+<g>
+<rect id="box" x="200" y="100" width="50" height="50"/>
+<text x="205" y="131" font-size="23">500</text>
+</g> 
+<g>
+<rect id="box" x="250" y="100" width="50" height="50"/>
+<text x="255" y="131" font-size="23">600</text>
+</g> 
+</svg>
+
+To access individual elements of the array, 
+use the **array access operator**, `[]`
+
+_e.g._, `a[0]`: 
+<svg>
+<g>
+<rect id="boxhighlight" x="0" y="100" width="50" height="50"/>
+<text x="5" y="131" font-size="23">100</text>
+</g> 
+<g>
+<rect id="box" x="50" y="100" width="50" height="50"/>
+<text x="55" y="131" font-size="23">200</text>
+</g> 
+<g>
+<rect id="box" x="100" y="100" width="50" height="50"/>
+<text x="105" y="131" font-size="23">300</text>
+</g> 
+<g>
+<rect id="box" x="150" y="100" width="50" height="50"/>
+<text x="155" y="131" font-size="23">400</text>
+</g> 
+<g>
+<rect id="box" x="200" y="100" width="50" height="50"/>
+<text x="205" y="131" font-size="23">500</text>
+</g> 
+<g>
+<rect id="box" x="250" y="100" width="50" height="50"/>
+<text x="255" y="131" font-size="23">600</text>
+</g> 
+</svg>
+
+_e.g._, `a[2]`: 
+<svg>
+<g>
+<rect id="box" x="0" y="100" width="50" height="50"/>
+<text x="5" y="131" font-size="23">100</text>
+</g> 
+<g>
+<rect id="box" x="50" y="100" width="50" height="50"/>
+<text x="55" y="131" font-size="23">200</text>
+</g> 
+<g>
+<rect id="boxhighlight" x="100" y="100" width="50" height="50"/>
+<text x="105" y="131" font-size="23">300</text>
+</g> 
+<g>
+<rect id="box" x="150" y="100" width="50" height="50"/>
+<text x="155" y="131" font-size="23">400</text>
+</g> 
+<g>
+<rect id="box" x="200" y="100" width="50" height="50"/>
+<text x="205" y="131" font-size="23">500</text>
+</g> 
+<g>
+<rect id="box" x="250" y="100" width="50" height="50"/>
+<text x="255" y="131" font-size="23">600</text>
+</g> 
+</svg>
+
+Now, there's a reason why I drew it like this:
+
+`a` &rarr; 
+<svg>
+<g>
+<rect id="box" x="0" y="100" width="50" height="50"/>
+<text x="5" y="131" font-size="23">100</text>
+</g> 
+<g>
+<rect id="box" x="50" y="100" width="50" height="50"/>
+<text x="55" y="131" font-size="23">200</text>
+</g> 
+<g>
+<rect id="box" x="100" y="100" width="50" height="50"/>
+<text x="105" y="131" font-size="23">300</text>
+</g> 
+<g>
+<rect id="box" x="150" y="100" width="50" height="50"/>
+<text x="155" y="131" font-size="23">400</text>
+</g> 
+<g>
+<rect id="box" x="200" y="100" width="50" height="50"/>
+<text x="205" y="131" font-size="23">500</text>
+</g> 
+<g>
+<rect id="box" x="250" y="100" width="50" height="50"/>
+<text x="255" y="131" font-size="23">600</text>
+</g> 
+</svg>
+
+because, `a` is actually a...**pointer**...to the start of the array, _i.e._, the **first** element.
+
+When we access an array item, _e.g._, `a[2]`...`C` is basically doing **pointer arithmetic**. So, 
+
+`a[2]` &rarr; `*(a+2)`:
+
+|||
+|-----|-----|
+| `a` | pointer to start of array |
+| `a+2` | add `2` to the pointer, <br> _i.e.,_ to the **address** `a` |
+| `*(a+2)` | **dereference** address `a+2`, <br> _i.e.,_ get **data** from location `a+2` |
+||
+
+A simple example of using pointers vs array name:
+
+```c
+#include <stdio.h>
+
+int main()
+{
+    int a[5] = { 100, 200, 300, 400, 500 } ;
+    int* p_a = a ;
+
+    printf( "%d\n", *(a+2) ) ;
+    printf( "%d\n", *(p_a++) ) ;
+
+    printf( "\n ) ;
+    return 0 ;
+}
+```
+
+Program output:
+```
+inline_exec_tmp.c: In function main:
+inline_exec_tmp.c:11:13: warning: missing terminating " character
+   11 |     printf( "\n ) ;
+      |             ^
+inline_exec_tmp.c:11:13: error: missing terminating " character
+   11 |     printf( "\n ) ;
+      |             ^~~~~~~
+inline_exec_tmp.c:12:5: error: expected expression before return
+   12 |     return 0 ;
+      |     ^~~~~~
+inline_exec_tmp.c:12:15: error: expected ; before } token
+   12 |     return 0 ;
+      |               ^
+      |               ;
+   13 | }
+      | ~              
+make[1]: *** [Makefile:33: inline_exec_tmp] Error 1
+```
 ## Exercises
 
 ### C is a Thin Language Layer on Top of Memory
@@ -1785,10 +1980,10 @@ print_values(void)
 Program output:
 ```
 Addresses:
-a   @ 0x555739313010
-b   @ 0x555739313014
-c   @ 0x555739313020
-end @ 0x555739313039
+a   @ 0x564ce3ec3010
+b   @ 0x564ce3ec3014
+c   @ 0x564ce3ec3020
+end @ 0x564ce3ec3039
 &end - &a = 41
 
 Initial values:
@@ -1796,7 +1991,7 @@ a     = 1
 b     = 2
 c.c_a = 3
 c.c_b = 0
-c.c_c = 0x555739313014
+c.c_c = 0x564ce3ec3014
 
 Print out the variables as raw memory
 
@@ -1910,8 +2105,8 @@ main(void)
 
 Program output:
 ```
-0: 4 @ 0x559edf49704c
-1: 2 @ 0x559edf497044
+0: 4 @ 0x55e52b4fa04c
+1: 2 @ 0x55e52b4fa044
 2: 0 @ (nil)
 ```
 
@@ -2119,8 +2314,8 @@ inline_exec_tmp.c:36:5: warning: implicit declaration of function bubble_sort; d
    36 |     bubble_sort( my_array, array_size ) ;
       |     ^~~~~~~~~~~
       |     bubble_sort_int
-/usr/bin/ld: /tmp/ccdaHogz.o: in function `main':
-/home/sibin/Teaching/CSCI_2401/lectures/inline_exec_tmp.c:36: undefined reference to `bubble_sort'
+/usr/bin/ld: /tmp/ccgHgnMo.o: in function `main':
+/home/sibin/Teaching/CSCI_2401/lectures-private/inline_exec_tmp.c:36: undefined reference to `bubble_sort'
 collect2: error: ld returned 1 exit status
 make[1]: *** [Makefile:33: inline_exec_tmp] Error 1
 ```
@@ -2913,16 +3108,16 @@ Program output:
 ```
 0: 194
 1: 0
-2: -1546230761
-3: 32764
-4: -1546230762
-5: 32764
-6: 1635893821
-7: 21872
-8: 659854056
-9: 32517
-10: 1635893744
-11: 21872
+2: -1551092233
+3: 32767
+4: -1551092234
+5: 32767
+6: -2139905475
+7: 22074
+8: 1665118952
+9: 32679
+10: -2139905552
+11: 22074
 ```
 
 Yikes.
@@ -3367,7 +3562,7 @@ main(void)
 Program output:
 ```
 blahblahblah
-0x560bee643004 == 0x560bee643004 != 0x560bee645011
+0x55adf3d20004 == 0x55adf3d20004 != 0x55adf3d22011
 ```
 
 The C compiler and linker are smart enough to see that if you have already used a string with a specific value (in this case `"clone"`), it will avoid allocating a copy of that string, and will just reuse the previous value.
@@ -7093,9 +7288,9 @@ int main(void)
 
 Program output:
 ```
-1527151: We've been asked to terminate. Exit!
-1527150: Parent asking child (1527151) to terminate
-1527150: Child process 1527151 has exited.
+1837404: We've been asked to terminate. Exit!
+1837403: Parent asking child (1837404) to terminate
+1837403: Child process 1837404 has exited.
 ```
 
 *Note:* You want to run this a few times on your system to see the output.
@@ -8395,7 +8590,7 @@ Program output:
 - F output_tmp.dat (0)
 - D 01
 - F Makefile (1971)
-- F lectures.html (965611)
+- F lectures.html (981961)
 - D 99
 - D 00
 - D 11
@@ -8410,7 +8605,7 @@ Program output:
 - F inline_exec_tmp.c (1658)
 - F theme.css (691)
 - D 07
-- F inline_exec_tmp (60160)
+- F inline_exec_tmp (60168)
 - F LICENSE (1522)
 - D tools
 - D .git
@@ -8418,7 +8613,7 @@ Program output:
 - D figures
 - F title.md (333)
 - F README.md (35)
-- F aggregate.md (257834)
+- F aggregate.md (262539)
 - D 08
 - D slides
 - D 05
@@ -8863,8 +9058,8 @@ main(void)
 
 Program output:
 ```
-1527433: 1527433
-1527434: 1527434
+1837676: 1837676
+1837675: 1837675
 ```
 
 
@@ -9051,15 +9246,15 @@ main(void)
 Program output:
 ```
 Server: New client connected with new file descriptor 4.
-1. Client 1527455 connected to server.
-2. Client 1527455 request sent message to server.
-Server received message (sz 38): "Citizen 1527455: Penny for Pawsident!". Replying!
-3. Client 1527455 reply received from server: Citizen 1527455: Penny for Pawsident!
-1. Client 1527456 connected to server.
+1. Client 1837696 connected to server.
+2. Client 1837696 request sent message to server.
+Server received message (sz 38): "Citizen 1837696: Penny for Pawsident!". Replying!
+1. Client 1837697 connected to server.
+2. Client 1837697 request sent message to server.
+3. Client 1837696 reply received from server: Citizen 1837696: Penny for Pawsident!
 Server: New client connected with new file descriptor 4.
-2. Client 1527456 request sent message to server.
-Server received message (sz 38): "Citizen 1527456: Penny for Pawsident!". Replying!
-3. Client 1527456 reply received from server: Citizen 1527456: Penny for Pawsident!
+Server received message (sz 38): "Citizen 1837697: Penny for Pawsident!". Replying!
+3. Client 1837697 reply received from server: Citizen 1837697: Penny for Pawsident!
 ```
 
 The server's call to `accept` is the key difference of domain sockets from named pipes.
@@ -10842,7 +11037,7 @@ Program output:
 
 malloc + free overhead (cycles): 1336
 
-mmap + munmap overhead (cycles): 36918
+mmap + munmap overhead (cycles): 36381
 ```
 
 > What is a "cycle"?
@@ -10900,11 +11095,11 @@ main(void)
 Program output:
 ```
                                                                                                                                                                                                                                                                 
-write overhead (cycles): 15354
+write overhead (cycles): 15307
                                                                                                                                                                                                                                                                 
 fwrite (stream) overhead (cycles): 148
                                                                                                                                                                                                                                                                 
-fwrite + fflush overhead (cycles): 15892
+fwrite + fflush overhead (cycles): 15317
 ```
 
 ## Library vs. Kernel Trade-offs in Memory Allocation
