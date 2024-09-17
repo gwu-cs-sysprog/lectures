@@ -968,7 +968,7 @@ main(void)
 Program output:
 ```
 Integers: 2147483647, 9223372036854775807, 4294967295, *
-Hex and pointers: 7fffffffffffffff, 0x55df710d7149
+Hex and pointers: 7fffffffffffffff, 0x555555555149
 Strings: hello world
 ```
 
@@ -1155,8 +1155,8 @@ int main(void) {
 
 Program output:
 ```
-0th index: 0x7ffdeb3412c0 == 0x7ffdeb3412c0; 6 == 6
-nth index: 0x7ffdeb3412c4 == 0x7ffdeb3412c4; 7 == 7
+0th index: 0x7fffffffe7c0 == 0x7fffffffe7c0; 6 == 6
+nth index: 0x7fffffffe7c4 == 0x7fffffffe7c4; 7 == 7
 ```
 
 Making this a little more clear, lets understand how C accesses the `n`th item.
@@ -1191,7 +1191,7 @@ main(void)
 
 Program output:
 ```
-nth index: 0x7ffe9911fb34 == 0x7ffe9911fb34; 7 == 7
+nth index: 0x7fffffffe7c4 == 0x7fffffffe7c4; 7 == 7
 ```
 
 We can see that *pointer arithmetic* (i.e. doing addition/subtraction on pointers) does the same thing as array indexing plus a dereference.
@@ -1226,10 +1226,10 @@ main(void)
 
 Program output:
 ```
-idx 0 @ 0x7fff51087e50 & 0x7fff51087e64
-idx 1 @ 0x7fff51087e54 & 0x7fff51087e65
-idx 2 @ 0x7fff51087e58 & 0x7fff51087e66
-idx 3 @ 0x7fff51087e5c & 0x7fff51087e67
+idx 0 @ 0x7fffffffe7c0 & 0x7fffffffe7d4
+idx 1 @ 0x7fffffffe7c4 & 0x7fffffffe7d5
+idx 2 @ 0x7fffffffe7c8 & 0x7fffffffe7d6
+idx 3 @ 0x7fffffffe7cc & 0x7fffffffe7d7
 ```
 
 Note that the pointer for the integer array (`a`) is being incremented by 4, while the character array (`b`) by 1.
@@ -1605,8 +1605,8 @@ inline_exec_tmp.c: In function main:
 inline_exec_tmp.c:8:5: warning: p_int is used uninitialized in this function [-Wuninitialized]
     8 |     printf( "i = %d\t p_int = %p\n", i, p_int ) ;
       |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-i = 100	 p_int = 0x7ffccdd085d0
-i = 100	 p_int = 0x7ffccdd084cc	 address of i = 0x7ffccdd084cc
+i = 100	 p_int = 0x7fffffffe8d0
+i = 100	 p_int = 0x7fffffffe7cc	 address of i = 0x7fffffffe7cc
 
 
 ```
@@ -1986,6 +1986,7 @@ Signature: `void *malloc(size_t size);`
 * returns &rarr; **pointer to newly allocated memory**
 
 
+
 ```C
 #include <stdio.h>
 #include <stdlib.h>
@@ -2016,6 +2017,125 @@ int main()
     printf("\n") ;
     return 0 ;
 }
+```
+
+
+Let's look at another example:
+```C
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+
+int main()
+{
+    // Create a new string to store a Haiku
+    char haiku[] = "'You Laughed While I Slept'\n\
+- by Bertram Dobell\n\
+\n\
+You laughed while I wept,\n\
+Yet my tears and your laughter\n\
+Had only one source." ;
+
+    char* new_haiku = (char*)malloc( sizeof(char)*128 ) ;
+    assert(new_haiku) ; // check if we got a valid pointer
+
+    // copy from one to the other?
+    new_haiku = haiku ;
+
+    printf( "haiku = %s\n\n", haiku ) ;
+    printf( "new_haiku = %s\n\n", new_haiku ) ;
+
+    // Exactly the same, so all ok?
+
+    // But, what if we do this?
+    haiku [1] = '#' ;
+
+    // new_haiku has changed!
+    printf( "new_haiku = %s\n\n", new_haiku ) ;
+
+    printf("\n") ;
+    return 0 ;
+}
+```
+
+The above change happens, because the copy `` new_haiku = haiku`` was a **shallow copy**, _i.e._, it only copied the pointers and **not** the underlying string!
+
+To fix this problem, do a **deep copy** instead. 
+```C
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+
+int main()
+{
+    // Create a new string to store a Haiku
+    char haiku[] = "'You Laughed While I Slept'\n\
+- by Bertram Dobell\n\
+\n\
+You laughed while I wept,\n\
+Yet my tears and your laughter\n\
+Had only one source." ;
+
+    char* new_haiku = (char*)malloc( sizeof(char)*128 ) ;
+    assert(new_haiku) ; // check if we got a valid pointer
+
+    // copy from one to the other?
+    // SHALLOW COPY
+    // new_haiku = haiku ;
+
+    // Deep Copy
+    unsigned int i ; 
+    for( i = 0 ; i < sizeof(haiku) ; ++i )
+        new_haiku[i] = haiku[i] ;
+
+    // modify original Haiku
+    haiku [1] = '#' ;
+
+    printf( "haiku = %s\n\n", haiku ) ;
+    printf( "new_haiku = %s\n\n", new_haiku ) ; //unchanged
+
+    printf("\n") ;
+    return 0 ;
+}
+```
+
+Note: we can use a `C` standard library function, `strcpy()` (defined in `<string.h>`) to do the copy:
+```C
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <string.h>
+
+int main()
+{
+    // Create a new string to store a Haiku
+    char haiku[] = "'You Laughed While I Slept'\n\
+- by Bertram Dobell\n\
+\n\
+You laughed while I wept,\n\
+Yet my tears and your laughter\n\
+Had only one source." ;
+
+    char* new_haiku = (char*)malloc( sizeof(char)*128 ) ;
+    assert(new_haiku) ; // check if we got a valid pointer
+
+    // Deep Copy
+    strcpy( new_haiku, haiku ) ;
+
+    // modify original Haiku
+    haiku [1] = '#' ;
+
+    printf( "haiku = %s\n\n", haiku ) ;
+    printf( "new_haiku = %s\n\n", new_haiku ) ; //unchanged
+
+    printf("\n") ;
+    return 0 ;
+}
+```
+
+What happens if I do, 
+```c 
+1[new_haiku] = `*` ;
 ```
 
 
@@ -2059,6 +2179,7 @@ int main()
 ```
 Compare the differences, _if any_, in the outputs of the above two pieces of code. 
 
+
 #### `realloc`
 
 Signature: `void* realloc(void *ptr, size_t size);`
@@ -2084,41 +2205,144 @@ There are some "oddities" you need to be aware of while using `realloc()`:
     * `realloc(pa, 20)`
     * last `10` bytes **not** set to `0`
 
-Adapting the code example from earlier,
+
+
+Adapting the code example from earlier, let's assume we now have a much longer poem to copy,
 ```C
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
 
 // ALWAYS good to define array sizes as such constants
-#define ARRAY_SIZE 16
+#define HAIKU_SIZE 128
 
 int main()
 {
-    // replace with calloc()
-    // int* pi = (int*) malloc( sizeof(int) * ARRAY_SIZE ) ;
-    int* pi = (int*) calloc( ARRAY_SIZE, sizeof(int) )  ; // notice the difference in args
-    assert(pi) ; // check that a valid address was returned
+    // Create a new string to store the Haiku
+    char haiku[] = "'You Laughed While I Slept'\n\
+- by Bertram Dobell\n\
+\n\
+You laughed while I wept,\n\
+Yet my tears and your laughter\n\
+Had only one source." ;
 
-    pi[0] = 233 ;
+    // get space to store it
+    char* new_haiku = (char*)malloc( sizeof(char)*128 ) ;
 
-    printf( "After malloc\n") ;
-    for( unsigned int i = 0 ; i < ARRAY_SIZE ; ++i )
-        printf( "pi[%d] = %d\t", i, pi[i] ) ;
-    printf( "\n" ) ;
+    // Deep Copy
+    strcpy( new_haiku, haiku ) ;
 
-    // double the size o
-    realloc( pi, ARRAY_SIZE*2 ) ;
+    // ... same code as before
 
-    printf( "After realloc\n") ;
-    for( unsigned int i = 0 ; i < ARRAY_SIZE*2 ; ++i )
-        printf( "pi[%d] = %d\t", i, pi[i] ) ;
-    printf( "\n" ) ;
+    // Now we have a new, LONGER, poem
+    char twain_poem[] = "'These Annual Bills'\n\
+- Mark Twain\n\
+\n\
+These annual bills! these annual bills!\n\ 
+How many a song their discord trills \n\
+Of 'truck' consumed, enjoyed, forgot,\n\
+Since I was skinned by last year's lot!\n\
+Those joyous beans are passed away;\n\
+\n\
+Those onions blithe, O where are they?\n\
+Once loved, lost, mourned-now vexing ILLS\n\
+Your shades troop back in annual bills! \n\
+\n\
+And so 'twill be when I'm aground \n\
+These yearly duns will still go round, \n\
+While other bards, with frantic quills,\n\
+\n\
+Shall damn and damn these annual bills!" ;
+
+    // Deep Copy?
+    strcpy( new_haiku, twain_poem ) ;
+
+    printf( "\n---------------\n" ) ;
+    printf( "%s\n\n", twain_poem ) ;
+    printf( "new_haiku = %s\n\n", new_haiku ) ;
+
+    printf( "new_haiku size = %lu \t twain size = %lu", sizeof(new_haiku), sizeof(twain_poem) ) ;
 
     printf("\n") ;
     return 0 ;
 }
 ```
+
+We see some random behaviors. Program can crash!
+
+Some important issues: 
+1. `strcpy() ` **does not** do a bounds check while copying! Use `strncpy()` instead.
+2. we need to _increase_ the space for `new_haiku`, so we use `realloc()`.
+
+```C
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <string.h>
+
+// ALWAYS good to define array sizes as such constants
+#define HAIKU_SIZE 128
+#define POEM_SIZE 1024 
+
+int main()
+{
+    // Create a new string to store the Haiku
+    char haiku[] = "'You Laughed While I Slept'\n\
+- by Bertram Dobell\n\
+\n\
+You laughed while I wept,\n\
+Yet my tears and your laughter\n\
+Had only one source." ;
+
+    // get space to store it
+    char* new_haiku = (char*)malloc( sizeof(char)*128 ) ;
+
+    // Deep Copy
+    strcpy( new_haiku, haiku ) ;
+
+    // ... same code as before
+
+    // Now we have a new, LONGER, poem
+    char twain_poem[] = "'These Annual Bills'\n\
+- Mark Twain\n\
+\n\
+These annual bills! these annual bills!\n\ 
+How many a song their discord trills \n\
+Of 'truck' consumed, enjoyed, forgot,\n\
+Since I was skinned by last year's lot!\n\
+Those joyous beans are passed away;\n\
+\n\
+Those onions blithe, O where are they?\n\
+Once loved, lost, mourned-now vexing ILLS\n\
+Your shades troop back in annual bills! \n\
+\n\
+And so 'twill be when I'm aground \n\
+These yearly duns will still go round, \n\
+While other bards, with frantic quills,\n\
+\n\
+Shall damn and damn these annual bills!" ;
+
+
+    // realloc for more space
+    new_haiku = (char*) realloc( new_haiku, POEM_SIZE ) ;
+    assert(new_haiku) ; // ALWAYS CHECK!
+
+    // Deep Copy?
+    strcpy( new_haiku, twain_poem ) ;
+
+    printf( "\n---------------\n" ) ;
+    printf( "%s\n\n", twain_poem ) ;
+    printf( "new_haiku = %s\n\n", new_haiku ) ;
+
+    printf( "new_haiku size = %lu \t twain size = %lu", sizeof(new_haiku), sizeof(twain_poem) ) ;
+
+    printf("\n") ;
+    return 0 ;
+}
+```
+
+
 
 
 #### ` free()`
@@ -2358,10 +2582,10 @@ print_values(void)
 Program output:
 ```
 Addresses:
-a   @ 0x55c817f9a010
-b   @ 0x55c817f9a014
-c   @ 0x55c817f9a020
-end @ 0x55c817f9a039
+a   @ 0x555555558010
+b   @ 0x555555558014
+c   @ 0x555555558020
+end @ 0x555555558039
 &end - &a = 41
 
 Initial values:
@@ -2369,7 +2593,7 @@ a     = 1
 b     = 2
 c.c_a = 3
 c.c_b = 0
-c.c_c = 0x55c817f9a014
+c.c_c = 0x555555558014
 
 Print out the variables as raw memory
 
@@ -2483,8 +2707,8 @@ main(void)
 
 Program output:
 ```
-0: 4 @ 0x562539f1904c
-1: 2 @ 0x562539f19044
+0: 4 @ 0x55555555804c
+1: 2 @ 0x555555558044
 2: 0 @ (nil)
 ```
 
@@ -2692,7 +2916,7 @@ inline_exec_tmp.c:36:5: warning: implicit declaration of function bubble_sort; d
    36 |     bubble_sort( my_array, array_size ) ;
       |     ^~~~~~~~~~~
       |     bubble_sort_int
-/usr/bin/ld: /tmp/ccibvE8q.o: in function `main':
+/usr/bin/ld: /tmp/ccsXuoDT.o: in function `main':
 /home/sibin/Teaching/CSCI_2401/lectures-private/inline_exec_tmp.c:36: undefined reference to `bubble_sort'
 collect2: error: ld returned 1 exit status
 make[1]: *** [Makefile:33: inline_exec_tmp] Error 1
@@ -3486,16 +3710,16 @@ Program output:
 ```
 0: 194
 1: 0
-2: -1318969769
+2: -6201
 3: 32767
-4: -1318969770
+4: -6202
 5: 32767
-6: -968129987
-7: 21879
-8: -918928664
-9: 32525
-10: -968130064
-11: 21879
+6: 1431654973
+7: 21845
+8: -134552856
+9: 32767
+10: 1431654896
+11: 21845
 ```
 
 Yikes.
@@ -3940,7 +4164,7 @@ main(void)
 Program output:
 ```
 blahblahblah
-0x5577d7f0b004 == 0x5577d7f0b004 != 0x5577d7f0d011
+0x555555556004 == 0x555555556004 != 0x555555558011
 ```
 
 The C compiler and linker are smart enough to see that if you have already used a string with a specific value (in this case `"clone"`), it will avoid allocating a copy of that string, and will just reuse the previous value.
@@ -7080,8 +7304,8 @@ int main(void)
 
 Program output:
 ```
-Child sent whole message!
 Parent got the message!
+Child sent whole message!
 ```
 
 The *concurrency* of the system enables separate processes to be active at the same time, thus for the `write` and `read` to be transferring data through the pipe *at the same time*. This simplifies our code as we don't need to worry about sending chunks of our data.
@@ -7666,9 +7890,9 @@ int main(void)
 
 Program output:
 ```
-2032470: We've been asked to terminate. Exit!
-2032469: Parent asking child (2032470) to terminate
-2032469: Child process 2032470 has exited.
+3450444: We've been asked to terminate. Exit!
+3450443: Parent asking child (3450444) to terminate
+3450443: Child process 3450444 has exited.
 ```
 
 *Note:* You want to run this a few times on your system to see the output.
@@ -8968,7 +9192,7 @@ Program output:
 - F output_tmp.dat (0)
 - D 01
 - F Makefile (2007)
-- F lectures.html (1025101)
+- F lectures.html (1012584)
 - D 99
 - D 00
 - D 11
@@ -8992,7 +9216,7 @@ Program output:
 - D figures
 - F title.md (333)
 - F README.md (35)
-- F aggregate.md (271275)
+- F aggregate.md (276542)
 - D 08
 - D slides
 - D 05
@@ -9437,8 +9661,8 @@ main(void)
 
 Program output:
 ```
-2032758: 2032757
-2032757: 2032758
+3450715: 3450715
+3450716: 3450716
 ```
 
 
@@ -9625,15 +9849,15 @@ main(void)
 Program output:
 ```
 Server: New client connected with new file descriptor 4.
-1. Client 2032796 connected to server.
-2. Client 2032796 request sent message to server.
-Server received message (sz 38): "Citizen 2032796: Penny for Pawsident!". Replying!
-1. Client 2032797 connected to server.
-2. Client 2032797 request sent message to server.
-3. Client 2032796 reply received from server: Citizen 2032796: Penny for Pawsident!
+1. Client 3450736 connected to server.
+2. Client 3450736 request sent message to server.
+Server received message (sz 38): "Citizen 3450736: Penny for Pawsident!". Replying!
+1. Client 3450737 connected to server.
+3. Client 3450736 reply received from server: Citizen 3450736: Penny for Pawsident!
 Server: New client connected with new file descriptor 4.
-Server received message (sz 38): "Citizen 2032797: Penny for Pawsident!". Replying!
-3. Client 2032797 reply received from server: Citizen 2032797: Penny for Pawsident!
+2. Client 3450737 request sent message to server.
+Server received message (sz 38): "Citizen 3450737: Penny for Pawsident!". Replying!
+3. Client 3450737 reply received from server: Citizen 3450737: Penny for Pawsident!
 ```
 
 The server's call to `accept` is the key difference of domain sockets from named pipes.
@@ -11414,9 +11638,9 @@ main(void)
 Program output:
 ```
 
-malloc + free overhead (cycles): 1351
+malloc + free overhead (cycles): 1180
 
-mmap + munmap overhead (cycles): 36403
+mmap + munmap overhead (cycles): 36470
 ```
 
 > What is a "cycle"?
@@ -11474,11 +11698,11 @@ main(void)
 Program output:
 ```
                                                                                                                                                                                                                                                                 
-write overhead (cycles): 15384
+write overhead (cycles): 15314
                                                                                                                                                                                                                                                                 
-fwrite (stream) overhead (cycles): 147
+fwrite (stream) overhead (cycles): 146
                                                                                                                                                                                                                                                                 
-fwrite + fflush overhead (cycles): 16141
+fwrite + fflush overhead (cycles): 15292
 ```
 
 ## Library vs. Kernel Trade-offs in Memory Allocation
