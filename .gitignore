@@ -4,6 +4,9 @@ aggregate.md
 inline_exec_tmp
 inline_exec_tmp.c
 
+# Link to public lecture notes directory
+public_lecture_page
+
 # Prerequisites
 *.d
 
