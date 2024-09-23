@@ -59,6 +59,7 @@ install: html
 	cp lectures.html $(INSTALLDIR)/index.html
 	cp -r figures/* $(INSTALLDIR)/figures/
 	cp -r slides/*_slides.html slides/reveal slides/figures $(INSTALLDIR)/slides/
+	cp -r code/*.c $(INSTALLDIR)/code/
 
 # doc: html pdf
 doc: html

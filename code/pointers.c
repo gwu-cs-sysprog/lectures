@@ -12,7 +12,7 @@
 int main()
 {
     int* temp = malloc( 239847 ) ;
-    int* p_int = (int*) malloc( sizeof(int) * 100 )
+    int* p_int = (int*) malloc( sizeof(int) * 100 ) ;
 
     /*
     int i = 100 ;
