@@ -2745,8 +2745,8 @@ struct student{
 The memory _layout_ for this struct will look like:
 
 <twocolumn>
-<img src="figures/pointers_mem_layouts/code_struct_with_array.png" height="200">
-<img src="figures/pointers_mem_layouts/struct_mem_layout-1.png" height="200">
+<img src="figures/pointers_mem_layouts/code_struct_with_array.png" width="200">
+<img src="figures/pointers_mem_layouts/struct_mem_layout-1.png" width="200">
 </twocolumn>
 
 where the memory for the two variables, `_gwid` and `name` are (likely) consecutively laid out in memory (note: `unsigned int` is typically `4 bytes` for 32-bit architectures but can be `8 bytes` in 64-bit architectures.).
@@ -2760,8 +2760,8 @@ We can **dynamically allocate** memory for `_name` (based on how much memory is 
 So, once we update the `struct`, we get the following memory layout:
 
 <twocolumn>
-<img src="figures/pointers_mem_layouts/code_struct_with_pointer.png" height="200">
-<img src="figures/pointers_mem_layouts/struct_mem_layout-2.png" height="200">
+<img src="figures/pointers_mem_layouts/code_struct_with_pointer.png" width="200">
+<img src="figures/pointers_mem_layouts/struct_mem_layout-2.png" width="200">
 </twocolumn>
 
 <br>
@@ -2780,7 +2780,7 @@ So, now we must _allocate_ memory for us to store names, _.e.g._,
 
 The memory layout will now look like,
 
-<img src="figures/pointers_mem_layouts/struct_mem_layout-3.png" height="100">
+<img src="figures/pointers_mem_layouts/struct_mem_layout-3.png" width="100">
 
 ### Complex Memory Layouts
 
@@ -2798,8 +2798,8 @@ struct student student_records[4] ;
 Recall (from above) what the memory layout for _one_ `struct` (still with the hardcoded array for `_name`, _i.e._, an array of `128 bytes`) looks like. Now, the memory layout for an _array_ will look like,
 
 <twocolumn>
-<img src="figures/pointers_mem_layouts/code_array_struct_array.png" height="200">
-<img src="figures/pointers_mem_layouts/struct_mem_layout-4.png" height="100">
+<img src="figures/pointers_mem_layouts/code_array_struct_array.png" width="200">
+<img src="figures/pointers_mem_layouts/struct_mem_layout-4.png" width="100">
 </twocolumn>
 
 Remember that,
@@ -2809,7 +2809,7 @@ Remember that,
 
 Hence, when you access each element of the array, _e.g._, `student_records[n]
 
-<img src="figures/pointers_mem_layouts/struct_mem_layout-5.png" height="150">
+<img src="figures/pointers_mem_layouts/struct_mem_layout-5.png" width="150">
 
 Of course, this still suffers from the earlier issue with the fixed value for the size of `_name`. Hence, we want to use the _pointer_ version of the struct. So, if we create an array of `struct student` as follows,
 ```c 
@@ -2824,19 +2824,19 @@ struct student student_records[4] ;
 The memory layout for the `student_records` array will look like (again recall what the memory layout for _one_ struct will look like from above),
 
 <twocolumn>
-<img src="figures/pointers_mem_layouts/code_array_struct_pointers.png" height="150">
-<img src="figures/pointers_mem_layouts/struct_mem_layout-6.png" height="100">
+<img src="figures/pointers_mem_layouts/code_array_struct_pointers.png" width="150">
+<img src="figures/pointers_mem_layouts/struct_mem_layout-6.png" width="100">
 </twocolumn>
 
 As before, to access each element of this array, we can use the `[]` operator, 
 
-<img src="figures/pointers_mem_layouts/struct_mem_layout-7.png" height="100">
+<img src="figures/pointers_mem_layouts/struct_mem_layout-7.png" width="100">
 
 Note, we need to be careful with how we access/allocate/use the memory now. More of that later. 
 
 Let's draw the same figure this way for convenience:
 
-<img src="figures/pointers_mem_layouts/struct_mem_layout-8.png" height="100">
+<img src="figures/pointers_mem_layouts/struct_mem_layout-8.png" width="100">
 
 Remember that `_name` still needs memory! So we can allocate it, say using `malloc()`. Hence, allocating memory for the _first_ `_name` may look like this:
 
@@ -2853,15 +2853,15 @@ student_records[0]._name = (char*) malloc( sizeof(char)*128 ) ; // allocate memo
 The memory layout, after _one_ `_name` allocation will look like:
 
 <twocolumn>
-<img src="figures/pointers_mem_layouts/code_array_struct_pointers_malloc.1.png" height="200">
-<img src="figures/pointers_mem_layouts/struct_mem_layout-8.1.png" height="100">
+<img src="figures/pointers_mem_layouts/code_array_struct_pointers_malloc.1.png" width="200">
+<img src="figures/pointers_mem_layouts/struct_mem_layout-8.1.png" width="100">
 </twocolumn>
 
 Updated memory layout after _all four_ `_name` allocations
 
 <twocolumn>
-<img src="figures/pointers_mem_layouts/code_array_struct_pointers_malloc.3.png" height="200">
-<img src="figures/pointers_mem_layouts/struct_mem_layout-8.3.png" height="100">
+<img src="figures/pointers_mem_layouts/code_array_struct_pointers_malloc.3.png" width="200">
+<img src="figures/pointers_mem_layouts/struct_mem_layout-8.3.png" width="100">
 </twocolumn>
 
 and the corresponding code will look like,
@@ -2890,8 +2890,8 @@ It creates an _array_ of **pointers to `struct`** (remember to read the definiti
 The memory layout now looks like,
 
 <twocolumn>
-<img src="figures/pointers_mem_layouts/code_array_pointers_struct_pointers.png" height="150">
-<img src="figures/pointers_mem_layouts/struct_mem_layout-9.png" height="150">
+<img src="figures/pointers_mem_layouts/code_array_pointers_struct_pointers.png" width="150">
+<img src="figures/pointers_mem_layouts/struct_mem_layout-9.png" width="150">
 </twocolumn>
 
 (Compare this to the previous layouts)
@@ -2913,8 +2913,8 @@ student_records[0] = (struct student*) malloc( sizeof(struct student) ) ; // all
 The memory layout after allocating the struct:
 
 <twocolumn>
-<img src="figures/pointers_mem_layouts/code_array_pointers_struct_pointers.1.png" height="200">
-<img src="figures/pointers_mem_layouts/struct_mem_layout-9.1.png" height="100">
+<img src="figures/pointers_mem_layouts/code_array_pointers_struct_pointers.1.png" width="200">
+<img src="figures/pointers_mem_layouts/struct_mem_layout-9.1.png" width="100">
 </twocolumn>
 
 <br>
@@ -2946,8 +2946,8 @@ student_records[0]->name = (char*) malloc( sizeof(char) * 128 ) ; // allocate me
 Now, the memory layout after allocating both, the `struct` and `_name`,
 
 <twocolumn>
-<img src="figures/pointers_mem_layouts/code_array_pointers_struct_pointers.1.1.png" height="150">
-<img src="figures/pointers_mem_layouts/struct_mem_layout-9.2.png" height="150">
+<img src="figures/pointers_mem_layouts/code_array_pointers_struct_pointers.1.1.png" width="150">
+<img src="figures/pointers_mem_layouts/struct_mem_layout-9.2.png" width="150">
 </twocolumn>
 
 To allocate **all** of the required memory for the _entire_ array, _i.e.,_ allocating for all `struct` and `_name` pointers, we need to,
@@ -2973,7 +2973,7 @@ student_records[3]->name = (char*) malloc( sizeof(char) * 128 ) ; // allocate me
 
 The _final_ memory layout will look like,
 
-<img src="figures/pointers_mem_layouts/struct_mem_layout-9.3.png" height="100">
+<img src="figures/pointers_mem_layouts/struct_mem_layout-9.3.png" width="100">
 
 ### Interfaces
 
@@ -3559,7 +3559,7 @@ inline_exec_tmp.c:36:5: warning: implicit declaration of function bubble_sort; d
    36 |     bubble_sort( my_array, array_size ) ;
       |     ^~~~~~~~~~~
       |     bubble_sort_int
-/usr/bin/ld: /tmp/ccoIMtPf.o: in function `main':
+/usr/bin/ld: /tmp/ccfcoo6Z.o: in function `main':
 /home/sibin/Teaching/CSCI_2401/lectures-private/inline_exec_tmp.c:36: undefined reference to `bubble_sort'
 collect2: error: ld returned 1 exit status
 make[1]: *** [Makefile:33: inline_exec_tmp] Error 1
@@ -7947,8 +7947,8 @@ int main(void)
 
 Program output:
 ```
-Child sent whole message!
 Parent got the message!
+Child sent whole message!
 ```
 
 The *concurrency* of the system enables separate processes to be active at the same time, thus for the `write` and `read` to be transferring data through the pipe *at the same time*. This simplifies our code as we don't need to worry about sending chunks of our data.
@@ -8533,9 +8533,9 @@ int main(void)
 
 Program output:
 ```
-1199772: We've been asked to terminate. Exit!
-1199771: Parent asking child (1199772) to terminate
-1199771: Child process 1199772 has exited.
+1201680: We've been asked to terminate. Exit!
+1201679: Parent asking child (1201680) to terminate
+1201679: Child process 1201680 has exited.
 ```
 
 *Note:* You want to run this a few times on your system to see the output.
@@ -9835,7 +9835,7 @@ Program output:
 - F output_tmp.dat (0)
 - D 01
 - F Makefile (2007)
-- F lectures.html (1091350)
+- F lectures.html (1091617)
 - D 99
 - D 00
 - D 11
@@ -9859,7 +9859,7 @@ Program output:
 - D figures
 - F title.md (333)
 - F README.md (35)
-- F aggregate.md (298760)
+- F aggregate.md (298737)
 - D 08
 - D slides
 - D 05
@@ -10304,7 +10304,8 @@ main(void)
 
 Program output:
 ```
-1200061: 12000611200062
+1201951: 1201951
+1201952: 1201952
 ```
 
 
@@ -10491,15 +10492,15 @@ main(void)
 Program output:
 ```
 Server: New client connected with new file descriptor 4.
-1. Client 1200085 connected to server.
-2. Client 1200085 request sent message to server.
-Server received message (sz 38): "Citizen 1200085: Penny for Pawsident!". Replying!
-3. Client 1200085 reply received from server: Citizen 1200085: Penny for Pawsident!
+1. Client 1201972 connected to server.
+2. Client 1201972 request sent message to server.
+Server received message (sz 38): "Citizen 1201972: Penny for Pawsident!". Replying!
+3. Client 1201972 reply received from server: Citizen 1201972: Penny for Pawsident!
+1. Client 1201973 connected to server.
 Server: New client connected with new file descriptor 4.
-1. Client 1200086 connected to server.
-Server received message (sz 38): "Citizen 1200086: Penny for Pawsident!". Replying!
-2. Client 1200086 request sent message to server.
-3. Client 1200086 reply received from server: Citizen 1200086: Penny for Pawsident!
+2. Client 1201973 request sent message to server.
+Server received message (sz 38): "Citizen 1201973: Penny for Pawsident!". Replying!
+3. Client 1201973 reply received from server: Citizen 1201973: Penny for Pawsident!
 ```
 
 The server's call to `accept` is the key difference of domain sockets from named pipes.
@@ -12280,9 +12281,9 @@ main(void)
 Program output:
 ```
 
-malloc + free overhead (cycles): 1173
+malloc + free overhead (cycles): 1181
 
-mmap + munmap overhead (cycles): 36738
+mmap + munmap overhead (cycles): 36365
 ```
 
 > What is a "cycle"?
@@ -12340,11 +12341,11 @@ main(void)
 Program output:
 ```
                                                                                                                                                                                                                                                                 
-write overhead (cycles): 15549
+write overhead (cycles): 15621
                                                                                                                                                                                                                                                                 
 fwrite (stream) overhead (cycles): 146
                                                                                                                                                                                                                                                                 
-fwrite + fflush overhead (cycles): 15291
+fwrite + fflush overhead (cycles): 15314
 ```
 
 ## Library vs. Kernel Trade-offs in Memory Allocation
