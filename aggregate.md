@@ -1155,8 +1155,8 @@ int main(void) {
 
 Program output:
 ```
-0th index: 0x7fffffffe7b0 == 0x7fffffffe7b0; 6 == 6
-nth index: 0x7fffffffe7b4 == 0x7fffffffe7b4; 7 == 7
+0th index: 0x7fffffffe7a0 == 0x7fffffffe7a0; 6 == 6
+nth index: 0x7fffffffe7a4 == 0x7fffffffe7a4; 7 == 7
 ```
 
 Making this a little more clear, lets understand how C accesses the `n`th item.
@@ -1191,7 +1191,7 @@ main(void)
 
 Program output:
 ```
-nth index: 0x7fffffffe7b4 == 0x7fffffffe7b4; 7 == 7
+nth index: 0x7fffffffe7a4 == 0x7fffffffe7a4; 7 == 7
 ```
 
 We can see that *pointer arithmetic* (i.e. doing addition/subtraction on pointers) does the same thing as array indexing plus a dereference.
@@ -1226,10 +1226,10 @@ main(void)
 
 Program output:
 ```
-idx 0 @ 0x7fffffffe7b0 & 0x7fffffffe7c4
-idx 1 @ 0x7fffffffe7b4 & 0x7fffffffe7c5
-idx 2 @ 0x7fffffffe7b8 & 0x7fffffffe7c6
-idx 3 @ 0x7fffffffe7bc & 0x7fffffffe7c7
+idx 0 @ 0x7fffffffe7a0 & 0x7fffffffe7b4
+idx 1 @ 0x7fffffffe7a4 & 0x7fffffffe7b5
+idx 2 @ 0x7fffffffe7a8 & 0x7fffffffe7b6
+idx 3 @ 0x7fffffffe7ac & 0x7fffffffe7b7
 ```
 
 Note that the pointer for the integer array (`a`) is being incremented by 4, while the character array (`b`) by 1.
@@ -1605,8 +1605,8 @@ inline_exec_tmp.c: In function main:
 inline_exec_tmp.c:8:5: warning: p_int is used uninitialized in this function [-Wuninitialized]
     8 |     printf( "i = %d\t p_int = %p\n", i, p_int ) ;
       |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-i = 100	 p_int = 0x7fffffffe8c0
-i = 100	 p_int = 0x7fffffffe7bc	 address of i = 0x7fffffffe7bc
+i = 100	 p_int = 0x7fffffffe8b0
+i = 100	 p_int = 0x7fffffffe7ac	 address of i = 0x7fffffffe7ac
 
 
 ```
@@ -2780,7 +2780,7 @@ So, now we must _allocate_ memory for us to store names, _.e.g._,
 
 The memory layout will now look like,
 
-<img src="figures/pointers_mem_layouts/struct_mem_layout-3.png" height="150">
+<img src="figures/pointers_mem_layouts/struct_mem_layout-3.png" height="100">
 
 ### Complex Memory Layouts
 
@@ -2799,16 +2799,16 @@ Recall (from above) what the memory layout for _one_ `struct` (still with the ha
 
 <twocolumn>
 <img src="figures/pointers_mem_layouts/code_array_struct_array.png" height="200">
-<img src="figures/pointers_mem_layouts/struct_mem_layout-4.png" height="200">
+<img src="figures/pointers_mem_layouts/struct_mem_layout-4.png" height="100">
 </twocolumn>
 
 Remember that,
-* an array is _contiguous_ memory of the _same type_
-* `_student_records`, the array name is a **pointer** to the start of the array memory address.
+- an array is _contiguous_ memory of the _same type_
+- `_student_records`, the array name is a **pointer** to the start of the array memory address.
 
 Hence, when you access each element of the array, _e.g._, `student_records[n]
 
-<img src="figures/pointers_mem_layouts/struct_mem_layout-5.png" height="300">
+<img src="figures/pointers_mem_layouts/struct_mem_layout-5.png" height="150">
 
 Of course, this still suffers from the earlier issue with the fixed value for the size of `_name`. Hence, we want to use the _pointer_ version of the struct. So, if we create an array of `struct student` as follows,
 ```c 
@@ -2823,19 +2823,19 @@ struct student student_records[4] ;
 The memory layout for the `student_records` array will look like (again recall what the memory layout for _one_ struct will look like from above),
 
 <twocolumn>
-<img src="figures/pointers_mem_layouts/code_array_struct_pointers.png" height="100">
+<img src="figures/pointers_mem_layouts/code_array_struct_pointers.png" height="150">
 <img src="figures/pointers_mem_layouts/struct_mem_layout-6.png" height="100">
 </twocolumn>
 
 As before, to access each element of this array, we can use the `[]` operator, 
 
-<img src="figures/pointers_mem_layouts/struct_mem_layout-7.png" height="200">
+<img src="figures/pointers_mem_layouts/struct_mem_layout-7.png" height="100">
 
 Note, we need to be careful with how we access/allocate/use the memory now. More of that later. 
 
 Let's draw the same figure this way for convenience:
 
-<img src="figures/pointers_mem_layouts/struct_mem_layout-8.png" height="200">
+<img src="figures/pointers_mem_layouts/struct_mem_layout-8.png" height="100">
 
 Remember that `_name` still needs memory! So we can allocate it, say using `malloc()`. Hence, allocating memory for the _first_ `_name` may look like this:
 
@@ -2853,14 +2853,14 @@ The memory layout, after _one_ `_name` allocation will look like:
 
 <twocolumn>
 <img src="figures/pointers_mem_layouts/code_array_struct_pointers_malloc.1.png" height="200">
-<img src="figures/pointers_mem_layouts/struct_mem_layout-8.1.png" height="200">
+<img src="figures/pointers_mem_layouts/struct_mem_layout-8.1.png" height="100">
 </twocolumn>
 
-Ppdated memory layout after _all four_ `_name` allocations
+Updated memory layout after _all four_ `_name` allocations
 
 <twocolumn>
 <img src="figures/pointers_mem_layouts/code_array_struct_pointers_malloc.3.png" height="200">
-<img src="figures/pointers_mem_layouts/struct_mem_layout-8.3.png" height="200">
+<img src="figures/pointers_mem_layouts/struct_mem_layout-8.3.png" height="100">
 </twocolumn>
 
 and the corresponding code will look like,
@@ -2913,7 +2913,7 @@ The memory layout after allocating the struct:
 
 <twocolumn>
 <img src="figures/pointers_mem_layouts/code_array_pointers_struct_pointers.1.png" height="200">
-<img src="figures/pointers_mem_layouts/struct_mem_layout-9.1.png" height="200">
+<img src="figures/pointers_mem_layouts/struct_mem_layout-9.1.png" height="100">
 </twocolumn>
 
 <br>
@@ -2971,7 +2971,7 @@ student_records[3]->name = (char*) malloc( sizeof(char) * 128 ) ; // allocate me
 
 The _final_ memory layout will look like,
 
-<img src="figures/pointers_mem_layouts/struct_mem_layout-9.3.png" height="200">
+<img src="figures/pointers_mem_layouts/struct_mem_layout-9.3.png" height="100">
 
 ### Interfaces
 
@@ -3557,7 +3557,7 @@ inline_exec_tmp.c:36:5: warning: implicit declaration of function bubble_sort; d
    36 |     bubble_sort( my_array, array_size ) ;
       |     ^~~~~~~~~~~
       |     bubble_sort_int
-/usr/bin/ld: /tmp/cczxw7l5.o: in function `main':
+/usr/bin/ld: /tmp/ccJWFqq6.o: in function `main':
 /home/sibin/Teaching/CSCI_2401/lectures-private/inline_exec_tmp.c:36: undefined reference to `bubble_sort'
 collect2: error: ld returned 1 exit status
 make[1]: *** [Makefile:33: inline_exec_tmp] Error 1
@@ -4351,9 +4351,9 @@ Program output:
 ```
 0: 194
 1: 0
-2: -6217
+2: -6233
 3: 32767
-4: -6218
+4: -6234
 5: 32767
 6: 1431654973
 7: 21845
@@ -8531,9 +8531,9 @@ int main(void)
 
 Program output:
 ```
-1185886: We've been asked to terminate. Exit!
-1185885: Parent asking child (1185886) to terminate
-1185885: Child process 1185886 has exited.
+1196617: We've been asked to terminate. Exit!
+1196616: Parent asking child (1196617) to terminate
+1196616: Child process 1196617 has exited.
 ```
 
 *Note:* You want to run this a few times on your system to see the output.
@@ -9833,7 +9833,7 @@ Program output:
 - F output_tmp.dat (0)
 - D 01
 - F Makefile (2007)
-- F lectures.html (1034515)
+- F lectures.html (1091350)
 - D 99
 - D 00
 - D 11
@@ -10302,8 +10302,8 @@ main(void)
 
 Program output:
 ```
-1186157: 1186157
-1186158: 1186158
+1196888: 1196888
+1196889: 1196889
 ```
 
 
@@ -10490,15 +10490,15 @@ main(void)
 Program output:
 ```
 Server: New client connected with new file descriptor 4.
-1. Client 1186178 connected to server.
-2. Client 1186178 request sent message to server.
-Server received message (sz 38): "Citizen 1186178: Penny for Pawsident!". Replying!
-1. Client 1186179 connected to server.
-3. Client 1186178 reply received from server: Citizen 1186178: Penny for Pawsident!
-2. Client 1186179 request sent message to server.
+1. Client 1196909 connected to server.
+2. Client 1196909 request sent message to server.
+Server received message (sz 38): "Citizen 1196909: Penny for Pawsident!". Replying!
+1. Client 1196910 connected to server.
+3. Client 1196909 reply received from server: Citizen 1196909: Penny for Pawsident!
+2. Client 1196910 request sent message to server.
 Server: New client connected with new file descriptor 4.
-Server received message (sz 38): "Citizen 1186179: Penny for Pawsident!". Replying!
-3. Client 1186179 reply received from server: Citizen 1186179: Penny for Pawsident!
+Server received message (sz 38): "Citizen 1196910: Penny for Pawsident!". Replying!
+3. Client 1196910 reply received from server: Citizen 1196910: Penny for Pawsident!
 ```
 
 The server's call to `accept` is the key difference of domain sockets from named pipes.
@@ -12279,9 +12279,9 @@ main(void)
 Program output:
 ```
 
-malloc + free overhead (cycles): 1162
+malloc + free overhead (cycles): 1168
 
-mmap + munmap overhead (cycles): 36847
+mmap + munmap overhead (cycles): 36565
 ```
 
 > What is a "cycle"?
@@ -12339,11 +12339,11 @@ main(void)
 Program output:
 ```
                                                                                                                                                                                                                                                                 
-write overhead (cycles): 15352
+write overhead (cycles): 15784
                                                                                                                                                                                                                                                                 
-fwrite (stream) overhead (cycles): 147
+fwrite (stream) overhead (cycles): 145
                                                                                                                                                                                                                                                                 
-fwrite + fflush overhead (cycles): 15367
+fwrite + fflush overhead (cycles): 15297
 ```
 
 ## Library vs. Kernel Trade-offs in Memory Allocation
