@@ -1155,8 +1155,8 @@ int main(void) {
 
 Program output:
 ```
-0th index: 0x7fffffffe7a0 == 0x7fffffffe7a0; 6 == 6
-nth index: 0x7fffffffe7a4 == 0x7fffffffe7a4; 7 == 7
+0th index: 0x7fffffffe780 == 0x7fffffffe780; 6 == 6
+nth index: 0x7fffffffe784 == 0x7fffffffe784; 7 == 7
 ```
 
 Making this a little more clear, lets understand how C accesses the `n`th item.
@@ -1191,7 +1191,7 @@ main(void)
 
 Program output:
 ```
-nth index: 0x7fffffffe7a4 == 0x7fffffffe7a4; 7 == 7
+nth index: 0x7fffffffe784 == 0x7fffffffe784; 7 == 7
 ```
 
 We can see that *pointer arithmetic* (i.e. doing addition/subtraction on pointers) does the same thing as array indexing plus a dereference.
@@ -1226,10 +1226,10 @@ main(void)
 
 Program output:
 ```
-idx 0 @ 0x7fffffffe7a0 & 0x7fffffffe7b4
-idx 1 @ 0x7fffffffe7a4 & 0x7fffffffe7b5
-idx 2 @ 0x7fffffffe7a8 & 0x7fffffffe7b6
-idx 3 @ 0x7fffffffe7ac & 0x7fffffffe7b7
+idx 0 @ 0x7fffffffe780 & 0x7fffffffe794
+idx 1 @ 0x7fffffffe784 & 0x7fffffffe795
+idx 2 @ 0x7fffffffe788 & 0x7fffffffe796
+idx 3 @ 0x7fffffffe78c & 0x7fffffffe797
 ```
 
 Note that the pointer for the integer array (`a`) is being incremented by 4, while the character array (`b`) by 1.
@@ -1605,8 +1605,8 @@ inline_exec_tmp.c: In function main:
 inline_exec_tmp.c:8:5: warning: p_int is used uninitialized in this function [-Wuninitialized]
     8 |     printf( "i = %d\t p_int = %p\n", i, p_int ) ;
       |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-i = 100	 p_int = 0x7fffffffe8b0
-i = 100	 p_int = 0x7fffffffe7ac	 address of i = 0x7fffffffe7ac
+i = 100	 p_int = 0x7fffffffe890
+i = 100	 p_int = 0x7fffffffe78c	 address of i = 0x7fffffffe78c
 
 
 ```
@@ -2803,6 +2803,7 @@ Recall (from above) what the memory layout for _one_ `struct` (still with the ha
 </twocolumn>
 
 Remember that,
+
 - an array is _contiguous_ memory of the _same type_
 - `_student_records`, the array name is a **pointer** to the start of the array memory address.
 
@@ -2935,6 +2936,7 @@ student_records[0]->name = (char*) malloc( sizeof(char) * 128 ) ; // allocate me
 >
 > When we're trying to access members of a `struct` (or `union`) using pointers, we use the `->` operator.
 > note the differences between the following:
+> 
 > |variable type|access examples|
 > |-------------|---------------|
 > | normal variable <br> <font size="small">`struct student sibin ;`| `sibin._name = malloc(...) ;` <br> `printf( "name = %s\n", sibin._name ) ;`|
@@ -3557,7 +3559,7 @@ inline_exec_tmp.c:36:5: warning: implicit declaration of function bubble_sort; d
    36 |     bubble_sort( my_array, array_size ) ;
       |     ^~~~~~~~~~~
       |     bubble_sort_int
-/usr/bin/ld: /tmp/ccJWFqq6.o: in function `main':
+/usr/bin/ld: /tmp/ccoIMtPf.o: in function `main':
 /home/sibin/Teaching/CSCI_2401/lectures-private/inline_exec_tmp.c:36: undefined reference to `bubble_sort'
 collect2: error: ld returned 1 exit status
 make[1]: *** [Makefile:33: inline_exec_tmp] Error 1
@@ -4351,9 +4353,9 @@ Program output:
 ```
 0: 194
 1: 0
-2: -6233
+2: -6265
 3: 32767
-4: -6234
+4: -6266
 5: 32767
 6: 1431654973
 7: 21845
@@ -7945,8 +7947,8 @@ int main(void)
 
 Program output:
 ```
-Parent got the message!
 Child sent whole message!
+Parent got the message!
 ```
 
 The *concurrency* of the system enables separate processes to be active at the same time, thus for the `write` and `read` to be transferring data through the pipe *at the same time*. This simplifies our code as we don't need to worry about sending chunks of our data.
@@ -8531,9 +8533,9 @@ int main(void)
 
 Program output:
 ```
-1196617: We've been asked to terminate. Exit!
-1196616: Parent asking child (1196617) to terminate
-1196616: Child process 1196617 has exited.
+1199772: We've been asked to terminate. Exit!
+1199771: Parent asking child (1199772) to terminate
+1199771: Child process 1199772 has exited.
 ```
 
 *Note:* You want to run this a few times on your system to see the output.
@@ -9857,7 +9859,7 @@ Program output:
 - D figures
 - F title.md (333)
 - F README.md (35)
-- F aggregate.md (298756)
+- F aggregate.md (298760)
 - D 08
 - D slides
 - D 05
@@ -10302,8 +10304,7 @@ main(void)
 
 Program output:
 ```
-1196888: 1196888
-1196889: 1196889
+1200061: 12000611200062
 ```
 
 
@@ -10490,15 +10491,15 @@ main(void)
 Program output:
 ```
 Server: New client connected with new file descriptor 4.
-1. Client 1196909 connected to server.
-2. Client 1196909 request sent message to server.
-Server received message (sz 38): "Citizen 1196909: Penny for Pawsident!". Replying!
-1. Client 1196910 connected to server.
-3. Client 1196909 reply received from server: Citizen 1196909: Penny for Pawsident!
-2. Client 1196910 request sent message to server.
+1. Client 1200085 connected to server.
+2. Client 1200085 request sent message to server.
+Server received message (sz 38): "Citizen 1200085: Penny for Pawsident!". Replying!
+3. Client 1200085 reply received from server: Citizen 1200085: Penny for Pawsident!
 Server: New client connected with new file descriptor 4.
-Server received message (sz 38): "Citizen 1196910: Penny for Pawsident!". Replying!
-3. Client 1196910 reply received from server: Citizen 1196910: Penny for Pawsident!
+1. Client 1200086 connected to server.
+Server received message (sz 38): "Citizen 1200086: Penny for Pawsident!". Replying!
+2. Client 1200086 request sent message to server.
+3. Client 1200086 reply received from server: Citizen 1200086: Penny for Pawsident!
 ```
 
 The server's call to `accept` is the key difference of domain sockets from named pipes.
@@ -12279,9 +12280,9 @@ main(void)
 Program output:
 ```
 
-malloc + free overhead (cycles): 1168
+malloc + free overhead (cycles): 1173
 
-mmap + munmap overhead (cycles): 36565
+mmap + munmap overhead (cycles): 36738
 ```
 
 > What is a "cycle"?
@@ -12339,11 +12340,11 @@ main(void)
 Program output:
 ```
                                                                                                                                                                                                                                                                 
-write overhead (cycles): 15784
+write overhead (cycles): 15549
                                                                                                                                                                                                                                                                 
-fwrite (stream) overhead (cycles): 145
+fwrite (stream) overhead (cycles): 146
                                                                                                                                                                                                                                                                 
-fwrite + fflush overhead (cycles): 15297
+fwrite + fflush overhead (cycles): 15291
 ```
 
 ## Library vs. Kernel Trade-offs in Memory Allocation
