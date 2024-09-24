@@ -1518,8 +1518,8 @@ Languages such as Java assume that *every single* object variable is a pointer, 
 <a class="sourceLine" id="cb32-10" title="10">    <span class="cf">return</span> <span class="dv">0</span>;</a>
 <a class="sourceLine" id="cb32-11" title="11">}</a></code></pre></div>
 <p>Program output:</p>
-<pre><code>0th index: 0x7fffffffe780 == 0x7fffffffe780; 6 == 6
-nth index: 0x7fffffffe784 == 0x7fffffffe784; 7 == 7</code></pre>
+<pre><code>0th index: 0x7fffffffe270 == 0x7fffffffe270; 6 == 6
+nth index: 0x7fffffffe274 == 0x7fffffffe274; 7 == 7</code></pre>
 <p>Making this a little more clear, lets understand how C accesses the <code>n</code>th item. Lets make a pointer <code>int *p = a + 1</code> (we’ll just simply and assume that <code>n == 1</code> here), we should have this:</p>
 <pre><code>p ---------+
            |
@@ -1542,7 +1542,7 @@ a ---&gt; +---+---+---+---+
 <a class="sourceLine" id="cb35-12" title="12">    <span class="cf">return</span> <span class="dv">0</span>;</a>
 <a class="sourceLine" id="cb35-13" title="13">}</a></code></pre></div>
 <p>Program output:</p>
-<pre><code>nth index: 0x7fffffffe784 == 0x7fffffffe784; 7 == 7</code></pre>
+<pre><code>nth index: 0x7fffffffe274 == 0x7fffffffe274; 7 == 7</code></pre>
 <p>We can see that <em>pointer arithmetic</em> (i.e. doing addition/subtraction on pointers) does the same thing as array indexing plus a dereference. That is, <code>*(a + 1) == a[1]</code>. For the most part, arrays and pointers can be viewed as very similar, with only a few exceptions<a href="#fn5" class="footnote-ref" id="fnref5"><sup>5</sup></a>.</p>
 <p><em>Pointer arithmetic should generally be avoided in favor of using the array syntax.</em> One complication for pointer arithmetic is that it does not fit our intuition for addition:</p>
 <div class="sourceCode" id="cb37"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb37-1" title="1"><span class="pp">#include </span><span class="im">&lt;stdio.h&gt;</span></a>
@@ -1566,10 +1566,10 @@ a ---&gt; +---+---+---+---+
 <a class="sourceLine" id="cb37-19" title="19">    <span class="cf">return</span> <span class="dv">0</span>;</a>
 <a class="sourceLine" id="cb37-20" title="20">}</a></code></pre></div>
 <p>Program output:</p>
-<pre><code>idx 0 @ 0x7fffffffe780 &amp; 0x7fffffffe794
-idx 1 @ 0x7fffffffe784 &amp; 0x7fffffffe795
-idx 2 @ 0x7fffffffe788 &amp; 0x7fffffffe796
-idx 3 @ 0x7fffffffe78c &amp; 0x7fffffffe797</code></pre>
+<pre><code>idx 0 @ 0x7fffffffe270 &amp; 0x7fffffffe284
+idx 1 @ 0x7fffffffe274 &amp; 0x7fffffffe285
+idx 2 @ 0x7fffffffe278 &amp; 0x7fffffffe286
+idx 3 @ 0x7fffffffe27c &amp; 0x7fffffffe287</code></pre>
 <p>Note that the pointer for the integer array (<code>a</code>) is being incremented by 4, while the character array (<code>b</code>) by 1. Focusing on the key part:</p>
 <pre><code>idx 0 @ ...0 &amp; ...4
 idx 1 @ ...4 &amp; ...5
@@ -1889,8 +1889,8 @@ make[1]: *** [Makefile:30: inline_exec] Aborted
 inline_exec_tmp.c:8:5: warning: p_int is used uninitialized in this function [-Wuninitialized]
     8 |     printf( &quot;i = %d\t p_int = %p\n&quot;, i, p_int ) ;
       |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-i = 100  p_int = 0x7fffffffe890
-i = 100  p_int = 0x7fffffffe78c  address of i = 0x7fffffffe78c
+i = 100  p_int = 0x7fffffffe380
+i = 100  p_int = 0x7fffffffe27c  address of i = 0x7fffffffe27c
 
 </code></pre>
 <p>To <em>follow the arrow</em>, <em>i.e.</em>, get the value in the location <em>pointed to</em> by it (or to modify the actual value), you must <strong>dereference</strong> the pointer as follows: <code>*ptr</code>.</p>
@@ -2811,6 +2811,15 @@ Post-`memset` values:</code></pre>
 </ul>
 <h2 id="pointers-memory-layouts-and-interfaces"><span class="header-section-number">4.5</span> Pointers | Memory Layouts and Interfaces</h2>
 <p><a href="https://sibin.github.io/teaching/csci2410-gwu-systems_programming/fall_2024/slides/reveal_slides/pointers_memory_layout.html">Slides</a></p>
+<details>
+<p><summary>[Notes]</summary></p>
+<blockquote>
+<ul>
+<li>Start with code examples</li>
+<li>Intersperse with slides</li>
+</ul>
+</blockquote>
+</details>
 <h3 id="basic-memory-layouts"><span class="header-section-number">4.5.1</span> Basic Memory Layouts</h3>
 <p>It is important to understand how memory in <code>C</code> (<em>e.g.</em>, variables, dynamic memory such from <code>malloc()</code>, <em>.</em>), once <em>allocated</em>, is <em>laid out</em> in memory. This particularly important when dealing with pointers, arrays, complex types built using <code>struct</code>, <em>etc.</em></p>
 <p>Consider the following <strong>example</strong>: suppose we need to create a database of student records. We can, perhaps, create a simle <code>struct</code> as follows:</p>
@@ -2819,13 +2828,13 @@ Post-`memset` values:</code></pre>
 <a class="sourceLine" id="cb80-3" title="3">    <span class="dt">char</span> _name [<span class="dv">128</span>] ;</a>
 <a class="sourceLine" id="cb80-4" title="4">} ;</a></code></pre></div>
 <p>The memory <em>layout</em> for this struct will look like:</p>
-<p><twocolumn> <img src="figures/pointers_mem_layouts/code_struct_with_array.png" width="200"> <img src="figures/pointers_mem_layouts/struct_mem_layout-1.png" width="200"> </twocolumn></p>
+<p><twocolumn> <img src="figures/pointers_mem_layouts/code_struct_with_array.png" width="300"> <img src="figures/pointers_mem_layouts/struct_mem_layout-1.png" width="300"> </twocolumn></p>
 <p>where the memory for the two variables, <code>_gwid</code> and <code>name</code> are (likely) consecutively laid out in memory (note: <code>unsigned int</code> is typically <code>4 bytes</code> for 32-bit architectures but can be <code>8 bytes</code> in 64-bit architectures.).</p>
 <p>In the above example, the array, <code>_name[128]</code> has a <strong>fixed</strong> size, <code>128 bytes</code>. While this may be enough for <em>most</em> names, there’s a likelihood that names can be longer. Hence, <code>128 bytes</code> may not be enough. On the other hand, if most names in the database are much smaller, then we will end up <em>wasting</em> a lot of memory (especially as the number of student records grows). For instance, if most names take up only <code>64 bytes</code> and if we have a <span class="math inline">100, 000</span> records, then we’re wasting <code>6.4 million</code> bytes! In some systems this can be prohibitive. Even otherwise, this is memory that other applications (or the OS) can use.</p>
 <p>What is the solution then?</p>
 <p>We can <strong>dynamically allocate</strong> memory for <code>_name</code> (based on how much memory is needed <em>at runtime</em>), <em>i.e.</em>, <strong>make it a pointer</strong>!</p>
 <p>So, once we update the <code>struct</code>, we get the following memory layout:</p>
-<p><twocolumn> <img src="figures/pointers_mem_layouts/code_struct_with_pointer.png" width="200"> <img src="figures/pointers_mem_layouts/struct_mem_layout-2.png" width="200"> </twocolumn></p>
+<p><twocolumn> <img src="figures/pointers_mem_layouts/code_struct_with_pointer.png" width="300"> <img src="figures/pointers_mem_layouts/struct_mem_layout-2.png" width="300"> </twocolumn></p>
 <p><br></p>
 <blockquote>
 <p>Note: a pointer’s size depends on the architecture:</p>
@@ -2855,7 +2864,7 @@ Post-`memset` values:</code></pre>
 <p>So, now we must <em>allocate</em> memory for us to store names, <em>.e.g.</em>,</p>
 <p><code>new_student._name = (char*) malloc( sizeof(char) * 128 ) ;</code></p>
 <p>The memory layout will now look like,</p>
-<p><img src="figures/pointers_mem_layouts/struct_mem_layout-3.png" width="100"></p>
+<p><img src="figures/pointers_mem_layouts/struct_mem_layout-3.png" width="300"></p>
 <h3 id="complex-memory-layouts"><span class="header-section-number">4.5.2</span> Complex Memory Layouts</h3>
 <p>Since we want to create a database of student records, we need to story more than one. One way could be to create an <em>array</em> of <code>struct student</code>,</p>
 <div class="sourceCode" id="cb81"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb81-1" title="1"><span class="kw">struct</span> student{</a>
@@ -2865,14 +2874,14 @@ Post-`memset` values:</code></pre>
 <a class="sourceLine" id="cb81-5" title="5"></a>
 <a class="sourceLine" id="cb81-6" title="6"><span class="kw">struct</span> student student_records[<span class="dv">4</span>] ;</a></code></pre></div>
 <p>Recall (from above) what the memory layout for <em>one</em> <code>struct</code> (still with the hardcoded array for <code>_name</code>, <em>i.e.</em>, an array of <code>128 bytes</code>) looks like. Now, the memory layout for an <em>array</em> will look like,</p>
-<p><twocolumn> <img src="figures/pointers_mem_layouts/code_array_struct_array.png" width="200"> <img src="figures/pointers_mem_layouts/struct_mem_layout-4.png" width="100"> </twocolumn></p>
+<p><twocolumn> <img src="figures/pointers_mem_layouts/code_array_struct_array.png" width="300"> <img src="figures/pointers_mem_layouts/struct_mem_layout-4.png" width="300"> </twocolumn></p>
 <p>Remember that,</p>
 <ul>
 <li>an array is <em>contiguous</em> memory of the <em>same type</em></li>
 <li><code>_student_records</code>, the array name is a <strong>pointer</strong> to the start of the array memory address.</li>
 </ul>
 <p>Hence, when you access each element of the array, <em>e.g.</em>, `student_records[n]</p>
-<p><img src="figures/pointers_mem_layouts/struct_mem_layout-5.png" width="150"></p>
+<p><img src="figures/pointers_mem_layouts/struct_mem_layout-5.png" width="300"></p>
 <p>Of course, this still suffers from the earlier issue with the fixed value for the size of <code>_name</code>. Hence, we want to use the <em>pointer</em> version of the struct. So, if we create an array of <code>struct student</code> as follows,</p>
 <div class="sourceCode" id="cb82"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb82-1" title="1"><span class="kw">struct</span> student{</a>
 <a class="sourceLine" id="cb82-2" title="2">    <span class="dt">unsigned</span> <span class="dt">int</span> _gwid ;</a>
@@ -2881,12 +2890,12 @@ Post-`memset` values:</code></pre>
 <a class="sourceLine" id="cb82-5" title="5"></a>
 <a class="sourceLine" id="cb82-6" title="6"><span class="kw">struct</span> student student_records[<span class="dv">4</span>] ;</a></code></pre></div>
 <p>The memory layout for the <code>student_records</code> array will look like (again recall what the memory layout for <em>one</em> struct will look like from above),</p>
-<p><twocolumn> <img src="figures/pointers_mem_layouts/code_array_struct_pointers.png" width="150"> <img src="figures/pointers_mem_layouts/struct_mem_layout-6.png" width="100"> </twocolumn></p>
+<p><twocolumn> <img src="figures/pointers_mem_layouts/code_array_struct_pointers.png" width="300"> <img src="figures/pointers_mem_layouts/struct_mem_layout-6.png" width="300"> </twocolumn></p>
 <p>As before, to access each element of this array, we can use the <code>[]</code> operator,</p>
-<p><img src="figures/pointers_mem_layouts/struct_mem_layout-7.png" width="100"></p>
+<p><img src="figures/pointers_mem_layouts/struct_mem_layout-7.png" width="300"></p>
 <p>Note, we need to be careful with how we access/allocate/use the memory now. More of that later.</p>
 <p>Let’s draw the same figure this way for convenience:</p>
-<p><img src="figures/pointers_mem_layouts/struct_mem_layout-8.png" width="100"></p>
+<p><img src="figures/pointers_mem_layouts/struct_mem_layout-8.png" width="300"></p>
 <p>Remember that <code>_name</code> still needs memory! So we can allocate it, say using <code>malloc()</code>. Hence, allocating memory for the <em>first</em> <code>_name</code> may look like this:</p>
 <div class="sourceCode" id="cb83"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb83-1" title="1"><span class="kw">struct</span> student{</a>
 <a class="sourceLine" id="cb83-2" title="2">    <span class="dt">unsigned</span> <span class="dt">int</span> _gwid ;</a>
@@ -2896,9 +2905,9 @@ Post-`memset` values:</code></pre>
 <a class="sourceLine" id="cb83-6" title="6"><span class="kw">struct</span> student student_records[<span class="dv">4</span>] ;</a>
 <a class="sourceLine" id="cb83-7" title="7">student_records[<span class="dv">0</span>]._name = (<span class="dt">char</span>*) malloc( <span class="kw">sizeof</span>(<span class="dt">char</span>)*<span class="dv">128</span> ) ; <span class="co">// allocate memory for first name</span></a></code></pre></div>
 <p>The memory layout, after <em>one</em> <code>_name</code> allocation will look like:</p>
-<p><twocolumn> <img src="figures/pointers_mem_layouts/code_array_struct_pointers_malloc.1.png" width="200"> <img src="figures/pointers_mem_layouts/struct_mem_layout-8.1.png" width="100"> </twocolumn></p>
+<p><twocolumn> <img src="figures/pointers_mem_layouts/code_array_struct_pointers_malloc.1.png" width="300"> <img src="figures/pointers_mem_layouts/struct_mem_layout-8.1.png" width="300"> </twocolumn></p>
 <p>Updated memory layout after <em>all four</em> <code>_name</code> allocations</p>
-<p><twocolumn> <img src="figures/pointers_mem_layouts/code_array_struct_pointers_malloc.3.png" width="200"> <img src="figures/pointers_mem_layouts/struct_mem_layout-8.3.png" width="100"> </twocolumn></p>
+<p><twocolumn> <img src="figures/pointers_mem_layouts/code_array_struct_pointers_malloc.3.png" width="300"> <img src="figures/pointers_mem_layouts/struct_mem_layout-8.3.png" width="300"> </twocolumn></p>
 <p>and the corresponding code will look like,</p>
 <div class="sourceCode" id="cb84"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb84-1" title="1"><span class="kw">struct</span> student{</a>
 <a class="sourceLine" id="cb84-2" title="2">    <span class="dt">unsigned</span> <span class="dt">int</span> _gwid ;</a>
@@ -2915,7 +2924,7 @@ Post-`memset` values:</code></pre>
 <p>what does this do?</p>
 <p>It creates an <em>array</em> of <strong>pointers to <code>struct</code></strong> (remember to read the definitions from right to left)!</p>
 <p>The memory layout now looks like,</p>
-<p><twocolumn> <img src="figures/pointers_mem_layouts/code_array_pointers_struct_pointers.png" width="150"> <img src="figures/pointers_mem_layouts/struct_mem_layout-9.png" width="150"> </twocolumn></p>
+<p><twocolumn> <img src="figures/pointers_mem_layouts/code_array_pointers_struct_pointers.png" width="300"> <img src="figures/pointers_mem_layouts/struct_mem_layout-9.png" width="300"> </twocolumn></p>
 <p>(Compare this to the previous layouts)</p>
 <p>Hence, when we dereference each element of the array, <em>e.g.,</em> <code>student_records[0]</code>, we get back, a <code>struct student*</code>, <em>i.e.,</em> a <strong>pointer</strong>.</p>
 <p>So, as a first step, we must <strong>allocate a struct</strong>!</p>
@@ -2927,7 +2936,7 @@ Post-`memset` values:</code></pre>
 <a class="sourceLine" id="cb86-6" title="6"><span class="kw">struct</span> student* student_records[<span class="dv">4</span>] ; <span class="co">// an array of pointers!</span></a>
 <a class="sourceLine" id="cb86-7" title="7">student_records[<span class="dv">0</span>] = (<span class="kw">struct</span> student*) malloc( <span class="kw">sizeof</span>(<span class="kw">struct</span> student) ) ; <span class="co">// allocate memory for a struct first!</span></a></code></pre></div>
 <p>The memory layout after allocating the struct:</p>
-<p><twocolumn> <img src="figures/pointers_mem_layouts/code_array_pointers_struct_pointers.1.png" width="200"> <img src="figures/pointers_mem_layouts/struct_mem_layout-9.1.png" width="100"> </twocolumn></p>
+<p><twocolumn> <img src="figures/pointers_mem_layouts/code_array_pointers_struct_pointers.1.png" width="300"> <img src="figures/pointers_mem_layouts/struct_mem_layout-9.1.png" width="300"> </twocolumn></p>
 <p><br></p>
 <p>We’re still missing something → <strong>no memory space</strong> for <code>_name</code> (remember it is still a pointer)! As before, we need to use <code>malloc()</code> for this:</p>
 <div class="sourceCode" id="cb87"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb87-1" title="1"><span class="kw">struct</span> student{</a>
@@ -2969,7 +2978,7 @@ Post-`memset` values:</code></pre>
 </table>
 </blockquote>
 <p>Now, the memory layout after allocating both, the <code>struct</code> and <code>_name</code>,</p>
-<p><twocolumn> <img src="figures/pointers_mem_layouts/code_array_pointers_struct_pointers.1.1.png" width="150"> <img src="figures/pointers_mem_layouts/struct_mem_layout-9.2.png" width="150"> </twocolumn></p>
+<p><twocolumn> <img src="figures/pointers_mem_layouts/code_array_pointers_struct_pointers.1.1.png" width="300"> <img src="figures/pointers_mem_layouts/struct_mem_layout-9.2.png" width="300"> </twocolumn></p>
 <p>To allocate <strong>all</strong> of the required memory for the <em>entire</em> array, <em>i.e.,</em> allocating for all <code>struct</code> and <code>_name</code> pointers, we need to,</p>
 <div class="sourceCode" id="cb88"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb88-1" title="1"><span class="kw">struct</span> student{</a>
 <a class="sourceLine" id="cb88-2" title="2">    <span class="dt">unsigned</span> <span class="dt">int</span> _gwid ;</a>
@@ -2989,10 +2998,19 @@ Post-`memset` values:</code></pre>
 <a class="sourceLine" id="cb88-16" title="16">student_records[<span class="dv">3</span>] = (<span class="kw">struct</span> student*) malloc( <span class="kw">sizeof</span>(<span class="kw">struct</span> student) ) ; <span class="co">// allocate memory for a struct first!</span></a>
 <a class="sourceLine" id="cb88-17" title="17">student_records[<span class="dv">3</span>]-&gt;name = (<span class="dt">char</span>*) malloc( <span class="kw">sizeof</span>(<span class="dt">char</span>) * <span class="dv">128</span> ) ; <span class="co">// allocate memory for name, note the -&gt; operator</span></a></code></pre></div>
 <p>The <em>final</em> memory layout will look like,</p>
-<p><img src="figures/pointers_mem_layouts/struct_mem_layout-9.3.png" width="100"></p>
+<p><img src="figures/pointers_mem_layouts/struct_mem_layout-9.3.png" width="300"></p>
 <h3 id="interfaces"><span class="header-section-number">4.5.3</span> Interfaces</h3>
 <p>The problem is that the code to initialize the entire array (<code>struct</code> and <code>_name</code>) is quite laborious and <em>ugly</em> since we are initializing each one explicitly in code. Imagine if we had <em>hundreds</em> or <em>thousands</em> of new student records to initialize/store!</p>
 <p>To solve this problem, we create an <strong>interface</strong> for <em>creating new records</em>. An “interface” is usually a fancy way of saying <strong>function</strong>. So, we <em>define</em> a new function say, <code>create_student_record()</code> as follows:</p>
+<details>
+<p><summary>[Notes]</summary></p>
+<blockquote>
+<ul>
+<li>show the previous, ugly code</li>
+<li>explain the MAX_NAME_SIZE macro</li>
+</ul>
+</blockquote>
+</details>
 <div class="sourceCode" id="cb89"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb89-1" title="1"><span class="pp">#include </span><span class="im">&lt;stdio.h&gt;</span></a>
 <a class="sourceLine" id="cb89-2" title="2"><span class="pp">#include </span><span class="im">&lt;stdlib.h&gt;</span></a>
 <a class="sourceLine" id="cb89-3" title="3"><span class="pp">#include </span><span class="im">&lt;string.h&gt;</span></a>
@@ -3020,6 +3038,14 @@ Post-`memset` values:</code></pre>
 (.text+0x24): undefined reference to `main&#39;
 collect2: error: ld returned 1 exit status
 make[1]: *** [Makefile:33: inline_exec_tmp] Error 1</code></pre>
+<details>
+<p><summary>[Notes]</summary></p>
+<blockquote>
+<ul>
+<li>show with a single student variable first, problems with shallow copy, etc.</li>
+</ul>
+</blockquote>
+</details>
 <p>And we use the function as follows:</p>
 <div class="sourceCode" id="cb91"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb91-1" title="1"><span class="pp">#include </span><span class="im">&lt;stdio.h&gt;</span></a>
 <a class="sourceLine" id="cb91-2" title="2"><span class="pp">#include </span><span class="im">&lt;stdlib.h&gt;</span></a>
@@ -3485,8 +3511,8 @@ inline_exec_tmp.c:36:5: warning: implicit declaration of function bubble_sort; d
    36 |     bubble_sort( my_array, array_size ) ;
       |     ^~~~~~~~~~~
       |     bubble_sort_int
-/usr/bin/ld: /tmp/ccfcoo6Z.o: in function `main&#39;:
-/home/sibin/Teaching/CSCI_2401/lectures-private/inline_exec_tmp.c:36: undefined reference to `bubble_sort&#39;
+/usr/bin/ld: /tmp/ccW0E8gd.o: in function `main&#39;:
+/home/sibin/Teaching/CSCI_2401/lectures-private-forBuildingWebpage/inline_exec_tmp.c:36: undefined reference to `bubble_sort&#39;
 collect2: error: ld returned 1 exit status
 make[1]: *** [Makefile:33: inline_exec_tmp] Error 1</code></pre>
 <p>This works for an array of <code>int</code>s. But what if I want to sort an array of <code>double</code>?</p>
@@ -4078,9 +4104,9 @@ Should find 8 @ 6: 6 (-1 is wrong here)</code></pre>
 <p>Program output:</p>
 <pre><code>0: 194
 1: 0
-2: -6265
+2: -7561
 3: 32767
-4: -6266
+4: -7562
 5: 32767
 6: 1431654973
 7: 21845
@@ -7082,8 +7108,8 @@ AFTER
 <a class="sourceLine" id="cb241-57" title="57">    <span class="cf">return</span> <span class="dv">0</span>;</a>
 <a class="sourceLine" id="cb241-58" title="58">}</a></code></pre></div>
 <p>Program output:</p>
-<pre><code>Parent got the message!
-Child sent whole message!</code></pre>
+<pre><code>Child sent whole message!
+Parent got the message!</code></pre>
 <p>The <em>concurrency</em> of the system enables separate processes to be active at the same time, thus for the <code>write</code> and <code>read</code> to be transferring data through the pipe <em>at the same time</em>. This simplifies our code as we don’t need to worry about sending chunks of our data.</p>
 <p>Note that we’re <code>close</code>ing the end of the pipe that we aren’t using in the corresponding processes. Though the file descriptors are identical in each process following <code>fork</code>, each process does have a <em>separate</em> set of those descriptors. Thus closing in one, doesn’t impact the other.</p>
 <p>Remember, processes provide <strong>isolation</strong>!</p>
@@ -7556,9 +7582,9 @@ make[1]: *** [Makefile:33: inline_exec_tmp] Error 1</code></pre>
 <a class="sourceLine" id="cb256-83" title="83">    <span class="cf">return</span> <span class="dv">0</span>;</a>
 <a class="sourceLine" id="cb256-84" title="84">}</a></code></pre></div>
 <p>Program output:</p>
-<pre><code>1201680: We&#39;ve been asked to terminate. Exit!
-1201679: Parent asking child (1201680) to terminate
-1201679: Child process 1201680 has exited.</code></pre>
+<pre><code>1206766: We&#39;ve been asked to terminate. Exit!
+1206765: Parent asking child (1206766) to terminate
+1206765: Child process 1206766 has exited.</code></pre>
 <p><em>Note:</em> You want to run this a few times on your system to see the output. The auto-execution scripts of the lectures might cause wonky effects here due to concurrency.</p>
 <p>We now see a couple of new features:</p>
 <ul>
@@ -8773,7 +8799,7 @@ The two main ones we care about are directories and files. Subsequent calls to <
 - F output_tmp.dat (0)
 - D 01
 - F Makefile (2007)
-- F lectures.html (1091617)
+- F lectures.html (1091604)
 - D 99
 - D 00
 - D 11
@@ -8788,7 +8814,7 @@ The two main ones we care about are directories and files. Subsequent calls to <
 - F inline_exec_tmp.c (1658)
 - F theme.css (691)
 - D 07
-- F inline_exec_tmp (60168)
+- F inline_exec_tmp (60184)
 - F LICENSE (1522)
 - D code
 - D tools
@@ -8797,7 +8823,7 @@ The two main ones we care about are directories and files. Subsequent calls to <
 - D figures
 - F title.md (333)
 - F README.md (35)
-- F aggregate.md (298737)
+- F aggregate.md (299109)
 - D 08
 - D slides
 - D 05</code></pre>
@@ -9128,8 +9154,8 @@ msg2: america for good doggies</code></pre>
 <a class="sourceLine" id="cb301-105" title="105">    <span class="cf">return</span> <span class="dv">0</span>;</a>
 <a class="sourceLine" id="cb301-106" title="106">}</a></code></pre></div>
 <p>Program output:</p>
-<pre><code>1201951: 1201951
-1201952: 1201952</code></pre>
+<pre><code>1207044: 1207044
+1207045: 1207045</code></pre>
 <p>If executed many times, you see the expected result:</p>
 <pre><code>167907: 167907
 167908: 167908</code></pre>
@@ -9282,15 +9308,15 @@ msg2: america for good doggies</code></pre>
 <a class="sourceLine" id="cb305-102" title="102">}</a></code></pre></div>
 <p>Program output:</p>
 <pre><code>Server: New client connected with new file descriptor 4.
-1. Client 1201972 connected to server.
-2. Client 1201972 request sent message to server.
-Server received message (sz 38): &quot;Citizen 1201972: Penny for Pawsident!&quot;. Replying!
-3. Client 1201972 reply received from server: Citizen 1201972: Penny for Pawsident!
-1. Client 1201973 connected to server.
+1. Client 1207065 connected to server.
+2. Client 1207065 request sent message to server.
+Server received message (sz 38): &quot;Citizen 1207065: Penny for Pawsident!&quot;. Replying!
+3. Client 1207065 reply received from server: Citizen 1207065: Penny for Pawsident!
 Server: New client connected with new file descriptor 4.
-2. Client 1201973 request sent message to server.
-Server received message (sz 38): &quot;Citizen 1201973: Penny for Pawsident!&quot;. Replying!
-3. Client 1201973 reply received from server: Citizen 1201973: Penny for Pawsident!</code></pre>
+1. Client 1207066 connected to server.
+2. Client 1207066 request sent message to server.
+Server received message (sz 38): &quot;Citizen 1207066: Penny for Pawsident!&quot;. Replying!
+3. Client 1207066 reply received from server: Citizen 1207066: Penny for Pawsident!</code></pre>
 <p>The server’s call to <code>accept</code> is the key difference of domain sockets from named pipes. It enables us to have per-client descriptors we can use to separately communicate (via <code>read</code>/<code>write</code>) to each client.</p>
 <ul>
 <li>✗ <strong>Transparent IPC.</strong> - We have to explicitly use the socket APIs.</li>
@@ -10522,9 +10548,9 @@ exit_group(0)                           = ?
 <a class="sourceLine" id="cb363-38" title="38">}</a></code></pre></div>
 <p>Program output:</p>
 <pre><code>
-malloc + free overhead (cycles): 1181
+malloc + free overhead (cycles): 1167
 
-mmap + munmap overhead (cycles): 36365</code></pre>
+mmap + munmap overhead (cycles): 36686</code></pre>
 <blockquote>
 <p>What is a “cycle”? When you read that you have a 3GHz, that essentially says that the internal “clock” that drives the logic in the processor cycles by at 3 billion cycles per second. That’s a <em>lot</em>. Each cycle is 1/3 a nanosecond. A cycle is the smallest unit of measurement on a processor, and the <code>cycles</code> function we implement here gives us how many cycles have elapsed since the system boots.</p>
 </blockquote>
@@ -10572,11 +10598,11 @@ mmap + munmap overhead (cycles): 36365</code></pre>
 <a class="sourceLine" id="cb365-36" title="36">}</a></code></pre></div>
 <p>Program output:</p>
 <pre><code>                                                                                                                                                                                                                                                                
-write overhead (cycles): 15621
+write overhead (cycles): 18266
                                                                                                                                                                                                                                                                 
-fwrite (stream) overhead (cycles): 146
+fwrite (stream) overhead (cycles): 153
                                                                                                                                                                                                                                                                 
-fwrite + fflush overhead (cycles): 15314</code></pre>
+fwrite + fflush overhead (cycles): 18043</code></pre>
 <h2 id="library-vs.-kernel-trade-offs-in-memory-allocation"><span class="header-section-number">14.4</span> Library vs. Kernel Trade-offs in Memory Allocation</h2>
 <p>We’ve seen that</p>
 <ol type="1">
