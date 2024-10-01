@@ -190,13 +190,13 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
         <li><a href="#interfaces"><span class="toc-section-number">4.5.3</span> Interfaces</a></li>
         <li><a href="#interface-design-issues-return-by-value-and-by-reference"><span class="toc-section-number">4.5.4</span> Interface Design Issues | Return “<em>by value</em>” and “<em>by reference</em>”</a></li>
         </ul></li>
-        <li><a href="#pointers-casting"><span class="toc-section-number">4.6</span> Pointers | Casting</a></li>
-        <li><a href="#pointers-and-arrays-1"><span class="toc-section-number">4.7</span> Pointers and Arrays</a></li>
-        <li><a href="#pointer-arithmetic"><span class="toc-section-number">4.8</span> Pointer Arithmetic</a></li>
-        <li><a href="#pointer-casting"><span class="toc-section-number">4.9</span> Pointer Casting!</a><ul>
-        <li><a href="#casting-from-int-to-char"><span class="toc-section-number">4.9.1</span> Casting from <code>int*</code> to <code>char*</code></a></li>
-        <li><a href="#example-2"><span class="toc-section-number">4.9.2</span> Example</a></li>
-        <li><a href="#pointer-casting-void"><span class="toc-section-number">4.9.3</span> Pointer Casting | <code>void*</code></a></li>
+        <li><a href="#pointers-casting"><span class="toc-section-number">4.6</span> Pointers | Casting</a><ul>
+        <li><a href="#pointers-and-arrays-1"><span class="toc-section-number">4.6.1</span> Pointers and Arrays</a></li>
+        </ul></li>
+        <li><a href="#casting"><span class="toc-section-number">4.7</span> Casting!</a><ul>
+        <li><a href="#casting-from-int-to-char"><span class="toc-section-number">4.7.1</span> Casting from <code>int*</code> to <code>char*</code></a></li>
+        <li><a href="#example-2"><span class="toc-section-number">4.7.2</span> Example</a></li>
+        <li><a href="#pointer-casting-void"><span class="toc-section-number">4.7.3</span> Pointer Casting | <code>void*</code></a></li>
         </ul></li>
         </ul></li>
         <li><a href="#c-scoping-rules"><span class="toc-section-number">5</span> <code>C</code> Scoping Rules</a><ul>
@@ -1526,8 +1526,8 @@ Languages such as Java assume that *every single* object variable is a pointer, 
 <a class="sourceLine" id="cb32-10" title="10">    <span class="cf">return</span> <span class="dv">0</span>;</a>
 <a class="sourceLine" id="cb32-11" title="11">}</a></code></pre></div>
 <p>Program output:</p>
-<pre><code>0th index: 0x7fffffffe270 == 0x7fffffffe270; 6 == 6
-nth index: 0x7fffffffe274 == 0x7fffffffe274; 7 == 7</code></pre>
+<pre><code>0th index: 0x7fffffffe260 == 0x7fffffffe260; 6 == 6
+nth index: 0x7fffffffe264 == 0x7fffffffe264; 7 == 7</code></pre>
 <p>Making this a little more clear, lets understand how C accesses the <code>n</code>th item. Lets make a pointer <code>int *p = a + 1</code> (we’ll just simply and assume that <code>n == 1</code> here), we should have this:</p>
 <pre><code>p ---------+
            |
@@ -1550,7 +1550,7 @@ a ---&gt; +---+---+---+---+
 <a class="sourceLine" id="cb35-12" title="12">    <span class="cf">return</span> <span class="dv">0</span>;</a>
 <a class="sourceLine" id="cb35-13" title="13">}</a></code></pre></div>
 <p>Program output:</p>
-<pre><code>nth index: 0x7fffffffe274 == 0x7fffffffe274; 7 == 7</code></pre>
+<pre><code>nth index: 0x7fffffffe264 == 0x7fffffffe264; 7 == 7</code></pre>
 <p>We can see that <em>pointer arithmetic</em> (i.e. doing addition/subtraction on pointers) does the same thing as array indexing plus a dereference. That is, <code>*(a + 1) == a[1]</code>. For the most part, arrays and pointers can be viewed as very similar, with only a few exceptions<a href="#fn5" class="footnote-ref" id="fnref5"><sup>5</sup></a>.</p>
 <p><em>Pointer arithmetic should generally be avoided in favor of using the array syntax.</em> One complication for pointer arithmetic is that it does not fit our intuition for addition:</p>
 <div class="sourceCode" id="cb37"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb37-1" title="1"><span class="pp">#include </span><span class="im">&lt;stdio.h&gt;</span></a>
@@ -1574,10 +1574,10 @@ a ---&gt; +---+---+---+---+
 <a class="sourceLine" id="cb37-19" title="19">    <span class="cf">return</span> <span class="dv">0</span>;</a>
 <a class="sourceLine" id="cb37-20" title="20">}</a></code></pre></div>
 <p>Program output:</p>
-<pre><code>idx 0 @ 0x7fffffffe270 &amp; 0x7fffffffe284
-idx 1 @ 0x7fffffffe274 &amp; 0x7fffffffe285
-idx 2 @ 0x7fffffffe278 &amp; 0x7fffffffe286
-idx 3 @ 0x7fffffffe27c &amp; 0x7fffffffe287</code></pre>
+<pre><code>idx 0 @ 0x7fffffffe260 &amp; 0x7fffffffe274
+idx 1 @ 0x7fffffffe264 &amp; 0x7fffffffe275
+idx 2 @ 0x7fffffffe268 &amp; 0x7fffffffe276
+idx 3 @ 0x7fffffffe26c &amp; 0x7fffffffe277</code></pre>
 <p>Note that the pointer for the integer array (<code>a</code>) is being incremented by 4, while the character array (<code>b</code>) by 1. Focusing on the key part:</p>
 <pre><code>idx 0 @ ...0 &amp; ...4
 idx 1 @ ...4 &amp; ...5
@@ -1897,8 +1897,8 @@ make[1]: *** [Makefile:30: inline_exec] Aborted
 inline_exec_tmp.c:8:5: warning: p_int is used uninitialized in this function [-Wuninitialized]
     8 |     printf( &quot;i = %d\t p_int = %p\n&quot;, i, p_int ) ;
       |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-i = 100  p_int = 0x7fffffffe380
-i = 100  p_int = 0x7fffffffe27c  address of i = 0x7fffffffe27c
+i = 100  p_int = 0x7fffffffe370
+i = 100  p_int = 0x7fffffffe26c  address of i = 0x7fffffffe26c
 
 </code></pre>
 <p>To <em>follow the arrow</em>, <em>i.e.</em>, get the value in the location <em>pointed to</em> by it (or to modify the actual value), you must <strong>dereference</strong> the pointer as follows: <code>*ptr</code>.</p>
@@ -3502,7 +3502,7 @@ sys     0m0.343s</code></pre>
 <p><strong>Note</strong>: in this implementation (return by reference), there is one significant issue that can crop up – <strong>memory leaks</strong> – since we use <code>malloc()</code> but haven’t called <code>free()</code> anywhere! This is left as an exercise for the readers to think about.</p>
 <h2 id="pointers-casting"><span class="header-section-number">4.6</span> Pointers | Casting</h2>
 <p><a href="https://sibin.github.io/teaching/csci2410-gwu-systems_programming/fall_2023/slides/reveal_slides/pointer_casting.html/">Slides</a></p>
-<h2 id="pointers-and-arrays-1"><span class="header-section-number">4.7</span> Pointers and Arrays</h2>
+<h3 id="pointers-and-arrays-1"><span class="header-section-number">4.6.1</span> Pointers and Arrays</h3>
 <p>..are the same thing!</p>
 <ul>
 <li>just different conventions to <strong>access memory</strong></li>
@@ -3513,7 +3513,7 @@ sys     0m0.343s</code></pre>
 <li>only <strong>whole ints</strong></li>
 </ul></li>
 </ul>
-<h2 id="pointer-arithmetic"><span class="header-section-number">4.8</span> Pointer Arithmetic</h2>
+<h4 id="pointer-arithmetic"><span class="header-section-number">4.6.1.1</span> Pointer Arithmetic</h4>
 <ul>
 <li>consider an integer array → <code>int a[5]</code></li>
 <li><code>5</code> ints, <strong>each</strong> of <code>4</code> bytes <img src="./figures/07.01.pointer_cast/pointer_cast.1.png" alt="array of integers" /></li>
@@ -3532,7 +3532,7 @@ sys     0m0.343s</code></pre>
 </ul>
 <p><br></p>
 <p>what if we <strong>want</strong> to access the individual bytes?</p>
-<h2 id="pointer-casting"><span class="header-section-number">4.9</span> Pointer Casting!</h2>
+<h2 id="casting"><span class="header-section-number">4.7</span> Casting!</h2>
 <ul>
 <li>can cast from one pointer type to another!</li>
 <li>between <strong>any two pointers</strong>!</li>
@@ -3543,7 +3543,7 @@ sys     0m0.343s</code></pre>
 <li>but, <strong>changes pointer arithmetic</strong>!</li>
 </ul></li>
 </ul>
-<h3 id="casting-from-int-to-char"><span class="header-section-number">4.9.1</span> Casting from <code>int*</code> to <code>char*</code></h3>
+<h3 id="casting-from-int-to-char"><span class="header-section-number">4.7.1</span> Casting from <code>int*</code> to <code>char*</code></h3>
 <ul>
 <li>now, as before, if we have → <code>int a[5]</code></li>
 <li>and we do, <strong><code>char* pc = (char*) a ;</code></strong></li>
@@ -3556,7 +3556,7 @@ sys     0m0.343s</code></pre>
 <ul>
 <li>so <code>pc[1]</code> is → same as <code>++pc</code>! <img src="./figures/07.01.pointer_cast/pointer_cast.6.png" alt="array of integers" /></li>
 </ul>
-<h3 id="example-2"><span class="header-section-number">4.9.2</span> Example</h3>
+<h3 id="example-2"><span class="header-section-number">4.7.2</span> Example</h3>
 <p>Consider the following code:</p>
 <div class="sourceCode" id="cb116"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb116-1" title="1"><span class="pp">#include </span><span class="im">&lt;assert.h&gt;</span></a>
 <a class="sourceLine" id="cb116-2" title="2"><span class="pp">#include </span><span class="im">&lt;stdio.h&gt;</span></a>
@@ -3589,7 +3589,7 @@ inline_exec_tmp.c:3:1: note: include &lt;stdlib.h&gt; or provide a declaration o
     3 | 
 a = 1145258561
 A B C D         </code></pre>
-<h3 id="pointer-casting-void"><span class="header-section-number">4.9.3</span> Pointer Casting | <code>void*</code></h3>
+<h3 id="pointer-casting-void"><span class="header-section-number">4.7.3</span> Pointer Casting | <code>void*</code></h3>
 <ul>
 <li>can cast <strong>any</strong> point to a <code>void*</code></li>
 <li>all of these are valid:</li>
@@ -3871,7 +3871,7 @@ inline_exec_tmp.c:36:5: warning: implicit declaration of function bubble_sort; d
    36 |     bubble_sort( my_array, array_size ) ;
       |     ^~~~~~~~~~~
       |     bubble_sort_int
-/usr/bin/ld: /tmp/ccj9q2UN.o: in function `main&#39;:
+/usr/bin/ld: /tmp/cc2QiLQ1.o: in function `main&#39;:
 /home/sibin/Teaching/CSCI_2401/lectures-private-forBuildingWebpage/inline_exec_tmp.c:36: undefined reference to `bubble_sort&#39;
 collect2: error: ld returned 1 exit status
 make[1]: *** [Makefile:33: inline_exec_tmp] Error 1</code></pre>
@@ -4464,9 +4464,9 @@ Should find 8 @ 6: 6 (-1 is wrong here)</code></pre>
 <p>Program output:</p>
 <pre><code>0: 194
 1: 0
-2: -7561
+2: -7577
 3: 32767
-4: -7562
+4: -7578
 5: 32767
 6: 1431654973
 7: 21845
@@ -7942,9 +7942,9 @@ make[1]: *** [Makefile:33: inline_exec_tmp] Error 1</code></pre>
 <a class="sourceLine" id="cb288-83" title="83">    <span class="cf">return</span> <span class="dv">0</span>;</a>
 <a class="sourceLine" id="cb288-84" title="84">}</a></code></pre></div>
 <p>Program output:</p>
-<pre><code>3020222: We&#39;ve been asked to terminate. Exit!
-3020221: Parent asking child (3020222) to terminate
-3020221: Child process 3020222 has exited.</code></pre>
+<pre><code>3022521: We&#39;ve been asked to terminate. Exit!
+3022520: Parent asking child (3022521) to terminate
+3022520: Child process 3022521 has exited.</code></pre>
 <p><em>Note:</em> You want to run this a few times on your system to see the output. The auto-execution scripts of the lectures might cause wonky effects here due to concurrency.</p>
 <p>We now see a couple of new features:</p>
 <ul>
@@ -9159,7 +9159,7 @@ The two main ones we care about are directories and files. Subsequent calls to <
 - F output_tmp.dat (0)
 - D 01
 - F Makefile (2007)
-- F lectures.html (1104902)
+- F lectures.html (1123781)
 - D 99
 - D 00
 - D 11
@@ -9183,7 +9183,7 @@ The two main ones we care about are directories and files. Subsequent calls to <
 - D figures
 - F title.md (333)
 - F README.md (35)
-- F aggregate.md (311453)
+- F aggregate.md (311448)
 - D 08
 - D slides
 - D 05</code></pre>
@@ -9325,7 +9325,7 @@ The two main ones we care about are directories and files. Subsequent calls to <
 <a class="sourceLine" id="cb329-54" title="54">}</a></code></pre></div>
 <p>Program output:</p>
 <pre><code>msg1: 
-msg2: america for good doggies</code></pre>
+msg2: </code></pre>
 <p>You can see that there are some problems here. If we run it many times, we can see that sometimes we don’t see any messages, sometimes we only see the first, sometimes we only see the second, and other times combinations of all three options. Thus, they are not useful for channel-based communication between multiple processes.</p>
 <p>On the other side, files have a very <em>useful</em> properti that we’d like to use in a good solution to IPC: they <em>have a location in the FS</em> that the communicating processes can both use to find the file, thus avoiding the need for a shared parent.</p>
 <ul>
@@ -9514,8 +9514,8 @@ msg2: america for good doggies</code></pre>
 <a class="sourceLine" id="cb333-105" title="105">    <span class="cf">return</span> <span class="dv">0</span>;</a>
 <a class="sourceLine" id="cb333-106" title="106">}</a></code></pre></div>
 <p>Program output:</p>
-<pre><code>3020493: 3020493
-3020494: 3020494</code></pre>
+<pre><code>3022797: 3022797
+3022798: 3022798</code></pre>
 <p>If executed many times, you see the expected result:</p>
 <pre><code>167907: 167907
 167908: 167908</code></pre>
@@ -9668,15 +9668,15 @@ msg2: america for good doggies</code></pre>
 <a class="sourceLine" id="cb337-102" title="102">}</a></code></pre></div>
 <p>Program output:</p>
 <pre><code>Server: New client connected with new file descriptor 4.
-1. Client 3020514 connected to server.
-2. Client 3020514 request sent message to server.
-Server received message (sz 38): &quot;Citizen 3020514: Penny for Pawsident!&quot;. Replying!
-3. Client 3020514 reply received from server: Citizen 3020514: Penny for Pawsident!
+1. Client 3022818 connected to server.
+2. Client 3022818 request sent message to server.
+Server received message (sz 38): &quot;Citizen 3022818: Penny for Pawsident!&quot;. Replying!
+1. Client 3022819 connected to server.
+3. Client 3022818 reply received from server: Citizen 3022818: Penny for Pawsident!
 Server: New client connected with new file descriptor 4.
-1. Client 3020515 connected to server.
-2. Client 3020515 request sent message to server.
-Server received message (sz 38): &quot;Citizen 3020515: Penny for Pawsident!&quot;. Replying!
-3. Client 3020515 reply received from server: Citizen 3020515: Penny for Pawsident!</code></pre>
+2. Client 3022819 request sent message to server.
+Server received message (sz 38): &quot;Citizen 3022819: Penny for Pawsident!&quot;. Replying!
+3. Client 3022819 reply received from server: Citizen 3022819: Penny for Pawsident!</code></pre>
 <p>The server’s call to <code>accept</code> is the key difference of domain sockets from named pipes. It enables us to have per-client descriptors we can use to separately communicate (via <code>read</code>/<code>write</code>) to each client.</p>
 <ul>
 <li>✗ <strong>Transparent IPC.</strong> - We have to explicitly use the socket APIs.</li>
@@ -10908,9 +10908,9 @@ exit_group(0)                           = ?
 <a class="sourceLine" id="cb395-38" title="38">}</a></code></pre></div>
 <p>Program output:</p>
 <pre><code>
-malloc + free overhead (cycles): 1178
+malloc + free overhead (cycles): 1187
 
-mmap + munmap overhead (cycles): 36351</code></pre>
+mmap + munmap overhead (cycles): 37022</code></pre>
 <blockquote>
 <p>What is a “cycle”? When you read that you have a 3GHz, that essentially says that the internal “clock” that drives the logic in the processor cycles by at 3 billion cycles per second. That’s a <em>lot</em>. Each cycle is 1/3 a nanosecond. A cycle is the smallest unit of measurement on a processor, and the <code>cycles</code> function we implement here gives us how many cycles have elapsed since the system boots.</p>
 </blockquote>
@@ -10958,11 +10958,11 @@ mmap + munmap overhead (cycles): 36351</code></pre>
 <a class="sourceLine" id="cb397-36" title="36">}</a></code></pre></div>
 <p>Program output:</p>
 <pre><code>                                                                                                                                                                                                                                                                
-write overhead (cycles): 18205
+write overhead (cycles): 15834
                                                                                                                                                                                                                                                                 
-fwrite (stream) overhead (cycles): 145
+fwrite (stream) overhead (cycles): 122
                                                                                                                                                                                                                                                                 
-fwrite + fflush overhead (cycles): 19264</code></pre>
+fwrite + fflush overhead (cycles): 15287</code></pre>
 <h2 id="library-vs.-kernel-trade-offs-in-memory-allocation"><span class="header-section-number">15.4</span> Library vs. Kernel Trade-offs in Memory Allocation</h2>
 <p>We’ve seen that</p>
 <ol type="1">
