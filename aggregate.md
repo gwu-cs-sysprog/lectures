@@ -3561,7 +3561,24 @@ real    0m0.454s
 user    0m0.111s
 sys     0m0.343s
 ```
-it takes **only** `0.45 seconds` as compared to the `17 seconds for the previous case. Again, a significant change. These differences grow quite rapidly when we increase the inputs further.# Pointers | Casting 
+it takes **only** `0.45 seconds` as compared to the `17 seconds for the previous case. Again, a significant change. These differences grow quite rapidly when we increase the inputs further.
+
+The sequence of events is:
+
+- memory is created inside the `create_value()_` using `malloc()`
+- we return a **pointer** to that memory
+- the original memory _remains_ after function exit
+- the `main()` function gets a **copy of the pointer** &rarr; that points to the _original memory chunk_
+- no need to have two memory blocks active 
+- _no need for an expensive copy_
+
+Hence, the performance gains are significant. Multiple orders of magnitude!
+
+We're returning a **reference** to the memory block (as a pointer) and not copying the contents of the memory block.
+
+**Note**: in this implementation (return by reference), there is one significant issue that can crop up -- **memory leaks** -- since we use `malloc()` but haven't called `free()` anywhere! This is left as an exercise for the readers to think about.
+
+## Pointers | Casting 
 [Slides](https://sibin.github.io/teaching/csci2410-gwu-systems_programming/fall_2023/slides/reveal_slides/pointer_casting.html/)
 
 ## Pointers and Arrays
@@ -3670,7 +3687,7 @@ A B C D        
 ```
 
 
-## Pointer Casting | `void*`
+### Pointer Casting | `void*`
 
 * can cast **any** point to a `void*`
 * all of these are valid:
@@ -3687,6 +3704,260 @@ char* pc = (char*) pi ;
 * **cannot** dereference a `void*` directly!
 compiler does not know the type
 
+
+# `C` Scoping Rules
+[Slides](https://sibin.github.io/teaching/csci2410-gwu-systems_programming/fall_2023/slides/reveal_slides/scoping_headers.html/)
+
+
+
+Most things in `C` have **names** (also known as *identifiers*). In fact, most things in `C` have a **name** and a **type**:
+
+<img src="figures/scoping/scope-final.png" width="250">
+
+Typical things that have names:
+
+* variable names
+* function names
+* file names
+* other resources 
+* *e.g.,* network sockets
+
+**Every** identifier in **c** also has a **scope**, *i.e.,* where that identifier is *valid*.
+
+### A slight detour | Declarations and Definitions
+
+Let's talk about: **declaration** vs **definition**.
+
+|declaration|definition|
+|--------|--------|    
+| associates<br> **name** with **type** |allocates<br> **resources**|
+||
+
+Most creation of identifiers are **both**, declarations and definitions, _e.g._,
+
+<img src="figures/scoping/scope-final.png" width="250">
+
+But this not _always_ the case (more on this later). 
+
+Now, look at these simple examples:
+
+|statement|type|
+|--------|--------|    
+| `int i ; `| definition |
+| `double* pd ; `| definition |
+| `char name[128] ;`| definition |
+| `struct student* student_records[100] ;`| definition |
+||
+
+But what about _function declarations_?
+
+```c 
+// declaration or definition?
+double foo( double temp ) ;
+```
+
+The above code is a _declaration_ since it associates a name with a type, _i.e.,_ the function name `foo` is being associated with the _type_ of function, _i.e.,_ 
+
+`double ( double ) ;` &rarr; a function that takes a `double` as input and returns a `double`. This type is also known as the **function signature**. 
+
+But if this is a "type", then what is a _definition_ for a function? Remember that a definition allocates resources to a name. For functions, at the programmatic level, the "resource" is the **<font color="darkred">code</font>** or **function body**, _e.g.,_
+
+```c 
+double foo( double temp )
+{
+    // code here -- the "resources" for function foo()
+    // hence, this is a definition!
+}
+```
+
+Now, let's get back to discussing the name topic, _scopes_.
+
+## "_local_" scope
+
+The name is only valid inside the **block** where it is defined, _e.g.,_
+
+```c 
+void foo( double a )
+{
+    double temperature = a ;
+    ...
+}
+```
+
+The variable name, `temperature` is **only** valid inside function `foo()`. It cannot be accessed from anywhere else, like `main()` or some other function, _e.g.,_
+
+```c 
+void bar()
+{
+    temperature = 200.0 ;
+}
+```
+this will fail!
+
+> **Note**: Is it a compile-time, link-time or run-time failure?
+
+
+In the following example,
+
+```c 
+for( unsigned int i = 0 ; i < 10 ; ++i )
+{
+    double fahrenheit = (temperature * (9/5) + 32 ) ;
+    printf( "temperature = %f\t in fahrenheit = %f\n", temperature, fahrenheit ) ;
+}
+```
+
+the variable `fahrenheit` is _local_ to the `for` block, _i.e.,_ it cannot be accessed outside the `for` block -- not even in other parts of the same function! What happens when you run the following code?
+
+```c 
+for( unsigned int i = 0 ; i < 10 ; ++i )
+{
+    double fahrenheit = (temperature * (9/5) + 32 ) ;
+    printf( "temperature = %f\t in fahrenheit = %f\n", temperature, fahrenheit ) ;
+}
+
+fahrenheit = 98.5 ;
+```
+
+What about `i` in the above example?
+
+Answer: it is local to the `for` block as well so it won't be available once the loop is done.
+
+Note that a "block" can mean many things:
+* function
+* loop `for`, `while`
+* conditional `if...else...`
+* even a pair of braces! `{...}`
+
+You can have the _same_ names in _different_ scopes!
+
+```c 
+int a = 100 ;
+
+if(1)
+{
+    int a = a*100 ;
+    int b = a ;
+
+    printf( "a inside if = %d\n", a ) ;
+}
+
+printf( "a outside if = %f\n", a ) ;
+```
+
+What is the output for the above code?
+
+As mentioned earlier, blocks can be just _empty braces_!
+
+```c 
+{
+    int a = 9038 ;
+    {
+        int a = 999999 ;
+    }
+}
+```
+
+
+## "_global_" scope
+
+These are variables that are defined **outside** of _any_ scope, _i.e.,_ outside of any function or block.
+
+```c 
+// GLOBAL
+double celsius_to_fahrenheit = 9.0/5.0 ;
+```
+
+`celsius_to_fahrenheit` is visible **everywhere**!
+
+```c 
+// GLOBAL
+double celsius_to_fahrenheit = 9.0/5.0 ;
+
+double foo( double a )
+{
+    double temperature = a ;
+
+    for(unsigned int i = 0 ; i < 10 ; ++i )
+    {
+        double fahrenheit = ( temperature * celcius_to_fahrenheit ) + 32 ; // using the global
+        char name[124] ;
+    }
+    ...
+}
+
+void bar()
+{
+    // can CHANGE the global ANYWHERE!
+    celcius_to_fahrenheit = 5.0/9.0 ;
+}
+```
+
+In fact, global variables can be accessed in **other files** &rarr; by `extern` keyword which just means that the variable is _defined_ elsewhere.
+
+For instance, let's say we create another file, `scope2.c` with the following,
+```c 
+// DEFINITION 
+double real_global_variable = 2.0f ;
+
+double pi = 3.141567 ;
+```
+
+and in our main file (say we call it `scope.c`), we do:
+```c 
+// DECLARATIONS! 
+extern double real_global_variable ;
+extern double pi ;
+```
+
+so, now we can access the variables, `real_global_variable` and `pi` **inside `scope.c`**, _i.e.,_ a different file from where they have been defined! Inside `scope.c`, we can use those variables, _e.g.,_
+```c 
+void bar( double radius )
+{
+    double area = pi * radius * radius ; // using the externally declared variable "pi"
+}
+```
+
+Let's revisit the **declaratins** vs **definitions** topic. This is a **definition**:
+
+```c  
+extern double pi = 3.1415f ;
+```
+
+since, it has 
+
+* a name, `pi`
+* associated with a type, `double` 
+* **resources allocated** &rarr; memory to store a `double`
+* also an **initialization** &rarr; `3.1415f`
+
+The following is a **declaration**:
+```c 
+extern double pi ;
+```
+
+* a name, `pi`
+* is associated with a type, `double` 
+* but **<font color="darkred">defined elsewhere</font>**!
+    - in `scope2.c`
+    - **<font color="darkred">no additional memory allocated</font>**
+
+> What about function **arguments**? Are they local or global?
+
+
+## "_translation unit_"/"_file_" scope
+
+What if we want...
+
+* an identifier **not** visible to others?
+* but global **only to us**, _i.e.,_ global inside our _current_ file only.
+
+This is called _file_ or _translation unit_ scope and we use the **`static`** keyword, as follows:
+
+```c 
+// GLOBAL but only for US
+static double celsius_to_fahrenheit = 9.0/5.0 ;
+```
 # Function Pointers
 
 Functions have **types** too. E.g., 
@@ -3767,7 +4038,7 @@ inline_exec_tmp.c:36:5: warning: implicit declaration of function bubble_sort; d
    36 |     bubble_sort( my_array, array_size ) ;
       |     ^~~~~~~~~~~
       |     bubble_sort_int
-/usr/bin/ld: /tmp/ccRZlR0c.o: in function `main':
+/usr/bin/ld: /tmp/ccj9q2UN.o: in function `main':
 /home/sibin/Teaching/CSCI_2401/lectures-private-forBuildingWebpage/inline_exec_tmp.c:36: undefined reference to `bubble_sort'
 collect2: error: ld returned 1 exit status
 make[1]: *** [Makefile:33: inline_exec_tmp] Error 1
@@ -8155,8 +8426,8 @@ int main(void)
 
 Program output:
 ```
-Child sent whole message!
 Parent got the message!
+Child sent whole message!
 ```
 
 The *concurrency* of the system enables separate processes to be active at the same time, thus for the `write` and `read` to be transferring data through the pipe *at the same time*. This simplifies our code as we don't need to worry about sending chunks of our data.
@@ -8741,9 +9012,9 @@ int main(void)
 
 Program output:
 ```
-2995325: We've been asked to terminate. Exit!
-2995324: Parent asking child (2995325) to terminate
-2995324: Child process 2995325 has exited.
+3020222: We've been asked to terminate. Exit!
+3020221: Parent asking child (3020222) to terminate
+3020221: Child process 3020222 has exited.
 ```
 
 *Note:* You want to run this a few times on your system to see the output.
@@ -10043,7 +10314,7 @@ Program output:
 - F output_tmp.dat (0)
 - D 01
 - F Makefile (2007)
-- F lectures.html (1104458)
+- F lectures.html (1104902)
 - D 99
 - D 00
 - D 11
@@ -10067,7 +10338,7 @@ Program output:
 - D figures
 - F title.md (333)
 - F README.md (35)
-- F aggregate.md (304356)
+- F aggregate.md (311453)
 - D 08
 - D slides
 - D 05
@@ -10512,8 +10783,8 @@ main(void)
 
 Program output:
 ```
-2995616: 2995616
-2995617: 2995617
+3020493: 3020493
+3020494: 3020494
 ```
 
 
@@ -10700,15 +10971,15 @@ main(void)
 Program output:
 ```
 Server: New client connected with new file descriptor 4.
-1. Client 2995637 connected to server.
-2. Client 2995637 request sent message to server.
-1. Client 2995638 connected to server.
-Server received message (sz 38): "Citizen 2995637: Penny for Pawsident!". Replying!
-2. Client 2995638 request sent message to server.
-3. Client 2995637 reply received from server: Citizen 2995637: Penny for Pawsident!
+1. Client 3020514 connected to server.
+2. Client 3020514 request sent message to server.
+Server received message (sz 38): "Citizen 3020514: Penny for Pawsident!". Replying!
+3. Client 3020514 reply received from server: Citizen 3020514: Penny for Pawsident!
 Server: New client connected with new file descriptor 4.
-Server received message (sz 38): "Citizen 2995638: Penny for Pawsident!". Replying!
-3. Client 2995638 reply received from server: Citizen 2995638: Penny for Pawsident!
+1. Client 3020515 connected to server.
+2. Client 3020515 request sent message to server.
+Server received message (sz 38): "Citizen 3020515: Penny for Pawsident!". Replying!
+3. Client 3020515 reply received from server: Citizen 3020515: Penny for Pawsident!
 ```
 
 The server's call to `accept` is the key difference of domain sockets from named pipes.
@@ -12489,9 +12760,9 @@ main(void)
 Program output:
 ```
 
-malloc + free overhead (cycles): 1420
+malloc + free overhead (cycles): 1178
 
-mmap + munmap overhead (cycles): 36375
+mmap + munmap overhead (cycles): 36351
 ```
 
 > What is a "cycle"?
@@ -12549,11 +12820,11 @@ main(void)
 Program output:
 ```
                                                                                                                                                                                                                                                                 
-write overhead (cycles): 18092
+write overhead (cycles): 18205
                                                                                                                                                                                                                                                                 
 fwrite (stream) overhead (cycles): 145
                                                                                                                                                                                                                                                                 
-fwrite + fflush overhead (cycles): 18163
+fwrite + fflush overhead (cycles): 19264
 ```
 
 ## Library vs. Kernel Trade-offs in Memory Allocation
