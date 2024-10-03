@@ -1155,8 +1155,8 @@ int main(void) {
 
 Program output:
 ```
-0th index: 0x7fffffffe260 == 0x7fffffffe260; 6 == 6
-nth index: 0x7fffffffe264 == 0x7fffffffe264; 7 == 7
+0th index: 0x7fffffffe270 == 0x7fffffffe270; 6 == 6
+nth index: 0x7fffffffe274 == 0x7fffffffe274; 7 == 7
 ```
 
 Making this a little more clear, lets understand how C accesses the `n`th item.
@@ -1191,7 +1191,7 @@ main(void)
 
 Program output:
 ```
-nth index: 0x7fffffffe264 == 0x7fffffffe264; 7 == 7
+nth index: 0x7fffffffe274 == 0x7fffffffe274; 7 == 7
 ```
 
 We can see that *pointer arithmetic* (i.e. doing addition/subtraction on pointers) does the same thing as array indexing plus a dereference.
@@ -1226,10 +1226,10 @@ main(void)
 
 Program output:
 ```
-idx 0 @ 0x7fffffffe260 & 0x7fffffffe274
-idx 1 @ 0x7fffffffe264 & 0x7fffffffe275
-idx 2 @ 0x7fffffffe268 & 0x7fffffffe276
-idx 3 @ 0x7fffffffe26c & 0x7fffffffe277
+idx 0 @ 0x7fffffffe270 & 0x7fffffffe284
+idx 1 @ 0x7fffffffe274 & 0x7fffffffe285
+idx 2 @ 0x7fffffffe278 & 0x7fffffffe286
+idx 3 @ 0x7fffffffe27c & 0x7fffffffe287
 ```
 
 Note that the pointer for the integer array (`a`) is being incremented by 4, while the character array (`b`) by 1.
@@ -1605,8 +1605,8 @@ inline_exec_tmp.c: In function main:
 inline_exec_tmp.c:8:5: warning: p_int is used uninitialized in this function [-Wuninitialized]
     8 |     printf( "i = %d\t p_int = %p\n", i, p_int ) ;
       |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-i = 100	 p_int = 0x7fffffffe370
-i = 100	 p_int = 0x7fffffffe26c	 address of i = 0x7fffffffe26c
+i = 100	 p_int = 0x7fffffffe380
+i = 100	 p_int = 0x7fffffffe27c	 address of i = 0x7fffffffe27c
 
 
 ```
@@ -4014,7 +4014,7 @@ int main()
     int array_size = 5 ;
 
     // sort the array
-    bubble_sort( my_array, array_size ) ;
+    bubble_sort_int( my_array, array_size ) ;
 
     print_array( my_array, array_size ) ;
 
@@ -4033,15 +4033,7 @@ inline_exec_tmp.c: In function print_array:
 inline_exec_tmp.c:26:33: warning: comparison of integer expressions of different signedness: unsigned int and int [-Wsign-compare]
    26 |     for( unsigned int i = 0 ; i < array_size ; ++i )
       |                                 ^
-inline_exec_tmp.c: In function main:
-inline_exec_tmp.c:36:5: warning: implicit declaration of function bubble_sort; did you mean bubble_sort_int? [-Wimplicit-function-declaration]
-   36 |     bubble_sort( my_array, array_size ) ;
-      |     ^~~~~~~~~~~
-      |     bubble_sort_int
-/usr/bin/ld: /tmp/cc2QiLQ1.o: in function `main':
-/home/sibin/Teaching/CSCI_2401/lectures-private-forBuildingWebpage/inline_exec_tmp.c:36: undefined reference to `bubble_sort'
-collect2: error: ld returned 1 exit status
-make[1]: *** [Makefile:33: inline_exec_tmp] Error 1
+array = 3 2341 2344 8632 747645 
 ```
 
 This works for an array of `int`s. But what if I want to sort an array of `double`?
@@ -4832,9 +4824,9 @@ Program output:
 ```
 0: 194
 1: 0
-2: -7577
+2: -7561
 3: 32767
-4: -7578
+4: -7562
 5: 32767
 6: 1431654973
 7: 21845
@@ -8426,8 +8418,8 @@ int main(void)
 
 Program output:
 ```
-Parent got the message!
 Child sent whole message!
+Parent got the message!
 ```
 
 The *concurrency* of the system enables separate processes to be active at the same time, thus for the `write` and `read` to be transferring data through the pipe *at the same time*. This simplifies our code as we don't need to worry about sending chunks of our data.
@@ -9012,9 +9004,9 @@ int main(void)
 
 Program output:
 ```
-3022521: We've been asked to terminate. Exit!
-3022520: Parent asking child (3022521) to terminate
-3022520: Child process 3022521 has exited.
+3370790: We've been asked to terminate. Exit!
+3370789: Parent asking child (3370790) to terminate
+3370789: Child process 3370790 has exited.
 ```
 
 *Note:* You want to run this a few times on your system to see the output.
@@ -10314,7 +10306,7 @@ Program output:
 - F output_tmp.dat (0)
 - D 01
 - F Makefile (2007)
-- F lectures.html (1123781)
+- F lectures.html (1123637)
 - D 99
 - D 00
 - D 11
@@ -10338,7 +10330,7 @@ Program output:
 - D figures
 - F title.md (333)
 - F README.md (35)
-- F aggregate.md (311448)
+- F aggregate.md (310932)
 - D 08
 - D slides
 - D 05
@@ -10556,7 +10548,7 @@ main(void)
 Program output:
 ```
 msg1: 
-msg2: 
+msg2: america for good doggies
 ```
 
 You can see that there are some problems here.
@@ -10783,8 +10775,8 @@ main(void)
 
 Program output:
 ```
-3022797: 3022797
-3022798: 3022798
+3371061: 3371061
+3371062: 3371062
 ```
 
 
@@ -10971,15 +10963,15 @@ main(void)
 Program output:
 ```
 Server: New client connected with new file descriptor 4.
-1. Client 3022818 connected to server.
-2. Client 3022818 request sent message to server.
-Server received message (sz 38): "Citizen 3022818: Penny for Pawsident!". Replying!
-1. Client 3022819 connected to server.
-3. Client 3022818 reply received from server: Citizen 3022818: Penny for Pawsident!
+1. Client 3371082 connected to server.
+2. Client 3371082 request sent message to server.
+Server received message (sz 38): "Citizen 3371082: Penny for Pawsident!". Replying!
+1. Client 3371083 connected to server.
+3. Client 3371082 reply received from server: Citizen 3371082: Penny for Pawsident!
+2. Client 3371083 request sent message to server.
 Server: New client connected with new file descriptor 4.
-2. Client 3022819 request sent message to server.
-Server received message (sz 38): "Citizen 3022819: Penny for Pawsident!". Replying!
-3. Client 3022819 reply received from server: Citizen 3022819: Penny for Pawsident!
+Server received message (sz 38): "Citizen 3371083: Penny for Pawsident!". Replying!
+3. Client 3371083 reply received from server: Citizen 3371083: Penny for Pawsident!
 ```
 
 The server's call to `accept` is the key difference of domain sockets from named pipes.
@@ -12760,9 +12752,9 @@ main(void)
 Program output:
 ```
 
-malloc + free overhead (cycles): 1187
+malloc + free overhead (cycles): 1172
 
-mmap + munmap overhead (cycles): 37022
+mmap + munmap overhead (cycles): 36452
 ```
 
 > What is a "cycle"?
@@ -12820,11 +12812,11 @@ main(void)
 Program output:
 ```
                                                                                                                                                                                                                                                                 
-write overhead (cycles): 15834
+write overhead (cycles): 17917
                                                                                                                                                                                                                                                                 
-fwrite (stream) overhead (cycles): 122
+fwrite (stream) overhead (cycles): 146
                                                                                                                                                                                                                                                                 
-fwrite + fflush overhead (cycles): 15287
+fwrite + fflush overhead (cycles): 18277
 ```
 
 ## Library vs. Kernel Trade-offs in Memory Allocation
