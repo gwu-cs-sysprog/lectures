@@ -67,4 +67,4 @@ doc: html
 clean: $(INLINE_EXEC)_clean
 	rm -f $(AGG) $(OUTPUT_PREFIX).pdf $(OUTPUT_PREFIX).html $(CBIN)
 
-.PHONY: all clean html pdf doc $(INLINE_EXEC)_clean $(INLINE_EXEC) examples build_code nested
+.PHONY: all clean html pdf doc $(INLINE_EXEC)_clean $(INLINE_EXEC) $(INLINE_EXEC)_tmp examples build_code nested

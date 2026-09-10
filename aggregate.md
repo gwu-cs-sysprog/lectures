@@ -603,11 +603,11 @@ int main()
 
 Program output:
 ```
-inline_exec_tmp.c: In function main:
-inline_exec_tmp.c:29:24: error: assignment to expression with array type
+inline_exec_tmp.c:29:24: error: array type 'char[64]' is not assignable
    29 |     today._day_of_week = "thursday" ;
-      |                        ^
-make[1]: *** [Makefile:33: inline_exec_tmp] Error 1
+      |     ~~~~~~~~~~~~~~~~~~ ^
+1 error generated.
+make[1]: *** [inline_exec_tmp] Error 1
 ```
 
 Wait, why does this fail?
@@ -801,11 +801,11 @@ main(void)
 
 Program output:
 ```
-inline_exec_tmp.c: In function main:
-inline_exec_tmp.c:6:7: error: variable or field a declared void
-    6 |  void a;
-      |       ^
-make[1]: *** [Makefile:33: inline_exec_tmp] Error 1
+inline_exec_tmp.c:6:7: error: variable has incomplete type 'void'
+    6 |         void a;
+      |              ^
+1 error generated.
+make[1]: *** [inline_exec_tmp] Error 1
 ```
 
 - `enum` - an `int` or `short int` with some "named" values.
@@ -968,7 +968,7 @@ main(void)
 Program output:
 ```
 Integers: 2147483647, 9223372036854775807, 4294967295, *
-Hex and pointers: 7fffffffffffffff, 0x555555555149
+Hex and pointers: 7fffffffffffffff, 0x1044e3ed8
 Strings: hello world
 ```
 
@@ -1155,8 +1155,8 @@ int main(void) {
 
 Program output:
 ```
-0th index: 0x7fffffffe290 == 0x7fffffffe290; 6 == 6
-nth index: 0x7fffffffe294 == 0x7fffffffe294; 7 == 7
+0th index: 0x16b6ea830 == 0x16b6ea830; 6 == 6
+nth index: 0x16b6ea834 == 0x16b6ea834; 7 == 7
 ```
 
 Making this a little more clear, lets understand how C accesses the `n`th item.
@@ -1191,7 +1191,7 @@ main(void)
 
 Program output:
 ```
-nth index: 0x7fffffffe294 == 0x7fffffffe294; 7 == 7
+nth index: 0x16d62e834 == 0x16d62e834; 7 == 7
 ```
 
 We can see that *pointer arithmetic* (i.e. doing addition/subtraction on pointers) does the same thing as array indexing plus a dereference.
@@ -1226,10 +1226,10 @@ main(void)
 
 Program output:
 ```
-idx 0 @ 0x7fffffffe290 & 0x7fffffffe2a4
-idx 1 @ 0x7fffffffe294 & 0x7fffffffe2a5
-idx 2 @ 0x7fffffffe298 & 0x7fffffffe2a6
-idx 3 @ 0x7fffffffe29c & 0x7fffffffe2a7
+idx 0 @ 0x16af3e830 & 0x16af3e828
+idx 1 @ 0x16af3e834 & 0x16af3e829
+idx 2 @ 0x16af3e838 & 0x16af3e82a
+idx 3 @ 0x16af3e83c & 0x16af3e82b
 ```
 
 Note that the pointer for the integer array (`a`) is being incremented by 4, while the character array (`b`) by 1.
@@ -1410,6 +1410,7 @@ main(void)
 
 Program output:
 ```
+make[1]: *** [inline_exec] Error 3
 ```
 
 - *Memory leaks.*
@@ -1455,8 +1456,7 @@ main(void)
 
 Program output:
 ```
-free(): double free detected in tcache 2
-make[1]: *** [Makefile:30: inline_exec] Aborted
+make[1]: *** [inline_exec] Trace/BPT trap: 5
 ```
 
 `valgrind` will help you debug the last three of these issues, and later in the class, we'll develop a library to help debug the first.
@@ -1601,12 +1601,16 @@ int main()
 
 Program output:
 ```
-inline_exec_tmp.c: In function main:
-inline_exec_tmp.c:8:5: warning: p_int is used uninitialized in this function [-Wuninitialized]
+inline_exec_tmp.c:8:41: warning: variable 'p_int' is uninitialized when used here [-Wuninitialized]
     8 |     printf( "i = %d\t p_int = %p\n", i, p_int ) ;
-      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-i = 100	 p_int = 0x7fffffffe3a0
-i = 100	 p_int = 0x7fffffffe29c	 address of i = 0x7fffffffe29c
+      |                                         ^~~~~
+inline_exec_tmp.c:6:15: note: initialize the variable 'p_int' to silence this warning
+    6 |     int* p_int; // declare a pointer, NOT initialized
+      |               ^
+      |                = NULL
+1 warning generated.
+i = 100	 p_int = 0x1ed744100
+i = 100	 p_int = 0x16baf6848	 address of i = 0x16baf6848
 
 
 ```
@@ -1639,7 +1643,7 @@ int main()
     printf( "i = %d\t p = %p\t address of i = %p\t value at i = %d\n\n", i, p_int, &i, *p_int ) ;
 
     int j = 200 ;
-    p_int = j ; // works but NOT what we want
+    p_int = j ; // does it work?
 
     printf( "i = %d\t p_int = %p\t address of i = %p\n\n", i, p_int, &i ) ;
     printf( "value at p_int = %d\n", *p_int ) ;
@@ -1865,7 +1869,9 @@ Now, there's a reason why I drew it like this:
 </g> 
 </svg>
 
-because, `a` is actually a...**pointer**...to the start of the array, _i.e._, the **first** element.
+because, `a` can be used as a...**pointer**...to the start of the array, _i.e._, the **first** element.
+Technically, an array is *not* a pointer, but it can **decay** into a pointer to
+the first element.
 
 When we access an array item, _e.g._, `a[2]`...`C` is basically doing **pointer arithmetic**. So, 
 
@@ -1888,8 +1894,13 @@ int main()
     int a[5] = { 100, 200, 300, 400, 500 } ;
     int* p_a = a ;
 
-    printf( "%d\n", *(a+2) ) ;
-    printf( "%d\n", *(p_a++) ) ;
+    printf("a   = %p\n", a);
+    printf("p_a = %p\n", p_a);
+
+    printf("\n");
+
+    printf( "a[2]   = %d\n", *(a+2)) ;
+    printf( "p_a[2] = %d\n", *(p_a + 2)) ;
 
     printf( "\n" ) ;
     return 0 ;
@@ -1898,8 +1909,11 @@ int main()
 
 Program output:
 ```
-300
-100
+a   = 0x16d9be830
+p_a = 0x16d9be830
+
+a[2]   = 300
+p_a[2] = 300
 
 ```
 ## Pointers | Memory Allocation
@@ -2463,6 +2477,7 @@ main(void)
 
 Program output:
 ```
+make[1]: *** [inline_exec] Error 4
 ```
 
 3. **memory leaks** &rarr; allocate but forget to `free()`!
@@ -2514,8 +2529,7 @@ main(void)
 
 Program output:
 ```
-free(): double free detected in tcache 2
-make[1]: *** [Makefile:30: inline_exec] Aborted
+make[1]: *** [inline_exec] Trace/BPT trap: 5
 ```
 
 ## Exercises
@@ -2582,18 +2596,18 @@ print_values(void)
 Program output:
 ```
 Addresses:
-a   @ 0x555555558010
-b   @ 0x555555558014
-c   @ 0x555555558020
-end @ 0x555555558039
-&end - &a = 41
+a   @ 0x1006b4000
+b   @ 0x1006b4004
+c   @ 0x1006b4008
+end @ 0x1006b4020
+&end - &a = 32
 
 Initial values:
 a     = 1
 b     = 2
 c.c_a = 3
 c.c_b = 0
-c.c_c = 0x555555558014
+c.c_c = 0x1006b4004
 
 Print out the variables as raw memory
 
@@ -2707,9 +2721,9 @@ main(void)
 
 Program output:
 ```
-0: 4 @ 0x55555555804c
-1: 2 @ 0x555555558044
-2: 0 @ (nil)
+0: 4 @ 0x10052c014
+1: 2 @ 0x10052c00c
+2: 0 @ 0x0
 ```
 
 You want to implement a simple "key-value" store that is very similar in API to a hash-table (many key-value stores are implemented using hash-tables!).
@@ -3010,10 +3024,12 @@ struct student create_student_record( unsigned int gwid, char* name )
 
 Program output:
 ```
-/usr/bin/ld: /usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/Scrt1.o: in function `_start':
-(.text+0x24): undefined reference to `main'
-collect2: error: ld returned 1 exit status
-make[1]: *** [Makefile:33: inline_exec_tmp] Error 1
+Undefined symbols for architecture arm64:
+  "_main", referenced from:
+      <initial-undefines>
+ld: symbol(s) not found for architecture arm64
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+make[1]: *** [inline_exec_tmp] Error 1
 ```
 
 And we use the function as follows:
@@ -3673,17 +3689,12 @@ int main()
 
 Program output:
 ```
-inline_exec_tmp.c: In function main:
-inline_exec_tmp.c:6:20: warning: implicit declaration of function malloc [-Wimplicit-function-declaration]
+inline_exec_tmp.c:6:20: error: call to undeclared library function 'malloc' with type 'void *(unsigned long)'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
     6 |     int* a = (int*)malloc( sizeof(int) ) ;
-      |                    ^~~~~~
-inline_exec_tmp.c:6:20: warning: incompatible implicit declaration of built-in function malloc
-inline_exec_tmp.c:3:1: note: include <stdlib.h> or provide a declaration of malloc
-    2 | #include <stdio.h>
-  +++ |+#include <stdlib.h>
-    3 | 
-a = 1145258561
-A B C D         
+      |                    ^
+inline_exec_tmp.c:6:20: note: include the header <stdlib.h> or explicitly provide a declaration for 'malloc'
+1 error generated.
+make[1]: *** [inline_exec_tmp] Error 1
 ```
 
 
@@ -4616,7 +4627,7 @@ Program output:
 ```
 What is uninitialized global memory set to?
 Integer: 0
-Pointer: (nil) (as hex: 0)
+Pointer: 0x0 (as hex: 0)
 ```
 
 Global variables are either initialized where they are defined, or are initialized to `0`.
@@ -4814,18 +4825,18 @@ main(void)
 
 Program output:
 ```
-0: 194
-1: 0
-2: -7529
-3: 32767
-4: -7530
-5: 32767
-6: 1431654973
-7: 21845
-8: -134552856
-9: 32767
-10: 1431654896
-11: 21845
+0: 1
+1: 1
+2: 0
+3: 0
+4: 0
+5: 0
+6: -308299152
+7: 1
+8: 1869245008
+9: 1
+10: 1
+11: 0
 ```
 
 Yikes.
@@ -4874,12 +4885,12 @@ main(void)
 
 Program output:
 ```
-inline_exec_tmp.c: In function bar:
-inline_exec_tmp.c:10:9: warning: function returns address of local variable [-Wreturn-local-addr]
-   10 |  return &a;            /* Return the address of a local variable. */
-      |         ^~
+inline_exec_tmp.c:10:10: warning: address of stack memory associated with local variable 'a' returned [-Wreturn-stack-address]
+   10 |         return &a;            /* Return the address of a local variable. */
+      |                 ^
+1 warning generated.
 Save address of local variable, and dereference it: 42
-make[1]: *** [Makefile:30: inline_exec] Segmentation fault
+Return address of local variable, and dereference it: 42
 ```
 
 You can see a few interesting facts from the output.
@@ -5157,8 +5168,7 @@ main(void)
 Program output:
 ```
 zzz
-*** stack smashing detected ***: terminated
-make[1]: *** [Makefile:30: inline_exec] Aborted
+make[1]: *** [inline_exec] Trace/BPT trap: 5
 ```
 
 #### Parsing Strings
@@ -5270,7 +5280,7 @@ main(void)
 Program output:
 ```
 blahblahblah
-0x555555556004 == 0x555555556004 != 0x555555558011
+0x100d7bf88 == 0x100d7bf88 != 0x100d80000
 ```
 
 The C compiler and linker are smart enough to see that if you have already used a string with a specific value (in this case `"clone"`), it will avoid allocating a copy of that string, and will just reuse the previous value.
@@ -5497,7 +5507,7 @@ Program output:
 Lets get greedy: allocate 9223372036854775807 bytes!
 Error: errno value 12 and description: Cannot allocate memory
 Error allocating memory: Cannot allocate memory
-make[1]: *** [Makefile:30: inline_exec] Error 255
+make[1]: *** [inline_exec] Error 255
 ```
 
 (Note: when you return from a program with a non-zero value, it designates that your *program* had an error.
@@ -5697,16 +5707,12 @@ main(void)
 
 Program output:
 ```
-inline_exec_tmp.c: In function main:
-inline_exec_tmp.c:100:2: warning: implicit declaration of function printf [-Wimplicit-function-declaration]
-  100 |  printf("Looks like success!...but wait till we valgrind; then ;-(\n");
-      |  ^~~~~~
-inline_exec_tmp.c:100:2: warning: incompatible implicit declaration of built-in function printf
-inline_exec_tmp.c:3:1: note: include <stdio.h> or provide a declaration of printf
-    2 | #include <stdlib.h>
-  +++ |+#include <stdio.h>
-    3 | 
-Looks like success!...but wait till we valgrind; then ;-(
+inline_exec_tmp.c:100:2: error: call to undeclared library function 'printf' with type 'int (const char *, ...)'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+  100 |         printf("Looks like success!...but wait till we valgrind; then ;-(\n");
+      |         ^
+inline_exec_tmp.c:100:2: note: include the header <stdio.h> or explicitly provide a declaration for 'printf'
+1 error generated.
+make[1]: *** [inline_exec_tmp] Error 1
 ```
 
 The above code is hopelessly broken.
@@ -5999,13 +6005,11 @@ int main()
 
 Program output:
 ```
-My Massive Array creation failed!: Cannot allocate memory
-errno = 12
-
-errno = 100	 (standard) String = Network is down
-
-my_errno = 9999	 (custom) String = Unknown error 9999
-
+inline_exec_tmp.c:9:10: fatal error: 'error.h' file not found
+    9 | #include <error.h>
+      |          ^~~~~~~~~
+1 error generated.
+make[1]: *** [inline_exec_tmp] Error 1
 ```
 
 **Note:** look up [`<limits.h>`](https://www.tutorialspoint.com/c_standard_library/limits_h.htm) that defines some useful constants such as `INT_MAX`, `INT_MIN`, `LONG_MAX`, *etc.*
@@ -6790,10 +6794,12 @@ int atexit(function my_func);
 
 Program output:
 ```
-/usr/bin/ld: /usr/lib/gcc/x86_64-linux-gnu/9/../../../x86_64-linux-gnu/Scrt1.o: in function `_start':
-(.text+0x24): undefined reference to `main'
-collect2: error: ld returned 1 exit status
-make[1]: *** [Makefile:33: inline_exec_tmp] Error 1
+Undefined symbols for architecture arm64:
+  "_main", referenced from:
+      <initial-undefines>
+ld: symbol(s) not found for architecture arm64
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+make[1]: *** [inline_exec_tmp] Error 1
 ```
 - register a *user-defined*  **function pointer**
 - `my_func`
@@ -7135,7 +7141,7 @@ main(int argc, char *argv[])
 
 Program output:
 ```
-I am sibin, and I live in /home/sibin
+I am jie, and I live in /Users/jie
 ```
 
 You can see all of the environmental variables available by default with:
@@ -7196,7 +7202,7 @@ main(int argc, char *argv[])
 
 Program output:
 ```
-user: sibin
+user: jie
 user (forked child): penny
 Environment variable USER -> penny
 ```
@@ -8410,8 +8416,8 @@ int main(void)
 
 Program output:
 ```
-Parent got the message!
 Child sent whole message!
+Parent got the message!
 ```
 
 The *concurrency* of the system enables separate processes to be active at the same time, thus for the `write` and `read` to be transferring data through the pipe *at the same time*. This simplifies our code as we don't need to worry about sending chunks of our data.
@@ -8633,9 +8639,14 @@ int main(void)
 
 Program output:
 ```
+inline_exec_tmp.c:39:8: warning: indirection of non-volatile null pointer will be deleted, not trap [-Wnull-dereference]
+   39 |         ret = *(int *)NULL;
+      |               ^~~~~~~~~~~~
+inline_exec_tmp.c:39:8: note: consider using __builtin_trap() or qualifying pointer with 'volatile'
+1 warning generated.
 Lets live dangerously
-My downfall is the forbidden fruit at address (nil).
-make[1]: *** [Makefile:30: inline_exec] Error 1
+My downfall is the forbidden fruit at address 0x0.
+make[1]: *** [inline_exec] Error 1
 ```
 
 We can actually execute in the signal handler when we access invalid memory! We can write code to execute in response to a segmentation fault. This is how Java prints out a backtrace. 
@@ -8757,13 +8768,14 @@ struct sigaction {
 
 Program output:
 ```
-inline_exec_tmp.c:3:35: error: unknown type name siginfo_t
+inline_exec_tmp.c:3:35: error: unknown type name 'siginfo_t'
     3 |     void     (*sa_sigaction)(int, siginfo_t *, void *);
-      |                                   ^~~~~~~~~
-inline_exec_tmp.c:4:5: error: expected ; before sigset_t
+      |                                   ^
+inline_exec_tmp.c:4:5: error: unknown type name 'sigset_t'
     4 |     sigset_t   sa_mask;
-      |     ^~~~~~~~
-make[1]: *** [Makefile:33: inline_exec_tmp] Error 1
+      |     ^
+2 errors generated.
+make[1]: *** [inline_exec_tmp] Error 1
 ```
 
 Why **two** function pointers?
@@ -8779,13 +8791,11 @@ void     (*sa_sigaction)(int, siginfo_t *, void *);
 
 Program output:
 ```
-inline_exec_tmp.c:1:29: error: stray ` in program
+inline_exec_tmp.c:1:29: error: expected identifier or '('
     1 | void     (*sa_handler)(int);`
       |                             ^
-inline_exec_tmp.c:2:31: error: unknown type name siginfo_t
-    2 | void     (*sa_sigaction)(int, siginfo_t *, void *);
-      |                               ^~~~~~~~~
-make[1]: *** [Makefile:33: inline_exec_tmp] Error 1
+1 error generated.
+make[1]: *** [inline_exec_tmp] Error 1
 ```
 choice of which &rarr; depends on a **flag** that is set.
 
@@ -8996,9 +9006,9 @@ int main(void)
 
 Program output:
 ```
-4025283: We've been asked to terminate. Exit!
-4025282: Parent asking child (4025283) to terminate
-4025282: Child process 4025283 has exited.
+3294: We've been asked to terminate. Exit!
+3293: Parent asking child (3294) to terminate
+3293: Child process 3294 has exited.
 ```
 
 *Note:* You want to run this a few times on your system to see the output.
@@ -9150,25 +9160,11 @@ int main()
 
 Program output:
 ```
-inline_exec_tmp.c: In function setup_signal:
-inline_exec_tmp.c:39:20: warning: initialization of long unsigned int from sigset_t * {aka struct <anonymous> *} makes integer from pointer without a cast [-Wint-conversion]
+inline_exec_tmp.c:39:20: error: incompatible pointer to integer conversion initializing 'sigset_t' (aka 'unsigned int') with an expression of type 'sigset_t *' (aka 'unsigned int *'); remove & [-Wint-conversion]
    39 |         .sa_mask = &masked,
-      |                    ^
-inline_exec_tmp.c:39:20: note: (near initialization for (anonymous).sa_mask.__val[0])
-inline_exec_tmp.c:37:32: warning: missing braces around initializer [-Wmissing-braces]
-   37 |     struct sigaction siginfo = (struct sigaction){
-      |                                ^
-   38 |         .sa_sigaction = func,
-      |                             }
-   39 |         .sa_mask = &masked,
-      |                    {{     }}
-inline_exec_tmp.c: In function main:
-inline_exec_tmp.c:70:21: warning: implicit declaration of function wait [-Wimplicit-function-declaration]
-   70 |         pid_t ret = wait(NULL) ;
-      |                     ^~~~
-Inside Alarm Handler!
-System call interrupted by Signal
-Child exited cleanly
+      |                    ^~~~~~~
+1 error generated.
+make[1]: *** [inline_exec_tmp] Error 1
 ```
 Comment out one of the other of the `setup_signal` function calls in `main()` to see very different behaviors.
 
@@ -9242,7 +9238,7 @@ int main(void)
 
 Program output:
 ```
-errno should be "Bad file descriptor", but has value "Success"
+errno should be "Bad file descriptor", but has value "Undefined error: 0"
 ```
 
 The set of functions you *can* call in a signal handler (i.e. that are *re-entrant*) are listed in the manual page: `man 7 signal-safety`.
@@ -9786,23 +9782,24 @@ int main(void)
 
 Program output:
 ```
-inline_exec_tmp.c: In function main:
-inline_exec_tmp.c:7:16: error: TWEET_LEN undeclared (first use in this function)
+inline_exec_tmp.c:7:16: error: use of undeclared identifier 'TWEET_LEN'
     7 |     char tweet[TWEET_LEN+1] ;
-      |                ^~~~~~~~~
-inline_exec_tmp.c:7:16: note: each undeclared identifier is reported only once for each function it appears in
-inline_exec_tmp.c:13:9: warning: implicit declaration of function exit [-Wimplicit-function-declaration]
+      |                ^
+inline_exec_tmp.c:13:9: error: call to undeclared library function 'exit' with type 'void (int) __attribute__((noreturn))'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
    13 |         exit( EXIT_FAILURE ) ;
-      |         ^~~~
-inline_exec_tmp.c:13:9: warning: incompatible implicit declaration of built-in function exit
-inline_exec_tmp.c:3:1: note: include <stdlib.h> or provide a declaration of exit
-    2 | #include <assert.h>
-  +++ |+#include <stdlib.h>
-    3 | 
-inline_exec_tmp.c:13:15: error: EXIT_FAILURE undeclared (first use in this function)
+      |         ^
+inline_exec_tmp.c:13:9: note: include the header <stdlib.h> or explicitly provide a declaration for 'exit'
+inline_exec_tmp.c:13:15: error: use of undeclared identifier 'EXIT_FAILURE'
    13 |         exit( EXIT_FAILURE ) ;
-      |               ^~~~~~~~~~~~
-make[1]: *** [Makefile:33: inline_exec_tmp] Error 1
+      |               ^
+inline_exec_tmp.c:17:29: error: use of undeclared identifier 'TWEET_LEN'
+   17 |     int ret = fread( tweet, TWEET_LEN, 1, f ) ;
+      |                             ^
+inline_exec_tmp.c:18:11: error: use of undeclared identifier 'TWEET_LEN'
+   18 |     tweet[TWEET_LEN] = '\0' ;
+      |           ^
+5 errors generated.
+make[1]: *** [inline_exec_tmp] Error 1
 ```
 
 #### Streams as buffered I/O
@@ -9885,7 +9882,12 @@ int main(void)
 
 Program output:
 ```
-make[1]: *** [Makefile:30: inline_exec] Segmentation fault
+inline_exec_tmp.c:10:6: warning: indirection of non-volatile null pointer will be deleted, not trap [-Wnull-dereference]
+   10 |         a = *(int *)NULL;
+      |             ^~~~~~~~~~~~
+inline_exec_tmp.c:10:6: note: consider using __builtin_trap() or qualifying pointer with 'volatile'
+1 warning generated.
+make[1]: *** [inline_exec] Segmentation fault: 11
 ```
 
 Even though we fault *after* the `printf`, we don't see the `printf`'s output!
@@ -10094,18 +10096,18 @@ long file_size(char *dir, char *file)
 
 Program output:
 ```
-      File: 150_01_lecture.md (size: 4245)
+ Directory: .
  Directory: ..
-      File: 150_02_exercises.md (size: 2978)
-      File: OLD_01_lecture copy_md (size: 21581)
       File: 14.02.files.other_methods.md (size: 11966)
       File: prufrock.txt (size: 6044)
- Directory: test_directory
+      File: 150_01_lecture.md (size: 4245)
+      File: daffodils.txt (size: 869)
+      File: 150_02_exercises.md (size: 2978)
       File: shelley_poems.txt (size: 283)
  Directory: figures
- Directory: .
-      File: daffodils.txt (size: 869)
       File: 14.01.files.md (size: 9624)
+      File: OLD_01_lecture copy_md (size: 21581)
+ Directory: test_directory
 ```
 
 To make *changes* in the first system hierarchy, we need an additional set of functions.
@@ -10293,39 +10295,40 @@ file_size(char *dir, char *file)
 
 Program output:
 ```
-- D 09
-- D 04
-- F output_tmp.dat (0)
-- D 01
-- F Makefile (2007)
-- F lectures.html (1123137)
-- D 99
-- D 00
-- D 11
-- D 02
-- D 10
-- D 13
 - D 03
-- D 14
-- D templates
-- F .gitignore (952)
-- D 12
-- F inline_exec_tmp.c (1658)
-- F theme.css (691)
-- D 07
-- F inline_exec_tmp (60184)
-- F LICENSE (1522)
-- D code
-- D tools
-- D .git
-- D 06
-- D figures
-- F title.md (333)
-- F README.md (35)
-- F aggregate.md (310389)
-- D 08
-- D slides
+- D 04
 - D 05
+- D 02
+- F inline_exec_tmp.c (1658)
+- D tools
+- F theme.css (691)
+- F LICENSE (1522)
+- F lectures.html (790653)
+- F Makefile (2026)
+- F title.md (333)
+- D code
+- D 11
+- D 10
+- D slides
+- D 07
+- D 00
+- F README.md (35)
+- D 09
+- D 08
+- D 01
+- D 06
+- D 99
+- F .gitignore (952)
+- D figures
+- F inline_exec_tmp (34832)
+- D templates
+- F aggregate.md (310407)
+- D inline_exec_tmp.dSYM
+- D .git
+- F output_tmp.dat (0)
+- D 12
+- D 13
+- D 14
 ```
 
 ### Task 2: File and Directory Sizes
@@ -10540,7 +10543,7 @@ main(void)
 Program output:
 ```
 msg1: 
-msg2: america for good doggies
+msg2: 
 ```
 
 You can see that there are some problems here.
@@ -10767,8 +10770,11 @@ main(void)
 
 Program output:
 ```
-4025554: 4025554
-4025555: 4025555
+inline_exec_tmp.c:102:26: error: call to undeclared function 'kill'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+  102 |         for (i = 0; i < 3; i++) kill(pids[i], SIGTERM);
+      |                                 ^
+1 error generated.
+make[1]: *** [inline_exec_tmp] Error 1
 ```
 
 
@@ -10954,16 +10960,15 @@ main(void)
 
 Program output:
 ```
-Server: New client connected with new file descriptor 4.
-1. Client 4025575 connected to server.
-2. Client 4025575 request sent message to server.
-Server received message (sz 38): "Citizen 4025575: Penny for Pawsident!". Replying!
-1. Client 4025576 connected to server.
-3. Client 4025575 reply received from server: Citizen 4025575: Penny for Pawsident!
-Server: New client connected with new file descriptor 4.
-2. Client 4025576 request sent message to server.
-Server received message (sz 38): "Citizen 4025576: Penny for Pawsident!". Replying!
-3. Client 4025576 reply received from server: Citizen 4025576: Penny for Pawsident!
+inline_exec_tmp.c:26:2: error: call to undeclared function 'on_exit'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+   26 |         on_exit(unlink_domain_socket, strdup(filename));
+      |         ^
+inline_exec_tmp.c:26:2: note: did you mean '_exit'?
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/unistd.h:430:7: note: '_exit' declared here
+  430 | void     _exit(int) __dead2;
+      |          ^
+1 error generated.
+make[1]: *** [inline_exec_tmp] Error 1
 ```
 
 The server's call to `accept` is the key difference of domain sockets from named pipes.
@@ -12553,10 +12558,10 @@ main(void)
 
 Program output:
 ```
-write: 1
-read:  0
-open:  2
-close: 3
+write: 4
+read:  3
+open:  5
+close: 6
 ```
 
 Note, these integer values are *not* related to descriptors (e.g. `STDIN_FILENO == 0`).
@@ -12743,10 +12748,12 @@ main(void)
 
 Program output:
 ```
-
-malloc + free overhead (cycles): 1162
-
-mmap + munmap overhead (cycles): 36444
+In file included from inline_exec_tmp.c:1:
+./10/timer.h:14:33: error: invalid output constraint '=a' in asm
+   14 |         __asm__ __volatile__("rdtsc" : "=a" (a), "=d" (d), "=c" (c) : : );
+      |                                        ^
+1 error generated.
+make[1]: *** [inline_exec_tmp] Error 1
 ```
 
 > What is a "cycle"?
@@ -12803,12 +12810,12 @@ main(void)
 
 Program output:
 ```
-                                                                                                                                                                                                                                                                
-write overhead (cycles): 15331
-                                                                                                                                                                                                                                                                
-fwrite (stream) overhead (cycles): 154
-                                                                                                                                                                                                                                                                
-fwrite + fflush overhead (cycles): 15528
+In file included from inline_exec_tmp.c:1:
+./10/timer.h:14:33: error: invalid output constraint '=a' in asm
+   14 |         __asm__ __volatile__("rdtsc" : "=a" (a), "=d" (d), "=c" (c) : : );
+      |                                        ^
+1 error generated.
+make[1]: *** [inline_exec_tmp] Error 1
 ```
 
 ## Library vs. Kernel Trade-offs in Memory Allocation
@@ -13185,7 +13192,7 @@ main(int argc, char * argv[])
 
 Program output:
 ```
-uid=1003 gid=20
+uid=501 gid=20
 ```
 
 Every user has different identifiers as does each group.
