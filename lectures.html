@@ -2171,7 +2171,7 @@ main(void)
 }</code></pre>
             <p>Program output:</p>
             <pre><code>Integers: 2147483647, 9223372036854775807, 4294967295, *
-Hex and pointers: 7fffffffffffffff, 0x1044e3ed8
+Hex and pointers: 7fffffffffffffff, 0x100343ed8
 Strings: hello world</code></pre>
             <h3 data-number="3.3.3"
             id="more-about-compound-types-struct-and-union"><span
@@ -2339,8 +2339,8 @@ int main(void) {
     return 0;
 }</code></pre>
             <p>Program output:</p>
-            <pre><code>0th index: 0x16b6ea830 == 0x16b6ea830; 6 == 6
-nth index: 0x16b6ea834 == 0x16b6ea834; 7 == 7</code></pre>
+            <pre><code>0th index: 0x16d9de930 == 0x16d9de930; 6 == 6
+nth index: 0x16d9de934 == 0x16d9de934; 7 == 7</code></pre>
             <p>Making this a little more clear, lets understand how C
             accesses the <code>n</code>th item. Lets make a pointer
             <code>int *p = a + 1</code> (we’ll just simply and assume
@@ -2368,7 +2368,7 @@ main(void)
     return 0;
 }</code></pre>
             <p>Program output:</p>
-            <pre><code>nth index: 0x16d62e834 == 0x16d62e834; 7 == 7</code></pre>
+            <pre><code>nth index: 0x16fb66934 == 0x16fb66934; 7 == 7</code></pre>
             <p>We can see that <em>pointer arithmetic</em> (i.e. doing
             addition/subtraction on pointers) does the same thing as
             array indexing plus a dereference. That is,
@@ -2401,10 +2401,10 @@ main(void)
     return 0;
 }</code></pre>
             <p>Program output:</p>
-            <pre><code>idx 0 @ 0x16af3e830 &amp; 0x16af3e828
-idx 1 @ 0x16af3e834 &amp; 0x16af3e829
-idx 2 @ 0x16af3e838 &amp; 0x16af3e82a
-idx 3 @ 0x16af3e83c &amp; 0x16af3e82b</code></pre>
+            <pre><code>idx 0 @ 0x16b48e930 &amp; 0x16b48e928
+idx 1 @ 0x16b48e934 &amp; 0x16b48e929
+idx 2 @ 0x16b48e938 &amp; 0x16b48e92a
+idx 3 @ 0x16b48e93c &amp; 0x16b48e92b</code></pre>
             <p>Note that the pointer for the integer array
             (<code>a</code>) is being incremented by 4, while the
             character array (<code>b</code>) by 1. Focusing on the key
@@ -2809,7 +2809,7 @@ inline_exec_tmp.c:6:15: note: initialize the variable &#39;p_int&#39; to silence
       |                = NULL
 1 warning generated.
 i = 100  p_int = 0x1ed744100
-i = 100  p_int = 0x16baf6848     address of i = 0x16baf6848
+i = 100  p_int = 0x16d5a6948     address of i = 0x16d5a6948
 
 </code></pre>
             <p>To <em>follow the arrow</em>, <em>i.e.</em>, get the
@@ -3043,8 +3043,8 @@ int main()
     return 0 ;
 }</code></pre>
             <p>Program output:</p>
-            <pre><code>a   = 0x16d9be830
-p_a = 0x16d9be830
+            <pre><code>a   = 0x16f122930
+p_a = 0x16f122930
 
 a[2]   = 300
 p_a[2] = 300
@@ -3695,7 +3695,7 @@ main(void)
     return *a;
 }</code></pre>
             <p>Program output:</p>
-            <pre><code>make[1]: *** [inline_exec] Error 4</code></pre>
+            <pre><code>make[1]: *** [inline_exec] Error 7</code></pre>
             <ol start="3" type="1">
             <li><strong>memory leaks</strong> → allocate but forget to
             <code>free()</code>!
@@ -3807,10 +3807,10 @@ print_values(void)
 }</code></pre>
             <p>Program output:</p>
             <pre><code>Addresses:
-a   @ 0x1006b4000
-b   @ 0x1006b4004
-c   @ 0x1006b4008
-end @ 0x1006b4020
+a   @ 0x1044cc000
+b   @ 0x1044cc004
+c   @ 0x1044cc008
+end @ 0x1044cc020
 &amp;end - &amp;a = 32
 
 Initial values:
@@ -3818,7 +3818,7 @@ a     = 1
 b     = 2
 c.c_a = 3
 c.c_b = 0
-c.c_c = 0x1006b4004
+c.c_c = 0x1044cc004
 
 Print out the variables as raw memory
 
@@ -3944,8 +3944,8 @@ main(void)
     return 0;
 }</code></pre>
             <p>Program output:</p>
-            <pre><code>0: 4 @ 0x10052c014
-1: 2 @ 0x10052c00c
+            <pre><code>0: 4 @ 0x104b74014
+1: 2 @ 0x104b7400c
 2: 0 @ 0x0</code></pre>
             <p>You want to implement a simple “key-value” store that is
             very similar in API to a hash-table (many key-value stores
@@ -3972,8 +3972,6 @@ main(void)
             id="pointers-memory-layouts-and-interfaces"><span
             class="header-section-number">4.5</span> Pointers | Memory
             Layouts and Interfaces</h2>
-            <p><a
-            href="https://sibin.github.io/teaching/csci2410-gwu-systems_programming/fall_2024/slides/reveal_slides/pointers_memory_layouts.html">Slides</a></p>
             <h3 data-number="4.5.1" id="basic-memory-layouts"><span
             class="header-section-number">4.5.1</span> Basic Memory
             Layouts</h3>
@@ -4084,12 +4082,12 @@ struct student student_records[4] ;</code></pre>
             <ul>
             <li>an array is <em>contiguous</em> memory of the <em>same
             type</em></li>
-            <li><code>_student_records</code>, the array name is a
-            <strong>pointer</strong> to the start of the array memory
-            address.</li>
+            <li><code>_student_records</code>, the array name can be
+            used as a <strong>pointer</strong> to the start of the array
+            memory address.</li>
             </ul>
             <p>Hence, when you access each element of the array,
-            <em>e.g.</em>, `student_records[n]</p>
+            <em>e.g.</em>, <code>student_records[n]</code></p>
             <p><img src="figures/pointers_mem_layouts/struct_mem_layout-5.png" width="300"></p>
             <p>Of course, this still suffers from the earlier issue with
             the fixed value for the size of <code>_name</code>. Hence,
@@ -4296,13 +4294,6 @@ struct student create_student_record( unsigned int gwid, char* name )
 
     return new_student ;
 }</code></pre>
-            <p>Program output:</p>
-            <pre><code>Undefined symbols for architecture arm64:
-  &quot;_main&quot;, referenced from:
-      &lt;initial-undefines&gt;
-ld: symbol(s) not found for architecture arm64
-clang: error: linker command failed with exit code 1 (use -v to see invocation)
-make[1]: *** [inline_exec_tmp] Error 1</code></pre>
             <p>And we use the function as follows:</p>
             <pre class="c"><code>#include &lt;stdio.h&gt;
 #include &lt;stdlib.h&gt;
@@ -4879,9 +4870,9 @@ sys     0m0.343s</code></pre>
             <h3 data-number="4.6.1" id="pointers-and-arrays-1"><span
             class="header-section-number">4.6.1</span> Pointers and
             Arrays</h3>
-            <p>..are the same thing!</p>
+            <p>… can often be used interchangeably.</p>
             <ul>
-            <li>just different conventions to <strong>access
+            <li>different conventions to <strong>access
             memory</strong></li>
             <li><em>e.g.,</em> pointer arithmetic over an array of
             ints</li>
@@ -4930,10 +4921,10 @@ sys     0m0.343s</code></pre>
             <ul>
             <li>can cast from one pointer type to another!</li>
             <li>between <strong>any two pointers</strong>!</li>
-            <li>a pointer is always the same size, <em>i.e.,</em>
-            <code>4</code> bytes</li>
-            <li>making it point to something else</li>
-            <li>doesn’t change the memory underneath
+            <li>a pointer is always the same size, e.g., <code>8</code>
+            bytes on a 64-bit system.</li>
+            <li>making it point to a different type of data</li>
+            <li>does not change the memory underneath
             <ul>
             <li>but, <strong>changes pointer arithmetic</strong>!</li>
             </ul></li>
@@ -4967,6 +4958,7 @@ sys     0m0.343s</code></pre>
             <p>Consider the following code:</p>
             <pre class="c"><code>#include &lt;assert.h&gt;
 #include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
 
 int main()
 {
@@ -4985,12 +4977,8 @@ int main()
     return 0 ;
 }</code></pre>
             <p>Program output:</p>
-            <pre><code>inline_exec_tmp.c:6:20: error: call to undeclared library function &#39;malloc&#39; with type &#39;void *(unsigned long)&#39;; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
-    6 |     int* a = (int*)malloc( sizeof(int) ) ;
-      |                    ^
-inline_exec_tmp.c:6:20: note: include the header &lt;stdlib.h&gt; or explicitly provide a declaration for &#39;malloc&#39;
-1 error generated.
-make[1]: *** [inline_exec_tmp] Error 1</code></pre>
+            <pre><code>a = 1145258561
+A B C D </code></pre>
             <h3 data-number="4.7.3" id="pointer-casting-void"><span
             class="header-section-number">4.7.3</span> Pointer Casting |
             <code>void*</code></h3>
@@ -4999,14 +4987,11 @@ make[1]: *** [inline_exec_tmp] Error 1</code></pre>
             <code>void*</code></li>
             <li>all of these are valid:</li>
             </ul>
-            <pre class="c"><code>void* pv = malloc(32);
-int* pi = (int*) pv ; 
-double* pd = (double*) pv ;
-char* pc = (char*) pi ; </code></pre>
+            <pre class="c"><code>void *pv = malloc(32);                                                          
+int *pi = (int*) pv; // the (int *) before pv is optional                       
+double *pd = (double*) pv; // (double *) before pv is also optional.            
+char *pc = pi; // (char *) before pi is needed; there would otherwise be a compiler warning.</code></pre>
             <ul>
-            <li>can cast <strong>any</strong> point to a
-            <code>void*</code></li>
-            <li>all of these are valid:</li>
             <li><strong>cannot</strong> dereference a <code>void*</code>
             directly! compiler does not know the type</li>
             </ul>
@@ -6185,7 +6170,7 @@ main(void)
 5: 0
 6: -308299152
 7: 1
-8: 1869245008
+8: 1865067344
 9: 1
 10: 1
 11: 0</code></pre>
@@ -6671,7 +6656,7 @@ main(void)
 }</code></pre>
             <p>Program output:</p>
             <pre><code>blahblahblah
-0x100d7bf88 == 0x100d7bf88 != 0x100d80000</code></pre>
+0x104e87f88 == 0x104e87f88 != 0x104e8c000</code></pre>
             <p>The C compiler and linker are smart enough to see that if
             you have already used a string with a specific value (in
             this case <code>"clone"</code>), it will avoid allocating a
@@ -10882,9 +10867,9 @@ int main(void)
     return 0;
 }</code></pre>
             <p>Program output:</p>
-            <pre><code>3294: We&#39;ve been asked to terminate. Exit!
-3293: Parent asking child (3294) to terminate
-3293: Child process 3294 has exited.</code></pre>
+            <pre><code>53349: We&#39;ve been asked to terminate. Exit!
+53348: Parent asking child (53349) to terminate
+53348: Child process 53349 has exited.</code></pre>
             <p><em>Note:</em> You want to run this a few times on your
             system to see the output. The auto-execution scripts of the
             lectures might cause wonky effects here due to
@@ -12464,7 +12449,7 @@ file_size(char *dir, char *file)
 - D tools
 - F theme.css (691)
 - F LICENSE (1522)
-- F lectures.html (790653)
+- F lectures.html (789785)
 - F Makefile (2026)
 - F title.md (333)
 - D code
@@ -12483,7 +12468,7 @@ file_size(char *dir, char *file)
 - D figures
 - F inline_exec_tmp (34832)
 - D templates
-- F aggregate.md (310407)
+- F aggregate.md (309802)
 - D inline_exec_tmp.dSYM
 - D .git
 - F output_tmp.dat (0)

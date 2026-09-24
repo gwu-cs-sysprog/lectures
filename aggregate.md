@@ -968,7 +968,7 @@ main(void)
 Program output:
 ```
 Integers: 2147483647, 9223372036854775807, 4294967295, *
-Hex and pointers: 7fffffffffffffff, 0x1044e3ed8
+Hex and pointers: 7fffffffffffffff, 0x100343ed8
 Strings: hello world
 ```
 
@@ -1155,8 +1155,8 @@ int main(void) {
 
 Program output:
 ```
-0th index: 0x16b6ea830 == 0x16b6ea830; 6 == 6
-nth index: 0x16b6ea834 == 0x16b6ea834; 7 == 7
+0th index: 0x16d9de930 == 0x16d9de930; 6 == 6
+nth index: 0x16d9de934 == 0x16d9de934; 7 == 7
 ```
 
 Making this a little more clear, lets understand how C accesses the `n`th item.
@@ -1191,7 +1191,7 @@ main(void)
 
 Program output:
 ```
-nth index: 0x16d62e834 == 0x16d62e834; 7 == 7
+nth index: 0x16fb66934 == 0x16fb66934; 7 == 7
 ```
 
 We can see that *pointer arithmetic* (i.e. doing addition/subtraction on pointers) does the same thing as array indexing plus a dereference.
@@ -1226,10 +1226,10 @@ main(void)
 
 Program output:
 ```
-idx 0 @ 0x16af3e830 & 0x16af3e828
-idx 1 @ 0x16af3e834 & 0x16af3e829
-idx 2 @ 0x16af3e838 & 0x16af3e82a
-idx 3 @ 0x16af3e83c & 0x16af3e82b
+idx 0 @ 0x16b48e930 & 0x16b48e928
+idx 1 @ 0x16b48e934 & 0x16b48e929
+idx 2 @ 0x16b48e938 & 0x16b48e92a
+idx 3 @ 0x16b48e93c & 0x16b48e92b
 ```
 
 Note that the pointer for the integer array (`a`) is being incremented by 4, while the character array (`b`) by 1.
@@ -1610,7 +1610,7 @@ inline_exec_tmp.c:6:15: note: initialize the variable 'p_int' to silence this wa
       |                = NULL
 1 warning generated.
 i = 100	 p_int = 0x1ed744100
-i = 100	 p_int = 0x16baf6848	 address of i = 0x16baf6848
+i = 100	 p_int = 0x16d5a6948	 address of i = 0x16d5a6948
 
 
 ```
@@ -1909,8 +1909,8 @@ int main()
 
 Program output:
 ```
-a   = 0x16d9be830
-p_a = 0x16d9be830
+a   = 0x16f122930
+p_a = 0x16f122930
 
 a[2]   = 300
 p_a[2] = 300
@@ -2477,7 +2477,7 @@ main(void)
 
 Program output:
 ```
-make[1]: *** [inline_exec] Error 4
+make[1]: *** [inline_exec] Error 7
 ```
 
 3. **memory leaks** &rarr; allocate but forget to `free()`!
@@ -2596,10 +2596,10 @@ print_values(void)
 Program output:
 ```
 Addresses:
-a   @ 0x1006b4000
-b   @ 0x1006b4004
-c   @ 0x1006b4008
-end @ 0x1006b4020
+a   @ 0x1044cc000
+b   @ 0x1044cc004
+c   @ 0x1044cc008
+end @ 0x1044cc020
 &end - &a = 32
 
 Initial values:
@@ -2607,7 +2607,7 @@ a     = 1
 b     = 2
 c.c_a = 3
 c.c_b = 0
-c.c_c = 0x1006b4004
+c.c_c = 0x1044cc004
 
 Print out the variables as raw memory
 
@@ -2721,8 +2721,8 @@ main(void)
 
 Program output:
 ```
-0: 4 @ 0x10052c014
-1: 2 @ 0x10052c00c
+0: 4 @ 0x104b74014
+1: 2 @ 0x104b7400c
 2: 0 @ 0x0
 ```
 
@@ -2740,9 +2740,6 @@ You want to implement a simple "key-value" store that is very similar in API to 
 - *Q4*: Add testing into the `main` for the relevant conditions and failures in `get` and `put`.
 
 ## Pointers | Memory Layouts and Interfaces
-
-[Slides](https://sibin.github.io/teaching/csci2410-gwu-systems_programming/fall_2024/slides/reveal_slides/pointers_memory_layouts.html)
-
 
 ### Basic Memory Layouts
 
@@ -2819,9 +2816,9 @@ Recall (from above) what the memory layout for _one_ `struct` (still with the ha
 Remember that,
 
 - an array is _contiguous_ memory of the _same type_
-- `_student_records`, the array name is a **pointer** to the start of the array memory address.
+- `_student_records`, the array name can be used as a **pointer** to the start of the array memory address.
 
-Hence, when you access each element of the array, _e.g._, `student_records[n]
+Hence, when you access each element of the array, _e.g._, `student_records[n]`
 
 <img src="figures/pointers_mem_layouts/struct_mem_layout-5.png" width="300">
 
@@ -2997,7 +2994,7 @@ To solve this problem, we create an **interface** for _creating new records_. An
 
 
 
-```c
+```c 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -3020,16 +3017,6 @@ struct student create_student_record( unsigned int gwid, char* name )
 
     return new_student ;
 }
-```
-
-Program output:
-```
-Undefined symbols for architecture arm64:
-  "_main", referenced from:
-      <initial-undefines>
-ld: symbol(s) not found for architecture arm64
-clang: error: linker command failed with exit code 1 (use -v to see invocation)
-make[1]: *** [inline_exec_tmp] Error 1
 ```
 
 And we use the function as follows:
@@ -3599,10 +3586,10 @@ We're returning a **reference** to the memory block (as a pointer) and not copyi
 
 ### Pointers and Arrays
 
-..are the same thing!
+... can often be used interchangeably.
 
 
-* just different conventions to **access memory**
+* different conventions to **access memory**
 * *e.g.,* pointer arithmetic over an array of ints
 * moves addresses by **size of the int** &rarr; `4` bytes
 * **no interaction** with individual bytes 
@@ -3638,9 +3625,9 @@ what if we **want** to access the individual bytes?
 
 * can cast from one pointer type to another!
 * between **any two pointers**!
-* a pointer is always the same size, *i.e.,* `4` bytes
-* making it point to something else 
-* doesn't change the memory underneath
+* a pointer is always the same size, e.g., `8` bytes on a 64-bit system.
+* making it point to a different type of data
+* does not change the memory underneath
     * but, **changes pointer arithmetic**!
 
 
@@ -3668,6 +3655,7 @@ Consider the following code:
 ```c
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 int main()
 {
@@ -3689,12 +3677,8 @@ int main()
 
 Program output:
 ```
-inline_exec_tmp.c:6:20: error: call to undeclared library function 'malloc' with type 'void *(unsigned long)'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
-    6 |     int* a = (int*)malloc( sizeof(int) ) ;
-      |                    ^
-inline_exec_tmp.c:6:20: note: include the header <stdlib.h> or explicitly provide a declaration for 'malloc'
-1 error generated.
-make[1]: *** [inline_exec_tmp] Error 1
+a = 1145258561
+A B C D 
 ```
 
 
@@ -3704,14 +3688,12 @@ make[1]: *** [inline_exec_tmp] Error 1
 * all of these are valid:
 
 ```c
-void* pv = malloc(32);
-int* pi = (int*) pv ; 
-double* pd = (double*) pv ;
-char* pc = (char*) pi ; 
+void *pv = malloc(32);                                                          
+int *pi = (int*) pv; // the (int *) before pv is optional                       
+double *pd = (double*) pv; // (double *) before pv is also optional.            
+char *pc = pi; // (char *) before pi is needed; there would otherwise be a compiler warning.
 ```                        
 
-* can cast **any** point to a `void*`
-* all of these are valid:
 * **cannot** dereference a `void*` directly!
 compiler does not know the type
 
@@ -4833,7 +4815,7 @@ Program output:
 5: 0
 6: -308299152
 7: 1
-8: 1869245008
+8: 1865067344
 9: 1
 10: 1
 11: 0
@@ -5280,7 +5262,7 @@ main(void)
 Program output:
 ```
 blahblahblah
-0x100d7bf88 == 0x100d7bf88 != 0x100d80000
+0x104e87f88 == 0x104e87f88 != 0x104e8c000
 ```
 
 The C compiler and linker are smart enough to see that if you have already used a string with a specific value (in this case `"clone"`), it will avoid allocating a copy of that string, and will just reuse the previous value.
@@ -9006,9 +8988,9 @@ int main(void)
 
 Program output:
 ```
-3294: We've been asked to terminate. Exit!
-3293: Parent asking child (3294) to terminate
-3293: Child process 3294 has exited.
+53349: We've been asked to terminate. Exit!
+53348: Parent asking child (53349) to terminate
+53348: Child process 53349 has exited.
 ```
 
 *Note:* You want to run this a few times on your system to see the output.
@@ -10303,7 +10285,7 @@ Program output:
 - D tools
 - F theme.css (691)
 - F LICENSE (1522)
-- F lectures.html (790653)
+- F lectures.html (789785)
 - F Makefile (2026)
 - F title.md (333)
 - D code
@@ -10322,7 +10304,7 @@ Program output:
 - D figures
 - F inline_exec_tmp (34832)
 - D templates
-- F aggregate.md (310407)
+- F aggregate.md (309802)
 - D inline_exec_tmp.dSYM
 - D .git
 - F output_tmp.dat (0)
