@@ -968,7 +968,7 @@ main(void)
 Program output:
 ```
 Integers: 2147483647, 9223372036854775807, 4294967295, *
-Hex and pointers: 7fffffffffffffff, 0x100343ed8
+Hex and pointers: 7fffffffffffffff, 0x102e43ed8
 Strings: hello world
 ```
 
@@ -1155,8 +1155,8 @@ int main(void) {
 
 Program output:
 ```
-0th index: 0x16d9de930 == 0x16d9de930; 6 == 6
-nth index: 0x16d9de934 == 0x16d9de934; 7 == 7
+0th index: 0x16b2a6930 == 0x16b2a6930; 6 == 6
+nth index: 0x16b2a6934 == 0x16b2a6934; 7 == 7
 ```
 
 Making this a little more clear, lets understand how C accesses the `n`th item.
@@ -1191,7 +1191,7 @@ main(void)
 
 Program output:
 ```
-nth index: 0x16fb66934 == 0x16fb66934; 7 == 7
+nth index: 0x16f7fa934 == 0x16f7fa934; 7 == 7
 ```
 
 We can see that *pointer arithmetic* (i.e. doing addition/subtraction on pointers) does the same thing as array indexing plus a dereference.
@@ -1226,10 +1226,10 @@ main(void)
 
 Program output:
 ```
-idx 0 @ 0x16b48e930 & 0x16b48e928
-idx 1 @ 0x16b48e934 & 0x16b48e929
-idx 2 @ 0x16b48e938 & 0x16b48e92a
-idx 3 @ 0x16b48e93c & 0x16b48e92b
+idx 0 @ 0x16d2ca930 & 0x16d2ca928
+idx 1 @ 0x16d2ca934 & 0x16d2ca929
+idx 2 @ 0x16d2ca938 & 0x16d2ca92a
+idx 3 @ 0x16d2ca93c & 0x16d2ca92b
 ```
 
 Note that the pointer for the integer array (`a`) is being incremented by 4, while the character array (`b`) by 1.
@@ -1410,7 +1410,7 @@ main(void)
 
 Program output:
 ```
-make[1]: *** [inline_exec] Error 3
+make[1]: *** [inline_exec] Error 4
 ```
 
 - *Memory leaks.*
@@ -1610,7 +1610,7 @@ inline_exec_tmp.c:6:15: note: initialize the variable 'p_int' to silence this wa
       |                = NULL
 1 warning generated.
 i = 100	 p_int = 0x1ed744100
-i = 100	 p_int = 0x16d5a6948	 address of i = 0x16d5a6948
+i = 100	 p_int = 0x16aea2948	 address of i = 0x16aea2948
 
 
 ```
@@ -1909,8 +1909,8 @@ int main()
 
 Program output:
 ```
-a   = 0x16f122930
-p_a = 0x16f122930
+a   = 0x16b296930
+p_a = 0x16b296930
 
 a[2]   = 300
 p_a[2] = 300
@@ -2477,7 +2477,7 @@ main(void)
 
 Program output:
 ```
-make[1]: *** [inline_exec] Error 7
+make[1]: *** [inline_exec] Error 4
 ```
 
 3. **memory leaks** &rarr; allocate but forget to `free()`!
@@ -2596,10 +2596,10 @@ print_values(void)
 Program output:
 ```
 Addresses:
-a   @ 0x1044cc000
-b   @ 0x1044cc004
-c   @ 0x1044cc008
-end @ 0x1044cc020
+a   @ 0x100eb0000
+b   @ 0x100eb0004
+c   @ 0x100eb0008
+end @ 0x100eb0020
 &end - &a = 32
 
 Initial values:
@@ -2607,7 +2607,7 @@ a     = 1
 b     = 2
 c.c_a = 3
 c.c_b = 0
-c.c_c = 0x1044cc004
+c.c_c = 0x100eb0004
 
 Print out the variables as raw memory
 
@@ -2721,8 +2721,8 @@ main(void)
 
 Program output:
 ```
-0: 4 @ 0x104b74014
-1: 2 @ 0x104b7400c
+0: 4 @ 0x10020c014
+1: 2 @ 0x10020c00c
 2: 0 @ 0x0
 ```
 
@@ -3582,7 +3582,6 @@ We're returning a **reference** to the memory block (as a pointer) and not copyi
 **Note**: in this implementation (return by reference), there is one significant issue that can crop up -- **memory leaks** -- since we use `malloc()` but haven't called `free()` anywhere! This is left as an exercise for the readers to think about.
 
 ## Pointers | Casting 
-[Slides](https://sibin.github.io/teaching/csci2410-gwu-systems_programming/fall_2023/slides/reveal_slides/pointer_casting.html/)
 
 ### Pointers and Arrays
 
@@ -3609,7 +3608,7 @@ We're returning a **reference** to the memory block (as a pointer) and not copyi
 
 <br>
 
-* so `a[1]` is &rarr; **same** as `++a`!
+* so `a[1]` is &rarr; **same** as `*(a+1)`!
 ![array of integers](./figures/07.01.pointer_cast/pointer_cast.3.png)
 
 <br>
@@ -3646,7 +3645,7 @@ what if we **want** to access the individual bytes?
 
 <br>
 
-* so `pc[1]` is &rarr; same as `++pc`!
+* so `pc[1]` is &rarr; same as `*(pc+1)`!
 ![array of integers](./figures/07.01.pointer_cast/pointer_cast.6.png)
 
 ### Example
@@ -3667,7 +3666,7 @@ int main()
     printf( "a = %d\n", *a ) ;
 
     char* ppc = (char*) a ;
-    for(unsigned int i = 0 ; i < sizeof(a); ++i )
+    for(unsigned int i = 0 ; i < sizeof(*a); ++i )
         printf( "%c ", *ppc++ ) ;
 
     printf("\n") ;
@@ -4815,7 +4814,7 @@ Program output:
 5: 0
 6: -308299152
 7: 1
-8: 1865067344
+8: 1802726224
 9: 1
 10: 1
 11: 0
@@ -5262,7 +5261,7 @@ main(void)
 Program output:
 ```
 blahblahblah
-0x104e87f88 == 0x104e87f88 != 0x104e8c000
+0x1026c3f88 == 0x1026c3f88 != 0x1026c8000
 ```
 
 The C compiler and linker are smart enough to see that if you have already used a string with a specific value (in this case `"clone"`), it will avoid allocating a copy of that string, and will just reuse the previous value.
@@ -8988,9 +8987,9 @@ int main(void)
 
 Program output:
 ```
-53349: We've been asked to terminate. Exit!
-53348: Parent asking child (53349) to terminate
-53348: Child process 53349 has exited.
+77136: We've been asked to terminate. Exit!
+77135: Parent asking child (77136) to terminate
+77135: Child process 77136 has exited.
 ```
 
 *Note:* You want to run this a few times on your system to see the output.
@@ -10285,7 +10284,7 @@ Program output:
 - D tools
 - F theme.css (691)
 - F LICENSE (1522)
-- F lectures.html (789785)
+- F lectures.html (789716)
 - F Makefile (2026)
 - F title.md (333)
 - D code
@@ -10304,7 +10303,7 @@ Program output:
 - D figures
 - F inline_exec_tmp (34832)
 - D templates
-- F aggregate.md (309802)
+- F aggregate.md (309680)
 - D inline_exec_tmp.dSYM
 - D .git
 - F output_tmp.dat (0)
