@@ -2171,7 +2171,7 @@ main(void)
 }</code></pre>
             <p>Program output:</p>
             <pre><code>Integers: 2147483647, 9223372036854775807, 4294967295, *
-Hex and pointers: 7fffffffffffffff, 0x102e43ed8
+Hex and pointers: 7fffffffffffffff, 0x100f0bed8
 Strings: hello world</code></pre>
             <h3 data-number="3.3.3"
             id="more-about-compound-types-struct-and-union"><span
@@ -2339,8 +2339,8 @@ int main(void) {
     return 0;
 }</code></pre>
             <p>Program output:</p>
-            <pre><code>0th index: 0x16b2a6930 == 0x16b2a6930; 6 == 6
-nth index: 0x16b2a6934 == 0x16b2a6934; 7 == 7</code></pre>
+            <pre><code>0th index: 0x16cfce930 == 0x16cfce930; 6 == 6
+nth index: 0x16cfce934 == 0x16cfce934; 7 == 7</code></pre>
             <p>Making this a little more clear, lets understand how C
             accesses the <code>n</code>th item. Lets make a pointer
             <code>int *p = a + 1</code> (we’ll just simply and assume
@@ -2368,7 +2368,7 @@ main(void)
     return 0;
 }</code></pre>
             <p>Program output:</p>
-            <pre><code>nth index: 0x16f7fa934 == 0x16f7fa934; 7 == 7</code></pre>
+            <pre><code>nth index: 0x16fb2e934 == 0x16fb2e934; 7 == 7</code></pre>
             <p>We can see that <em>pointer arithmetic</em> (i.e. doing
             addition/subtraction on pointers) does the same thing as
             array indexing plus a dereference. That is,
@@ -2401,10 +2401,10 @@ main(void)
     return 0;
 }</code></pre>
             <p>Program output:</p>
-            <pre><code>idx 0 @ 0x16d2ca930 &amp; 0x16d2ca928
-idx 1 @ 0x16d2ca934 &amp; 0x16d2ca929
-idx 2 @ 0x16d2ca938 &amp; 0x16d2ca92a
-idx 3 @ 0x16d2ca93c &amp; 0x16d2ca92b</code></pre>
+            <pre><code>idx 0 @ 0x16f29e930 &amp; 0x16f29e928
+idx 1 @ 0x16f29e934 &amp; 0x16f29e929
+idx 2 @ 0x16f29e938 &amp; 0x16f29e92a
+idx 3 @ 0x16f29e93c &amp; 0x16f29e92b</code></pre>
             <p>Note that the pointer for the integer array
             (<code>a</code>) is being incremented by 4, while the
             character array (<code>b</code>) by 1. Focusing on the key
@@ -2809,7 +2809,7 @@ inline_exec_tmp.c:6:15: note: initialize the variable &#39;p_int&#39; to silence
       |                = NULL
 1 warning generated.
 i = 100  p_int = 0x1ed744100
-i = 100  p_int = 0x16aea2948     address of i = 0x16aea2948
+i = 100  p_int = 0x16b972948     address of i = 0x16b972948
 
 </code></pre>
             <p>To <em>follow the arrow</em>, <em>i.e.</em>, get the
@@ -3043,8 +3043,8 @@ int main()
     return 0 ;
 }</code></pre>
             <p>Program output:</p>
-            <pre><code>a   = 0x16b296930
-p_a = 0x16b296930
+            <pre><code>a   = 0x16f2da930
+p_a = 0x16f2da930
 
 a[2]   = 300
 p_a[2] = 300
@@ -3807,10 +3807,10 @@ print_values(void)
 }</code></pre>
             <p>Program output:</p>
             <pre><code>Addresses:
-a   @ 0x100eb0000
-b   @ 0x100eb0004
-c   @ 0x100eb0008
-end @ 0x100eb0020
+a   @ 0x102178000
+b   @ 0x102178004
+c   @ 0x102178008
+end @ 0x102178020
 &amp;end - &amp;a = 32
 
 Initial values:
@@ -3818,7 +3818,7 @@ a     = 1
 b     = 2
 c.c_a = 3
 c.c_b = 0
-c.c_c = 0x100eb0004
+c.c_c = 0x102178004
 
 Print out the variables as raw memory
 
@@ -3944,8 +3944,8 @@ main(void)
     return 0;
 }</code></pre>
             <p>Program output:</p>
-            <pre><code>0: 4 @ 0x10020c014
-1: 2 @ 0x10020c00c
+            <pre><code>0: 4 @ 0x100f14014
+1: 2 @ 0x100f1400c
 2: 0 @ 0x0</code></pre>
             <p>You want to implement a simple “key-value” store that is
             very similar in API to a hash-table (many key-value stores
@@ -5275,11 +5275,15 @@ static double celsius_to_fahrenheit = 9.0/5.0 ;</code></pre>
             Pointers</h1>
             <p>Functions have <strong>types</strong> too. E.g.,</p>
             <pre class="c"><code>void foo(int i, double d){...}</code></pre>
-            <p>The “type” of this function is: * takes as input two
-            arguments → one <code>int</code> and one <code>double</code>
-            * returns nothing, hence return type is <code>void</code> *
-            <strong>note</strong>: this is <strong>not</strong> the same
-            as a return type of <code>void*</code></p>
+            <p>The “type” of this function is:</p>
+            <ul>
+            <li>takes as input two arguments → one <code>int</code> and
+            one <code>double</code></li>
+            <li>returns nothing, hence return type is
+            <code>void</code></li>
+            <li><strong>note</strong>: this is <strong>not</strong> the
+            same as a return type of <code>void*</code></li>
+            </ul>
             <p>Sometimes, you need to decide <em>which</em> function to
             call at <strong>run time</strong>. Why?</p>
             <h3 data-number="6.0.1" id="example-bubble-sort"><span
@@ -5299,7 +5303,7 @@ void bubble_sort_int( int array[], unsigned int array_size )
 {
     for( unsigned int i = 0 ; i &lt; array_size-1 ; ++i )
     {
-        for( unsigned int j = 0 ; j &lt; i ; ++j )
+        for( unsigned int j = 0 ; j &lt; array_size-1-i ; ++j )
         {
             if( array[j] &gt; array[j+1] )
             {
@@ -5337,12 +5341,15 @@ int main()
             <p>This works for an array of <code>int</code>s. But what if
             I want to sort an array of <code>double</code>?</p>
             <p>Maybe, write a new function to do that?</p>
-            <pre class="c"><code>// Sorting ints
+            <pre class="c"><code>// Sorting doubles
 void bubble_sort_double( double array[], int array_size )
 {
-    for( unsigned int i = 0 ; i &lt; array_size-1 ; ++i )
+    if( array_size &lt; 2 )
+        return ;
+
+    for( int i = 0 ; i &lt; array_size-1 ; ++i )
     {
-        for( unsigned int j = 0 ; j &lt; i ; ++j )
+        for( int j = 0 ; j &lt; array_size-1-i ; ++j )
         {
             if( array[j] &gt; array[j+1] )
             {
@@ -5361,7 +5368,7 @@ void bubble_sort_strings( char* array[], int array_size ){...}
 void bubble_sort_float( float array[], int array_size ){...}
 void bubble_sort_struct_student( struct student array[], int array_size ){...}</code></pre>
             <p>But what if <strong>we don’t know which one will be
-            needed until run time?</strong>*</p>
+            needed until run time?</strong></p>
             <p>So, depending on the data that we’re given, or some input
             from the user, we may have to pick one of the above but
             <em>won’t know of the choice at compile time</em>.</p>
@@ -5370,7 +5377,7 @@ void bubble_sort_struct_student( struct student array[], int array_size ){...}</
             id="example-generic-bubble-sort"><span
             class="header-section-number">6.0.2</span> Example | Generic
             Bubble Sort</h3>
-            <p>A sorting algorithm, at its heart, has two parts:</p>
+            <p>A sorting algorithm needs two key parts:</p>
             <ol type="1">
             <li><em>compare</em>: given two elements, let us know which
             is larger/greater</li>
@@ -5385,8 +5392,11 @@ void bubble_sort_struct_student( struct student array[], int array_size ){...}</
             <pre class="c"><code>// Sorting | Generic
 void generic_bubble_sort(...)
 {
-    for( unsigned int i = 0 ; i &lt; array_size-1 ; ++i )
-        for( unsigned int j = 0 ; j &lt; i ; ++j )
+    if( array_size &lt; 2 )
+        return ;
+
+    for( int i = 0 ; i &lt; array_size-1 ; ++i )
+        for( int j = 0 ; j &lt; array_size-1-i ; ++j )
             if( is_greater( array[j], array[j+1]) )
                 swap( array[j], array[j+1] ) ;
 }</code></pre>
@@ -5395,9 +5405,12 @@ void generic_bubble_sort(...)
             <p>We first need to define the type of the array. Since we
             won’t know the type of the data elements in the array, we
             can’t pick a specific array type.</p>
-            <p>But, remember: * arrays and pointers are interchangeable
-            * can cast from any pointer type to <code>void*</code> and
-            back</p>
+            <p>But, remember:</p>
+            <ul>
+            <li>arrays can decay to pointers</li>
+            <li>can cast from any pointer type to <code>void*</code> and
+            back</li>
+            </ul>
             <p>using this, we define the array as a
             <code>void*</code>:</p>
             <pre class="c"><code>void generic_bubble_sort( void* array, ... )</code></pre>
@@ -5408,24 +5421,31 @@ void generic_bubble_sort(...)
             <p>Remember that a void* pointer is just a pointer to a
             <em>block</em> of memory. C does not know the <em>type of
             each element</em> in the array. So, we
-            <strong>cannot</strong> do: * <code>array[i]</code> → since
-            the type is a <code>void*</code></p>
-            <p>We can use pointer arithmetic with <code>void*</code> so
-            this is possible: * <code>array+i</code> → but that moves
-            the pointer forward by <code>i</code>
-            <strong>bytes</strong></p>
-            <p>and <strong>not</strong> by the number of bytes of the
-            data type. Recall, * <code>char* pc ; pc+1 ;</code> →
-            advances by <code>1</code> byte *
-            <code>int* pi ; pi+1 ;</code> → advances by <code>4</code>
-            bytes</p>
+            <strong>cannot</strong> do:</p>
+            <ul>
+            <li><code>array[i]</code> → since the type is a
+            <code>void*</code></li>
+            </ul>
+            <p>Standard C does not allow pointer arithmetic on
+            <code>void*</code>. First convert it to a byte pointer:</p>
+            <pre class="c"><code>unsigned char* base = array ;</code></pre>
+            <p>Then <code>base+i</code> advances by <code>i</code>
+            <strong>bytes</strong>, not by <code>i</code> elements.
+            Recall,</p>
+            <ul>
+            <li><code>char* pc ; pc+1 ;</code> → advances by
+            <code>1</code> byte</li>
+            <li><code>int* pi ; pi+1 ;</code> → advances by
+            <code>sizeof(int)</code> bytes</li>
+            </ul>
             <p>Hence, we need information about the <em>size of each
             element</em>, i.e.,</p>
             <pre class="c"><code>void generic_bubble_sort( void* array, int array_size, 
                                         int element_size ) </code></pre>
-            <p>So, we can do: <code>array + (i * element_size)</code> to
-            move to the next element in the array</p>
-            <p>So, for an <code>int</code> array, we get
+            <p>So, <code>base + (i * element_size)</code> points to
+            element <code>i</code> in the array.</p>
+            <p>So, for an <code>int</code> array where
+            <code>sizeof(int) == 4</code>, we get
             (<code>element_size = 4</code>): <img
             src="./figures/07.01.pointer_cast/pointer_cast.2.png"
             alt="array of integers" /> <img
@@ -5444,10 +5464,12 @@ void generic_bubble_sort(...)
 void generic_bubble_sort( void* array, int array_size, 
                                         int element_size ) 
 {
-    for( unsigned int i = 0 ; i &lt; array_size-1 ; ++i )
-        for( unsigned int j = 0 ; j &lt; i ; ++j )
-            if( is_greater( array + (j * element_size), array + ((j+1) * element_size )) )
-                swap( array + (j * element_size), array + ((j+1) * element_size )) ) ;
+    unsigned char* base = array ;
+
+    for( int i = 0 ; i &lt; array_size-1 ; ++i )
+        for( int j = 0 ; j &lt; array_size-1-i ; ++j )
+            if( is_greater( base + (j * element_size), array + ((j+1) * element_size )) )
+                swap( base + (j * element_size), array + ((j+1) * element_size )) ) ;
 }</code></pre>
             <p>Now we see the <em>generic</em> version of bubble sort
             taking shape.</p>
@@ -5474,15 +5496,17 @@ void generic_bubble_sort( void* array, int array_size,
                           &lt;SOME_TYPE&gt; is_greater,
                           &lt;SOME_TYPE&gt; swap ) 
 {
-    for( unsigned int i = 0 ; i &lt; array_size-1 ; ++i )
-        for( unsigned int j = 0 ; j &lt; i ; ++j )
-            if( is_greater( array + (j * element_size), array + ((j+1) * element_size )) )
-                swap( array + (j * element_size), array + ((j+1) * element_size )) ) ;
+    unsigned char* base = array ;
+
+    for( int i = 0 ; i &lt; array_size-1 ; ++i )
+        for( int j = 0 ; j &lt; array_size-1-i ; ++j )
+            if( is_greater( base + (j * element_size), array + ((j+1) * element_size )) )
+                swap( base + (j * element_size), array + ((j+1) * element_size )) ) ;
 }</code></pre>
             <p>This is <em>precisely</em> where <strong>function
             pointers</strong> come in.</p>
-            <p>We can define <code>is_greater()</code> and
-            <code>swap()</code> to be pointers to functions,
+            <p>We can define <code>is_greater</code> and
+            <code>swap</code> to be pointers to functions,
             <em>i.e.,</em> to a <strong>type</strong> of function (the
             signatures). Hence, a <em>comparator</em> function pointer
             would look like:</p>
@@ -5497,9 +5521,12 @@ void generic_bubble_sort( void* array, int array_size,
             of type <code>void*</code> and returns and
             <code>int</code></strong>.</p>
             <p>Note, that the job of a comparator function is to take
-            two values and, * return positive (non-zero) values if
-            <code>l &gt; r</code> or * a zero if
-            <code>l &lt;= r</code>.</p>
+            two values and,</p>
+            <ul>
+            <li>return positive (non-zero) values if
+            <code>l &gt; r</code> or</li>
+            <li>a zero if <code>l &lt;= r</code>.</li>
+            </ul>
             <p>We can define the <code>swap</code> function pointer in a
             similar manner:</p>
             <pre class="c"><code>typedef void (*swap_function_pointer)( void* l, void* r ) ;</code></pre>
@@ -5515,10 +5542,15 @@ void generic_bubble_sort( void* array, int array_size,
                           comparator_function_pointer is_greater,
                           swap_function_pointer swap ) 
 {
-    for( unsigned int i = 0 ; i &lt; array_size-1 ; ++i )
-        for( unsigned int j = 0 ; j &lt; i ; ++j )
-            if( is_greater( array + (j * element_size), array + ((j+1) * element_size )) )
-                swap( array + (j * element_size), array + ((j+1) * element_size )) ) ;
+    if( array_size &lt; 2 )
+        return ;
+
+    unsigned char* base = array ;
+
+    for( int i = 0 ; i &lt; array_size-1 ; ++i )
+        for( int j = 0 ; j &lt; array_size-1-i ; ++j )
+            if( is_greater( base + (j * element_size), array + ((j+1) * element_size )) )
+                swap( base + (j * element_size), array + ((j+1) * element_size )) ) ;
 }</code></pre>
             <p>So, <code>is_greater</code> is now a function pointer of
             type, <code>comparator_function_pointer</code> and
@@ -6168,7 +6200,7 @@ main(void)
 5: 0
 6: -308299152
 7: 1
-8: 1802726224
+8: 1865411408
 9: 1
 10: 1
 11: 0</code></pre>
@@ -6654,7 +6686,7 @@ main(void)
 }</code></pre>
             <p>Program output:</p>
             <pre><code>blahblahblah
-0x1026c3f88 == 0x1026c3f88 != 0x1026c8000</code></pre>
+0x100127f88 == 0x100127f88 != 0x10012c000</code></pre>
             <p>The C compiler and linker are smart enough to see that if
             you have already used a string with a specific value (in
             this case <code>"clone"</code>), it will avoid allocating a
@@ -10865,9 +10897,9 @@ int main(void)
     return 0;
 }</code></pre>
             <p>Program output:</p>
-            <pre><code>77136: We&#39;ve been asked to terminate. Exit!
-77135: Parent asking child (77136) to terminate
-77135: Child process 77136 has exited.</code></pre>
+            <pre><code>11848: We&#39;ve been asked to terminate. Exit!
+11847: Parent asking child (11848) to terminate
+11847: Child process 11848 has exited.</code></pre>
             <p><em>Note:</em> You want to run this a few times on your
             system to see the output. The auto-execution scripts of the
             lectures might cause wonky effects here due to
@@ -12447,7 +12479,7 @@ file_size(char *dir, char *file)
 - D tools
 - F theme.css (691)
 - F LICENSE (1522)
-- F lectures.html (789716)
+- F lectures.html (790308)
 - F Makefile (2026)
 - F title.md (333)
 - D code
@@ -12466,7 +12498,7 @@ file_size(char *dir, char *file)
 - D figures
 - F inline_exec_tmp (34832)
 - D templates
-- F aggregate.md (309680)
+- F aggregate.md (309901)
 - D inline_exec_tmp.dSYM
 - D .git
 - F output_tmp.dat (0)

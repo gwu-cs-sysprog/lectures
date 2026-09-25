@@ -968,7 +968,7 @@ main(void)
 Program output:
 ```
 Integers: 2147483647, 9223372036854775807, 4294967295, *
-Hex and pointers: 7fffffffffffffff, 0x102e43ed8
+Hex and pointers: 7fffffffffffffff, 0x100f0bed8
 Strings: hello world
 ```
 
@@ -1155,8 +1155,8 @@ int main(void) {
 
 Program output:
 ```
-0th index: 0x16b2a6930 == 0x16b2a6930; 6 == 6
-nth index: 0x16b2a6934 == 0x16b2a6934; 7 == 7
+0th index: 0x16cfce930 == 0x16cfce930; 6 == 6
+nth index: 0x16cfce934 == 0x16cfce934; 7 == 7
 ```
 
 Making this a little more clear, lets understand how C accesses the `n`th item.
@@ -1191,7 +1191,7 @@ main(void)
 
 Program output:
 ```
-nth index: 0x16f7fa934 == 0x16f7fa934; 7 == 7
+nth index: 0x16fb2e934 == 0x16fb2e934; 7 == 7
 ```
 
 We can see that *pointer arithmetic* (i.e. doing addition/subtraction on pointers) does the same thing as array indexing plus a dereference.
@@ -1226,10 +1226,10 @@ main(void)
 
 Program output:
 ```
-idx 0 @ 0x16d2ca930 & 0x16d2ca928
-idx 1 @ 0x16d2ca934 & 0x16d2ca929
-idx 2 @ 0x16d2ca938 & 0x16d2ca92a
-idx 3 @ 0x16d2ca93c & 0x16d2ca92b
+idx 0 @ 0x16f29e930 & 0x16f29e928
+idx 1 @ 0x16f29e934 & 0x16f29e929
+idx 2 @ 0x16f29e938 & 0x16f29e92a
+idx 3 @ 0x16f29e93c & 0x16f29e92b
 ```
 
 Note that the pointer for the integer array (`a`) is being incremented by 4, while the character array (`b`) by 1.
@@ -1610,7 +1610,7 @@ inline_exec_tmp.c:6:15: note: initialize the variable 'p_int' to silence this wa
       |                = NULL
 1 warning generated.
 i = 100	 p_int = 0x1ed744100
-i = 100	 p_int = 0x16aea2948	 address of i = 0x16aea2948
+i = 100	 p_int = 0x16b972948	 address of i = 0x16b972948
 
 
 ```
@@ -1909,8 +1909,8 @@ int main()
 
 Program output:
 ```
-a   = 0x16b296930
-p_a = 0x16b296930
+a   = 0x16f2da930
+p_a = 0x16f2da930
 
 a[2]   = 300
 p_a[2] = 300
@@ -2596,10 +2596,10 @@ print_values(void)
 Program output:
 ```
 Addresses:
-a   @ 0x100eb0000
-b   @ 0x100eb0004
-c   @ 0x100eb0008
-end @ 0x100eb0020
+a   @ 0x102178000
+b   @ 0x102178004
+c   @ 0x102178008
+end @ 0x102178020
 &end - &a = 32
 
 Initial values:
@@ -2607,7 +2607,7 @@ a     = 1
 b     = 2
 c.c_a = 3
 c.c_b = 0
-c.c_c = 0x100eb0004
+c.c_c = 0x102178004
 
 Print out the variables as raw memory
 
@@ -2721,8 +2721,8 @@ main(void)
 
 Program output:
 ```
-0: 4 @ 0x10020c014
-1: 2 @ 0x10020c00c
+0: 4 @ 0x100f14014
+1: 2 @ 0x100f1400c
 2: 0 @ 0x0
 ```
 
@@ -3958,6 +3958,7 @@ Functions have **types** too. E.g.,
 void foo(int i, double d){...}
 ```
 The "type" of this function is:
+
 * takes as input two arguments &rarr; one `int` and one `double`
 * returns nothing, hence return type is `void`
 * **note**: this is **not** the same as a return type of `void*`
@@ -3980,7 +3981,7 @@ void bubble_sort_int( int array[], unsigned int array_size )
 {
     for( unsigned int i = 0 ; i < array_size-1 ; ++i )
     {
-        for( unsigned int j = 0 ; j < i ; ++j )
+        for( unsigned int j = 0 ; j < array_size-1-i ; ++j )
         {
             if( array[j] > array[j+1] )
             {
@@ -4025,12 +4026,15 @@ This works for an array of `int`s. But what if I want to sort an array of `doubl
 Maybe, write a new function to do that?
 
 ```c 
-// Sorting ints
+// Sorting doubles
 void bubble_sort_double( double array[], int array_size )
 {
-    for( unsigned int i = 0 ; i < array_size-1 ; ++i )
+    if( array_size < 2 )
+        return ;
+
+    for( int i = 0 ; i < array_size-1 ; ++i )
     {
-        for( unsigned int j = 0 ; j < i ; ++j )
+        for( int j = 0 ; j < array_size-1-i ; ++j )
         {
             if( array[j] > array[j+1] )
             {
@@ -4051,7 +4055,7 @@ void bubble_sort_float( float array[], int array_size ){...}
 void bubble_sort_struct_student( struct student array[], int array_size ){...}
 ```
 
-But what if **we don't know which one will be needed until run time?***
+But what if **we don't know which one will be needed until run time?**
 
 So, depending on the data that we're given, or some input from the user, we may have to pick one of the above but *won't know of the choice at compile time*.
 
@@ -4059,7 +4063,7 @@ Enter **function pointers**!
 
 ### Example | Generic Bubble Sort
 
-A sorting algorithm, at its heart, has two parts:
+A sorting algorithm needs two key parts:
 
 1. *compare*: given two elements, let us know which is larger/greater
 2. *swap*: given two elements, exchange their values
@@ -4075,8 +4079,11 @@ hence, we can rewrite the bubble sort function, in a "generic" form as:
 // Sorting | Generic
 void generic_bubble_sort(...)
 {
-    for( unsigned int i = 0 ; i < array_size-1 ; ++i )
-        for( unsigned int j = 0 ; j < i ; ++j )
+    if( array_size < 2 )
+        return ;
+
+    for( int i = 0 ; i < array_size-1 ; ++i )
+        for( int j = 0 ; j < array_size-1-i ; ++j )
             if( is_greater( array[j], array[j+1]) )
                 swap( array[j], array[j+1] ) ;
 }
@@ -4087,7 +4094,8 @@ But, what are the **inputs** to the function?
 We first need to define the type of the array. Since we won't know the type of the data elements in the array, we can't pick a specific array type. 
 
 But, remember:
-* arrays and pointers are interchangeable
+
+* arrays can decay to pointers
 * can cast from any pointer type to `void*` and back
 
 using this, we define the array as a `void*`:
@@ -4103,14 +4111,18 @@ void generic_bubble_sort( void* array, int array_size, ...)
 ```
 
 Remember that a void* pointer is just a pointer to a *block* of memory. C does not know the *type of each element* in the array. So, we **cannot** do:
+
 * `array[i]` &rarr; since the type is a `void*`
 
-We can use pointer arithmetic with `void*` so this is possible:
-* `array+i` &rarr; but that moves the pointer forward by `i` **bytes**
+Standard C does not allow pointer arithmetic on `void*`. First convert it to a byte pointer:
+```c 
+unsigned char* base = array ;
+```
 
-and **not** by the number of bytes of the data type. Recall,
+Then `base+i` advances by `i` **bytes**, not by `i` elements. Recall,
+
 * `char* pc ; pc+1 ;` &rarr; advances by `1` byte
-* `int* pi ; pi+1 ;  `  &rarr; advances by `4` bytes
+* `int* pi ; pi+1 ;` &rarr; advances by `sizeof(int)` bytes
 
 
 Hence, we need information about the *size of each element*, i.e.,
@@ -4119,9 +4131,9 @@ void generic_bubble_sort( void* array, int array_size,
                                         int element_size ) 
 ```
 
-So, we can do: `array + (i * element_size)` to move to the next element in the array
+So, `base + (i * element_size)` points to element `i` in the array.
 
-So, for an `int` array, we get (`element_size = 4`):
+So, for an `int` array where `sizeof(int) == 4`, we get (`element_size = 4`):
 ![array of integers](./figures/07.01.pointer_cast/pointer_cast.2.png)
 ![array of integers](./figures/07.01.pointer_cast/pointer_cast.3.png)
 <br>
@@ -4138,10 +4150,12 @@ Using this information about `element_size`, we can rewrite the generic bubble s
 void generic_bubble_sort( void* array, int array_size, 
                                         int element_size ) 
 {
-    for( unsigned int i = 0 ; i < array_size-1 ; ++i )
-        for( unsigned int j = 0 ; j < i ; ++j )
-            if( is_greater( array + (j * element_size), array + ((j+1) * element_size )) )
-                swap( array + (j * element_size), array + ((j+1) * element_size )) ) ;
+    unsigned char* base = array ;
+
+    for( int i = 0 ; i < array_size-1 ; ++i )
+        for( int j = 0 ; j < array_size-1-i ; ++j )
+            if( is_greater( base + (j * element_size), array + ((j+1) * element_size )) )
+                swap( base + (j * element_size), array + ((j+1) * element_size )) ) ;
 }
 ```
 
@@ -4160,16 +4174,18 @@ void generic_bubble_sort( void* array, int array_size,
                           <SOME_TYPE> is_greater,
                           <SOME_TYPE> swap ) 
 {
-    for( unsigned int i = 0 ; i < array_size-1 ; ++i )
-        for( unsigned int j = 0 ; j < i ; ++j )
-            if( is_greater( array + (j * element_size), array + ((j+1) * element_size )) )
-                swap( array + (j * element_size), array + ((j+1) * element_size )) ) ;
+    unsigned char* base = array ;
+
+    for( int i = 0 ; i < array_size-1 ; ++i )
+        for( int j = 0 ; j < array_size-1-i ; ++j )
+            if( is_greater( base + (j * element_size), array + ((j+1) * element_size )) )
+                swap( base + (j * element_size), array + ((j+1) * element_size )) ) ;
 }
 ```
 
 This is *precisely* where **function pointers** come in.
 
-We can define `is_greater()` and `swap()` to be pointers to functions, *i.e.,* to a **type** of function (the signatures). Hence, a *comparator* function pointer would look like:
+We can define `is_greater` and `swap` to be pointers to functions, *i.e.,* to a **type** of function (the signatures). Hence, a *comparator* function pointer would look like:
 ```c 
 typedef int (*comparator_function_pointer)( void* l, void* r ) ;
 ```
@@ -4177,6 +4193,7 @@ typedef int (*comparator_function_pointer)( void* l, void* r ) ;
 Recall that the `typedef` keyword *associates a name with a type*. In the above example, we are saying that `comparator_function_pointer` is now a name that refers to the (function) type, `int (*)( void*, void* )`, *i.e.,* a **pointer to a function that takes two arguments, each of type `void*` and returns and `int`**. 
 
 Note, that the job of a comparator function is to take two values and,
+
 * return positive (non-zero) values if `l > r` or 
 * a zero if `l <= r`.
 
@@ -4193,10 +4210,15 @@ void generic_bubble_sort( void* array, int array_size,
                           comparator_function_pointer is_greater,
                           swap_function_pointer swap ) 
 {
-    for( unsigned int i = 0 ; i < array_size-1 ; ++i )
-        for( unsigned int j = 0 ; j < i ; ++j )
-            if( is_greater( array + (j * element_size), array + ((j+1) * element_size )) )
-                swap( array + (j * element_size), array + ((j+1) * element_size )) ) ;
+    if( array_size < 2 )
+        return ;
+
+    unsigned char* base = array ;
+
+    for( int i = 0 ; i < array_size-1 ; ++i )
+        for( int j = 0 ; j < array_size-1-i ; ++j )
+            if( is_greater( base + (j * element_size), array + ((j+1) * element_size )) )
+                swap( base + (j * element_size), array + ((j+1) * element_size )) ) ;
 }
 ```
 So, `is_greater` is now a function pointer of type, `comparator_function_pointer` and `swap` is a function pointer of type, `swap_function_pointer`. 
@@ -4814,7 +4836,7 @@ Program output:
 5: 0
 6: -308299152
 7: 1
-8: 1802726224
+8: 1865411408
 9: 1
 10: 1
 11: 0
@@ -5261,7 +5283,7 @@ main(void)
 Program output:
 ```
 blahblahblah
-0x1026c3f88 == 0x1026c3f88 != 0x1026c8000
+0x100127f88 == 0x100127f88 != 0x10012c000
 ```
 
 The C compiler and linker are smart enough to see that if you have already used a string with a specific value (in this case `"clone"`), it will avoid allocating a copy of that string, and will just reuse the previous value.
@@ -8987,9 +9009,9 @@ int main(void)
 
 Program output:
 ```
-77136: We've been asked to terminate. Exit!
-77135: Parent asking child (77136) to terminate
-77135: Child process 77136 has exited.
+11848: We've been asked to terminate. Exit!
+11847: Parent asking child (11848) to terminate
+11847: Child process 11848 has exited.
 ```
 
 *Note:* You want to run this a few times on your system to see the output.
@@ -10284,7 +10306,7 @@ Program output:
 - D tools
 - F theme.css (691)
 - F LICENSE (1522)
-- F lectures.html (789716)
+- F lectures.html (790308)
 - F Makefile (2026)
 - F title.md (333)
 - D code
@@ -10303,7 +10325,7 @@ Program output:
 - D figures
 - F inline_exec_tmp (34832)
 - D templates
-- F aggregate.md (309680)
+- F aggregate.md (309901)
 - D inline_exec_tmp.dSYM
 - D .git
 - F output_tmp.dat (0)
