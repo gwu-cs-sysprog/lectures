@@ -968,7 +968,7 @@ main(void)
 Program output:
 ```
 Integers: 2147483647, 9223372036854775807, 4294967295, *
-Hex and pointers: 7fffffffffffffff, 0x100f0bed8
+Hex and pointers: 7fffffffffffffff, 0x100ccbed8
 Strings: hello world
 ```
 
@@ -1155,8 +1155,8 @@ int main(void) {
 
 Program output:
 ```
-0th index: 0x16cfce930 == 0x16cfce930; 6 == 6
-nth index: 0x16cfce934 == 0x16cfce934; 7 == 7
+0th index: 0x16f34a930 == 0x16f34a930; 6 == 6
+nth index: 0x16f34a934 == 0x16f34a934; 7 == 7
 ```
 
 Making this a little more clear, lets understand how C accesses the `n`th item.
@@ -1191,7 +1191,7 @@ main(void)
 
 Program output:
 ```
-nth index: 0x16fb2e934 == 0x16fb2e934; 7 == 7
+nth index: 0x16f3c6934 == 0x16f3c6934; 7 == 7
 ```
 
 We can see that *pointer arithmetic* (i.e. doing addition/subtraction on pointers) does the same thing as array indexing plus a dereference.
@@ -1226,10 +1226,10 @@ main(void)
 
 Program output:
 ```
-idx 0 @ 0x16f29e930 & 0x16f29e928
-idx 1 @ 0x16f29e934 & 0x16f29e929
-idx 2 @ 0x16f29e938 & 0x16f29e92a
-idx 3 @ 0x16f29e93c & 0x16f29e92b
+idx 0 @ 0x16d70a930 & 0x16d70a928
+idx 1 @ 0x16d70a934 & 0x16d70a929
+idx 2 @ 0x16d70a938 & 0x16d70a92a
+idx 3 @ 0x16d70a93c & 0x16d70a92b
 ```
 
 Note that the pointer for the integer array (`a`) is being incremented by 4, while the character array (`b`) by 1.
@@ -1410,7 +1410,7 @@ main(void)
 
 Program output:
 ```
-make[1]: *** [inline_exec] Error 4
+make[1]: *** [inline_exec] Error 7
 ```
 
 - *Memory leaks.*
@@ -1610,7 +1610,7 @@ inline_exec_tmp.c:6:15: note: initialize the variable 'p_int' to silence this wa
       |                = NULL
 1 warning generated.
 i = 100	 p_int = 0x1ed744100
-i = 100	 p_int = 0x16b972948	 address of i = 0x16b972948
+i = 100	 p_int = 0x16f42e948	 address of i = 0x16f42e948
 
 
 ```
@@ -1909,8 +1909,8 @@ int main()
 
 Program output:
 ```
-a   = 0x16f2da930
-p_a = 0x16f2da930
+a   = 0x16b22e930
+p_a = 0x16b22e930
 
 a[2]   = 300
 p_a[2] = 300
@@ -2596,10 +2596,10 @@ print_values(void)
 Program output:
 ```
 Addresses:
-a   @ 0x102178000
-b   @ 0x102178004
-c   @ 0x102178008
-end @ 0x102178020
+a   @ 0x102560000
+b   @ 0x102560004
+c   @ 0x102560008
+end @ 0x102560020
 &end - &a = 32
 
 Initial values:
@@ -2607,7 +2607,7 @@ a     = 1
 b     = 2
 c.c_a = 3
 c.c_b = 0
-c.c_c = 0x102178004
+c.c_c = 0x102560004
 
 Print out the variables as raw memory
 
@@ -2721,8 +2721,8 @@ main(void)
 
 Program output:
 ```
-0: 4 @ 0x100f14014
-1: 2 @ 0x100f1400c
+0: 4 @ 0x10030c014
+1: 2 @ 0x10030c00c
 2: 0 @ 0x0
 ```
 
@@ -3697,11 +3697,6 @@ char *pc = pi; // (char *) before pi is needed; there would otherwise be a compi
 compiler does not know the type
 
 
-# `C` Scoping Rules
-[Slides](https://sibin.github.io/teaching/csci2410-gwu-systems_programming/fall_2023/slides/reveal_slides/scoping_headers.html/)
-
-
-
 Most things in `C` have **names** (also known as *identifiers*). In fact, most things in `C` have a **name** and a **type**:
 
 <img src="figures/scoping/scope-final.png" width="250">
@@ -3722,10 +3717,9 @@ Let's talk about: **declaration** vs **definition**.
 
 |declaration|definition|
 |--------|--------|    
-| associates<br> **name** with **type** |allocates<br> **resources**|
-||
+| associates **name** with **type** |declaration + allocate resources, e.g., reserves memory or defines a function body|
 
-Most creation of identifiers are **both**, declarations and definitions, _e.g._,
+Most creation of identifiers are definitions, e.g.,
 
 <img src="figures/scoping/scope-final.png" width="250">
 
@@ -3741,7 +3735,7 @@ Now, look at these simple examples:
 | `struct student* student_records[100] ;`| definition |
 ||
 
-But what about _function declarations_?
+But what about this?
 
 ```c 
 // declaration or definition?
@@ -3764,7 +3758,7 @@ double foo( double temp )
 
 Now, let's get back to discussing the name topic, _scopes_.
 
-## "_local_" scope
+## Local Scope
 
 The name is only valid inside the **block** where it is defined, _e.g.,_
 
@@ -3816,17 +3810,18 @@ What about `i` in the above example?
 Answer: it is local to the `for` block as well so it won't be available once the loop is done.
 
 Note that a "block" can mean many things:
+
 * function
 * loop `for`, `while`
 * conditional `if...else...`
-* even a pair of braces! `{...}`
+* even just a pair of braces! `{...}`
 
 You can have the _same_ names in _different_ scopes!
 
 ```c 
 int a = 100 ;
 
-if(1)
+if(...)
 {
     int a = a*100 ;
     int b = a ;
@@ -3851,7 +3846,7 @@ As mentioned earlier, blocks can be just _empty braces_!
 ```
 
 
-## "_global_" scope
+## Global Scope
 
 These are variables that are defined **outside** of _any_ scope, _i.e.,_ outside of any function or block.
 
@@ -3892,7 +3887,7 @@ For instance, let's say we create another file, `scope2.c` with the following,
 // DEFINITION 
 double real_global_variable = 2.0f ;
 
-double pi = 3.141567 ;
+double pi = 3.14159 ;
 ```
 
 and in our main file (say we call it `scope.c`), we do:
@@ -3910,10 +3905,10 @@ void bar( double radius )
 }
 ```
 
-Let's revisit the **declaratins** vs **definitions** topic. This is a **definition**:
+Let's revisit the **declarations** vs **definitions** topic. This is a **definition**:
 
 ```c  
-extern double pi = 3.1415f ;
+double pi = 3.1415f ;
 ```
 
 since, it has 
@@ -3921,7 +3916,7 @@ since, it has
 * a name, `pi`
 * associated with a type, `double` 
 * **resources allocated** &rarr; memory to store a `double`
-* also an **initialization** &rarr; `3.1415f`
+* also an **initialization** &rarr; `3.1415`
 
 The following is a **declaration**:
 ```c 
@@ -3936,8 +3931,10 @@ extern double pi ;
 
 > What about function **arguments**? Are they local or global?
 
+Note, all global identifiers can only be _defined_ once. Defining the same identifier
+multiple times will lead to failed compilation.
 
-## "_translation unit_"/"_file_" scope
+## Translation Unit | File Scope
 
 What if we want...
 
@@ -4210,9 +4207,6 @@ void generic_bubble_sort( void* array, int array_size,
                           comparator_function_pointer is_greater,
                           swap_function_pointer swap ) 
 {
-    if( array_size < 2 )
-        return ;
-
     unsigned char* base = array ;
 
     for( int i = 0 ; i < array_size-1 ; ++i )
@@ -4836,7 +4830,7 @@ Program output:
 5: 0
 6: -308299152
 7: 1
-8: 1865411408
+8: 1807903568
 9: 1
 10: 1
 11: 0
@@ -5283,7 +5277,7 @@ main(void)
 Program output:
 ```
 blahblahblah
-0x100127f88 == 0x100127f88 != 0x10012c000
+0x104857f88 == 0x104857f88 != 0x10485c000
 ```
 
 The C compiler and linker are smart enough to see that if you have already used a string with a specific value (in this case `"clone"`), it will avoid allocating a copy of that string, and will just reuse the previous value.
@@ -9009,9 +9003,9 @@ int main(void)
 
 Program output:
 ```
-11848: We've been asked to terminate. Exit!
-11847: Parent asking child (11848) to terminate
-11847: Child process 11848 has exited.
+18148: We've been asked to terminate. Exit!
+18147: Parent asking child (18148) to terminate
+18147: Child process 18148 has exited.
 ```
 
 *Note:* You want to run this a few times on your system to see the output.
@@ -10305,8 +10299,9 @@ Program output:
 - F inline_exec_tmp.c (1658)
 - D tools
 - F theme.css (691)
+- F fn_ptr.c (2477)
 - F LICENSE (1522)
-- F lectures.html (790308)
+- F lectures.html (789661)
 - F Makefile (2026)
 - F title.md (333)
 - D code
@@ -10325,7 +10320,7 @@ Program output:
 - D figures
 - F inline_exec_tmp (34832)
 - D templates
-- F aggregate.md (309901)
+- F aggregate.md (309826)
 - D inline_exec_tmp.dSYM
 - D .git
 - F output_tmp.dat (0)
