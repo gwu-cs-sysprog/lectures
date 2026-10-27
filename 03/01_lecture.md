@@ -3,7 +3,7 @@
 
 Programming is hard.
 Really hard.
-When you write a program, you have to consider complex logic and the design of esoteric data-structures, all while desperately trying to avoid errors.
+When you write a program, you have to consider complex logic and the design of esoteric data structures, all while desperately trying to avoid errors.
 It is an exercise that challenges all of our logical, creative, and risk management facilities.
 As such, programming is the act of *methodically conquering complexity* with our *ability to abstract*.
 We walk on the knives-edge of our own abstractions where we can barely, just barely, make progress and engineer amazing systems.
@@ -57,8 +57,8 @@ You can think of Linux as an implementation of POSIX and as a variant of UNIX.
 UNIX has been taken into many different directions.
 Android and iOS layer a mobile runtime on top of UNIX; OSX and Ubuntu layer modern graphics and system  management on top of UNIX, and even Windows Subsystem for Linux (WSL) enables you to run a POSIX environment inside of Windows.
 In many ways, UNIX has won.
-However, it has won be being adapted to different domains -- you might be a little hard-pressed looking at the APIs for some of those systems to understand that it is UNIX under the hood.
+However, it has won by being adapted to different domains -- you might be a little hard-pressed looking at the APIs for some of those systems to understand that it is UNIX under the hood.
 Regardless, in this class, we'll be diving into UNIX and its APIs to better understand the core technology underlying most systems we use.
 
 The core UNIX philosophy endures, but has changed shape.
-In addition to the pervasive deployment of UNIX, Python is popular as it is has good support to compose together disparate services and libraries, and applications are frequently compositions of various REST/CRUD webservice APIs, and `json` is the unified language in which data is shared.
+In addition to the pervasive deployment of UNIX, Python is popular as it has good support to compose together disparate services and libraries, and applications are frequently compositions of various REST/CRUD webservice APIs, and `json` is the unified language in which data is shared.

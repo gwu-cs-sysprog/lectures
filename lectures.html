@@ -415,8 +415,8 @@ Programming</span>
         <ul>
         <li><a href="#tackling-complexity"
         id="toc-tackling-complexity"><span
-        class="toc-section-number">7.1.1</span> tackling
-        complexity</a></li>
+        class="toc-section-number">7.1.1</span> Tackling
+        Complexity</a></li>
         </ul></li>
         <li><a href="#process" id="toc-process"><span
         class="toc-section-number">7.2</span> process</a></li>
@@ -430,9 +430,9 @@ Programming</span>
         id="toc-process-creationterminationcoordination-api"><span
         class="toc-section-number">7.3.2</span> process
         creation/termination/coordination API</a></li>
-        <li><a href="#pdt_t" id="toc-pdt_t"><span
+        <li><a href="#pid_t" id="toc-pid_t"><span
         class="toc-section-number">7.3.3</span>
-        <code>pdt_t</code></a></li>
+        <code>pid_t</code></a></li>
         <li><a href="#lets-revisit-fork"
         id="toc-lets-revisit-fork"><span
         class="toc-section-number">7.3.4</span> let’s revisit
@@ -2163,7 +2163,7 @@ main(void)
 }</code></pre>
             <p>Program output:</p>
             <pre><code>Integers: 2147483647, 9223372036854775807, 4294967295, *
-Hex and pointers: 7fffffffffffffff, 0x100ccbed8
+Hex and pointers: 7fffffffffffffff, 0x100d8fed8
 Strings: hello world</code></pre>
             <h3 data-number="3.3.3"
             id="more-about-compound-types-struct-and-union"><span
@@ -2331,8 +2331,8 @@ int main(void) {
     return 0;
 }</code></pre>
             <p>Program output:</p>
-            <pre><code>0th index: 0x16f34a930 == 0x16f34a930; 6 == 6
-nth index: 0x16f34a934 == 0x16f34a934; 7 == 7</code></pre>
+            <pre><code>0th index: 0x16d576930 == 0x16d576930; 6 == 6
+nth index: 0x16d576934 == 0x16d576934; 7 == 7</code></pre>
             <p>Making this a little more clear, lets understand how C
             accesses the <code>n</code>th item. Lets make a pointer
             <code>int *p = a + 1</code> (we’ll just simply and assume
@@ -2360,7 +2360,7 @@ main(void)
     return 0;
 }</code></pre>
             <p>Program output:</p>
-            <pre><code>nth index: 0x16f3c6934 == 0x16f3c6934; 7 == 7</code></pre>
+            <pre><code>nth index: 0x16fbde934 == 0x16fbde934; 7 == 7</code></pre>
             <p>We can see that <em>pointer arithmetic</em> (i.e. doing
             addition/subtraction on pointers) does the same thing as
             array indexing plus a dereference. That is,
@@ -2393,10 +2393,10 @@ main(void)
     return 0;
 }</code></pre>
             <p>Program output:</p>
-            <pre><code>idx 0 @ 0x16d70a930 &amp; 0x16d70a928
-idx 1 @ 0x16d70a934 &amp; 0x16d70a929
-idx 2 @ 0x16d70a938 &amp; 0x16d70a92a
-idx 3 @ 0x16d70a93c &amp; 0x16d70a92b</code></pre>
+            <pre><code>idx 0 @ 0x16d852930 &amp; 0x16d852928
+idx 1 @ 0x16d852934 &amp; 0x16d852929
+idx 2 @ 0x16d852938 &amp; 0x16d85292a
+idx 3 @ 0x16d85293c &amp; 0x16d85292b</code></pre>
             <p>Note that the pointer for the integer array
             (<code>a</code>) is being incremented by 4, while the
             character array (<code>b</code>) by 1. Focusing on the key
@@ -2595,7 +2595,7 @@ main(void)
 
             Program output:
             ```
-            make[1]: *** [inline_exec] Error 7
+            make[1]: *** [inline_exec] Error 4
             ```
 
             - *Memory leaks.*
@@ -2801,7 +2801,7 @@ inline_exec_tmp.c:6:15: note: initialize the variable &#39;p_int&#39; to silence
       |                = NULL
 1 warning generated.
 i = 100  p_int = 0x1ed744100
-i = 100  p_int = 0x16f42e948     address of i = 0x16f42e948
+i = 100  p_int = 0x16bada948     address of i = 0x16bada948
 
 </code></pre>
             <p>To <em>follow the arrow</em>, <em>i.e.</em>, get the
@@ -3035,8 +3035,8 @@ int main()
     return 0 ;
 }</code></pre>
             <p>Program output:</p>
-            <pre><code>a   = 0x16b22e930
-p_a = 0x16b22e930
+            <pre><code>a   = 0x16d142930
+p_a = 0x16d142930
 
 a[2]   = 300
 p_a[2] = 300
@@ -3687,7 +3687,7 @@ main(void)
     return *a;
 }</code></pre>
             <p>Program output:</p>
-            <pre><code>make[1]: *** [inline_exec] Error 4</code></pre>
+            <pre><code>make[1]: *** [inline_exec] Error 7</code></pre>
             <ol start="3" type="1">
             <li><strong>memory leaks</strong> → allocate but forget to
             <code>free()</code>!
@@ -3799,10 +3799,10 @@ print_values(void)
 }</code></pre>
             <p>Program output:</p>
             <pre><code>Addresses:
-a   @ 0x102560000
-b   @ 0x102560004
-c   @ 0x102560008
-end @ 0x102560020
+a   @ 0x104104000
+b   @ 0x104104004
+c   @ 0x104104008
+end @ 0x104104020
 &amp;end - &amp;a = 32
 
 Initial values:
@@ -3810,7 +3810,7 @@ a     = 1
 b     = 2
 c.c_a = 3
 c.c_b = 0
-c.c_c = 0x102560004
+c.c_c = 0x104104004
 
 Print out the variables as raw memory
 
@@ -3936,8 +3936,8 @@ main(void)
     return 0;
 }</code></pre>
             <p>Program output:</p>
-            <pre><code>0: 4 @ 0x10030c014
-1: 2 @ 0x10030c00c
+            <pre><code>0: 4 @ 0x104bf0014
+1: 2 @ 0x104bf000c
 2: 0 @ 0x0</code></pre>
             <p>You want to implement a simple “key-value” store that is
             very similar in API to a hash-table (many key-value stores
@@ -5143,8 +5143,8 @@ fahrenheit = 98.5 ;</code></pre>
 
 if(...)
 {
-    int a = a*100 ;
-    int b = a ;
+    int b = a*100 ;
+    int a = b ;
 
     printf( &quot;a inside if = %d\n&quot;, a ) ;
 }
@@ -6189,7 +6189,7 @@ main(void)
 5: 0
 6: -308299152
 7: 1
-8: 1807903568
+8: 1808182096
 9: 1
 10: 1
 11: 0</code></pre>
@@ -6675,7 +6675,7 @@ main(void)
 }</code></pre>
             <p>Program output:</p>
             <pre><code>blahblahblah
-0x104857f88 == 0x104857f88 != 0x10485c000</code></pre>
+0x100d8bf88 == 0x100d8bf88 != 0x100d90000</code></pre>
             <p>The C compiler and linker are smart enough to see that if
             you have already used a string with a specific value (in
             this case <code>"clone"</code>), it will avoid allocating a
@@ -7430,7 +7430,7 @@ ENOTSUP 95 Operation not supported</code></pre>
             <td><code>perror()</code></td>
             <td><strong>print</strong> an error to the console,
             corresponding to <sc>errno</sc></td>
-            <td><code>error.h</code></td>
+            <td><code>stdio.h</code></td>
             </tr>
             <tr>
             <td><code>strerror()</code></td>
@@ -7554,7 +7554,7 @@ ERRORS
             class="header-section-number">7</span> Processes</h1>
             <p>Programming is hard. Really hard. When you write a
             program, you have to consider complex logic and the design
-            of esoteric data-structures, all while desperately trying to
+            of esoteric data structures, all while desperately trying to
             avoid errors. It is an exercise that challenges all of our
             logical, creative, and risk management facilities. As such,
             programming is the act of <em>methodically conquering
@@ -7656,7 +7656,7 @@ ERRORS
             and Ubuntu layer modern graphics and system management on
             top of UNIX, and even Windows Subsystem for Linux (WSL)
             enables you to run a POSIX environment inside of Windows. In
-            many ways, UNIX has won. However, it has won be being
+            many ways, UNIX has won. However, it has won by being
             adapted to different domains – you might be a little
             hard-pressed looking at the APIs for some of those systems
             to understand that it is UNIX under the hood. Regardless, in
@@ -7665,16 +7665,14 @@ ERRORS
             use.</p>
             <p>The core UNIX philosophy endures, but has changed shape.
             In addition to the pervasive deployment of UNIX, Python is
-            popular as it is has good support to compose together
-            disparate services and libraries, and applications are
-            frequently compositions of various REST/CRUD webservice
-            APIs, and <code>json</code> is the unified language in which
-            data is shared. # Processes</p>
-            <p><a
-            href="https://sibin.github.io/teaching/csci2410-gwu-systems_programming/fall_2023/slides/reveal_slides/processes.html#/">Slides</a></p>
+            popular as it has good support to compose together disparate
+            services and libraries, and applications are frequently
+            compositions of various REST/CRUD webservice APIs, and
+            <code>json</code> is the unified language in which data is
+            shared. # Processes</p>
             <h3 data-number="7.1.1" id="tackling-complexity"><span
-            class="header-section-number">7.1.1</span> tackling
-            complexity</h3>
+            class="header-section-number">7.1.1</span> Tackling
+            Complexity</h3>
             <span class="fragment fade-in">
             <ul>
             <li>
@@ -7767,14 +7765,14 @@ sibin    2385180  0.0  0.0   6432  2620 pts/15   S+   17:19   0:00 grep --color 
             a “<em>pipe</em>”). Hence, we are only listing those lines
             from the output of <code>ps aux</code> that has a string
             that matches the word, <code>sibin</code>.</p>
-            <p><strong>Note:</strong> neither command/process
+            <p><strong>Note:</strong> Neither command/process
             (<code>ps</code>/<code>grep</code>) needs to be aware of
-            each other. hey both carry out their normal functionality.
-            It if the beauty and elgance of the UNIX design that allows
+            each other. They both carry out their normal functionality.
+            It is the beauty and elegance of the UNIX design that allows
             this chaining of processes to work as well as it does.
             Technically <em>most</em> UNIX commands/processes can be
-            chained together to get very advance functionality from very
-            simple components.</p>
+            chained together to get very advanced functionality from
+            very simple components.</p>
             <h2 data-number="7.2" id="process"><span
             class="header-section-number">7.2</span> process</h2>
             <ul>
@@ -7797,7 +7795,7 @@ sibin    2385180  0.0  0.0   6432  2620 pts/15   S+   17:19   0:00 grep --color 
             <h2 data-number="7.3" id="fork"><span
             class="header-section-number">7.3</span>
             <code>fork()</code></h2>
-            <p>Create a new, child, process → from the <strong>state of
+            <p>Create a new, child process → from the <strong>state of
             the calling process</strong></p>
             <p>Defined in <code>&lt;unistd.h&gt;</code>.</p>
             <h3 data-number="7.3.1" id="after-fork"><span
@@ -7863,9 +7861,9 @@ sibin    2385180  0.0  0.0   6432  2620 pts/15   S+   17:19   0:00 grep --color 
             <li>process → program <strong>executing</strong> in
             memory</li>
             </ul>
-            <h3 data-number="7.3.3" id="pdt_t"><span
+            <h3 data-number="7.3.3" id="pid_t"><span
             class="header-section-number">7.3.3</span>
-            <code>pdt_t</code></h3>
+            <code>pid_t</code></h3>
             <ul>
             <li>process identifier defined in
             <code>&lt;sys/types.h&gt;</code></li>
@@ -8505,14 +8503,14 @@ Inside :::PARENT::: where child 2568616 exited with status: 5</code></pre>
             <h4 data-number="7.5.3.1" id="on_exit"><span
             class="header-section-number">7.5.3.1</span>
             <code>on_exit()</code></h4>
-            <pre class="c"><code>typdef void (*function)( int , void * ) ;
+            <pre class="c"><code>typedef void (*function)( int , void * ) ;
 int on_exit( function my_func, void *arg ) ;</code></pre>
             <ul>
             <li>register a <em>user-defined</em> <strong>function
             pointer</strong></li>
             <li><code>my_func</code></li>
             <li>to be called while exiting from <code>main()</code><br>
-            <code>typdef void (*function)( int , void * ) ;</code></li>
+            <code>typedef void (*function)( int , void * ) ;</code></li>
             <li>function receives → exit <code>status</code> &amp;
             <code>argument</code></li>
             <li>we can pass data/args to that function</li>
@@ -8522,18 +8520,11 @@ int on_exit( function my_func, void *arg ) ;</code></pre>
             <code>atexit()</code></h4>
             <pre class="c"><code>typedef void (*function)(void) ;
 int atexit(function my_func);</code></pre>
-            <p>Program output:</p>
-            <pre><code>Undefined symbols for architecture arm64:
-  &quot;_main&quot;, referenced from:
-      &lt;initial-undefines&gt;
-ld: symbol(s) not found for architecture arm64
-clang: error: linker command failed with exit code 1 (use -v to see invocation)
-make[1]: *** [inline_exec_tmp] Error 1</code></pre>
             <ul>
             <li>register a <em>user-defined</em> <strong>function
             pointer</strong></li>
             <li><code>my_func</code></li>
-            <li>to be called while exiting from <code>main()</code><br>
+            <li>to be called while exiting <br>
             <code>typedef void (*function)(void) ;</code></li>
             <li><strong>much simpler</strong> function/interface →
             <strong>no</strong> args!</li>
@@ -8931,8 +8922,7 @@ main(int argc, char *argv[])
 }</code></pre>
             <p>Program output:</p>
             <pre><code>user: jie
-user (forked child): penny
-Environment variable USER -&gt; penny</code></pre>
+user (forked child): penny</code></pre>
             <p><code>03/envtest.c</code> is</p>
             <pre class="c"><code>#include &lt;stdlib.h&gt;
 #include &lt;stdio.h&gt;
@@ -10886,9 +10876,9 @@ int main(void)
     return 0;
 }</code></pre>
             <p>Program output:</p>
-            <pre><code>18148: We&#39;ve been asked to terminate. Exit!
-18147: Parent asking child (18148) to terminate
-18147: Child process 18148 has exited.</code></pre>
+            <pre><code>49864: We&#39;ve been asked to terminate. Exit!
+49863: Parent asking child (49864) to terminate
+49863: Child process 49864 has exited.</code></pre>
             <p><em>Note:</em> You want to run this a few times on your
             system to see the output. The auto-execution scripts of the
             lectures might cause wonky effects here due to
@@ -12467,7 +12457,7 @@ file_size(char *dir, char *file)
 - F theme.css (691)
 - F fn_ptr.c (2477)
 - F LICENSE (1522)
-- F lectures.html (789661)
+- F lectures.html (789283)
 - F Makefile (2026)
 - F title.md (333)
 - D code
@@ -12486,7 +12476,7 @@ file_size(char *dir, char *file)
 - D figures
 - F inline_exec_tmp (34832)
 - D templates
-- F aggregate.md (309826)
+- F aggregate.md (309368)
 - D inline_exec_tmp.dSYM
 - D .git
 - F output_tmp.dat (0)

@@ -968,7 +968,7 @@ main(void)
 Program output:
 ```
 Integers: 2147483647, 9223372036854775807, 4294967295, *
-Hex and pointers: 7fffffffffffffff, 0x100ccbed8
+Hex and pointers: 7fffffffffffffff, 0x100d8fed8
 Strings: hello world
 ```
 
@@ -1155,8 +1155,8 @@ int main(void) {
 
 Program output:
 ```
-0th index: 0x16f34a930 == 0x16f34a930; 6 == 6
-nth index: 0x16f34a934 == 0x16f34a934; 7 == 7
+0th index: 0x16d576930 == 0x16d576930; 6 == 6
+nth index: 0x16d576934 == 0x16d576934; 7 == 7
 ```
 
 Making this a little more clear, lets understand how C accesses the `n`th item.
@@ -1191,7 +1191,7 @@ main(void)
 
 Program output:
 ```
-nth index: 0x16f3c6934 == 0x16f3c6934; 7 == 7
+nth index: 0x16fbde934 == 0x16fbde934; 7 == 7
 ```
 
 We can see that *pointer arithmetic* (i.e. doing addition/subtraction on pointers) does the same thing as array indexing plus a dereference.
@@ -1226,10 +1226,10 @@ main(void)
 
 Program output:
 ```
-idx 0 @ 0x16d70a930 & 0x16d70a928
-idx 1 @ 0x16d70a934 & 0x16d70a929
-idx 2 @ 0x16d70a938 & 0x16d70a92a
-idx 3 @ 0x16d70a93c & 0x16d70a92b
+idx 0 @ 0x16d852930 & 0x16d852928
+idx 1 @ 0x16d852934 & 0x16d852929
+idx 2 @ 0x16d852938 & 0x16d85292a
+idx 3 @ 0x16d85293c & 0x16d85292b
 ```
 
 Note that the pointer for the integer array (`a`) is being incremented by 4, while the character array (`b`) by 1.
@@ -1410,7 +1410,7 @@ main(void)
 
 Program output:
 ```
-make[1]: *** [inline_exec] Error 7
+make[1]: *** [inline_exec] Error 4
 ```
 
 - *Memory leaks.*
@@ -1610,7 +1610,7 @@ inline_exec_tmp.c:6:15: note: initialize the variable 'p_int' to silence this wa
       |                = NULL
 1 warning generated.
 i = 100	 p_int = 0x1ed744100
-i = 100	 p_int = 0x16f42e948	 address of i = 0x16f42e948
+i = 100	 p_int = 0x16bada948	 address of i = 0x16bada948
 
 
 ```
@@ -1909,8 +1909,8 @@ int main()
 
 Program output:
 ```
-a   = 0x16b22e930
-p_a = 0x16b22e930
+a   = 0x16d142930
+p_a = 0x16d142930
 
 a[2]   = 300
 p_a[2] = 300
@@ -2477,7 +2477,7 @@ main(void)
 
 Program output:
 ```
-make[1]: *** [inline_exec] Error 4
+make[1]: *** [inline_exec] Error 7
 ```
 
 3. **memory leaks** &rarr; allocate but forget to `free()`!
@@ -2596,10 +2596,10 @@ print_values(void)
 Program output:
 ```
 Addresses:
-a   @ 0x102560000
-b   @ 0x102560004
-c   @ 0x102560008
-end @ 0x102560020
+a   @ 0x104104000
+b   @ 0x104104004
+c   @ 0x104104008
+end @ 0x104104020
 &end - &a = 32
 
 Initial values:
@@ -2607,7 +2607,7 @@ a     = 1
 b     = 2
 c.c_a = 3
 c.c_b = 0
-c.c_c = 0x102560004
+c.c_c = 0x104104004
 
 Print out the variables as raw memory
 
@@ -2721,8 +2721,8 @@ main(void)
 
 Program output:
 ```
-0: 4 @ 0x10030c014
-1: 2 @ 0x10030c00c
+0: 4 @ 0x104bf0014
+1: 2 @ 0x104bf000c
 2: 0 @ 0x0
 ```
 
@@ -3823,8 +3823,8 @@ int a = 100 ;
 
 if(...)
 {
-    int a = a*100 ;
-    int b = a ;
+    int b = a*100 ;
+    int a = b ;
 
     printf( "a inside if = %d\n", a ) ;
 }
@@ -4830,7 +4830,7 @@ Program output:
 5: 0
 6: -308299152
 7: 1
-8: 1807903568
+8: 1808182096
 9: 1
 10: 1
 11: 0
@@ -5277,7 +5277,7 @@ main(void)
 Program output:
 ```
 blahblahblah
-0x104857f88 == 0x104857f88 != 0x10485c000
+0x100d8bf88 == 0x100d8bf88 != 0x100d90000
 ```
 
 The C compiler and linker are smart enough to see that if you have already used a string with a specific value (in this case `"clone"`), it will avoid allocating a copy of that string, and will just reuse the previous value.
@@ -5946,7 +5946,7 @@ The C standard library includes two additional helper functions for dealing with
 
 | function | operation | defined in |
 |----------|-----------|------------|
-|`perror()` | **print** an error to the console, corresponding to <sc>errno</sc>| `error.h` |
+|`perror()` | **print** an error to the console, corresponding to <sc>errno</sc>| `stdio.h` |
 |`strerror()` | **return** a **string** corresponding to <sc>errno</sc>| `string.h`|
 ||||
 
@@ -6057,7 +6057,7 @@ Error No     String
 
 Programming is hard.
 Really hard.
-When you write a program, you have to consider complex logic and the design of esoteric data-structures, all while desperately trying to avoid errors.
+When you write a program, you have to consider complex logic and the design of esoteric data structures, all while desperately trying to avoid errors.
 It is an exercise that challenges all of our logical, creative, and risk management facilities.
 As such, programming is the act of *methodically conquering complexity* with our *ability to abstract*.
 We walk on the knives-edge of our own abstractions where we can barely, just barely, make progress and engineer amazing systems.
@@ -6111,16 +6111,14 @@ You can think of Linux as an implementation of POSIX and as a variant of UNIX.
 UNIX has been taken into many different directions.
 Android and iOS layer a mobile runtime on top of UNIX; OSX and Ubuntu layer modern graphics and system  management on top of UNIX, and even Windows Subsystem for Linux (WSL) enables you to run a POSIX environment inside of Windows.
 In many ways, UNIX has won.
-However, it has won be being adapted to different domains -- you might be a little hard-pressed looking at the APIs for some of those systems to understand that it is UNIX under the hood.
+However, it has won by being adapted to different domains -- you might be a little hard-pressed looking at the APIs for some of those systems to understand that it is UNIX under the hood.
 Regardless, in this class, we'll be diving into UNIX and its APIs to better understand the core technology underlying most systems we use.
 
 The core UNIX philosophy endures, but has changed shape.
-In addition to the pervasive deployment of UNIX, Python is popular as it is has good support to compose together disparate services and libraries, and applications are frequently compositions of various REST/CRUD webservice APIs, and `json` is the unified language in which data is shared.
+In addition to the pervasive deployment of UNIX, Python is popular as it has good support to compose together disparate services and libraries, and applications are frequently compositions of various REST/CRUD webservice APIs, and `json` is the unified language in which data is shared.
 # Processes
 
-[Slides](https://sibin.github.io/teaching/csci2410-gwu-systems_programming/fall_2023/slides/reveal_slides/processes.html#/)
-
-### tackling complexity
+### Tackling Complexity
 
 <span class="fragment fade-in">
 <ul>
@@ -6212,7 +6210,7 @@ sibin    2385180  0.0  0.0   6432  2620 pts/15   S+   17:19   0:00 grep --color 
 ```
 The above command (`ps aux | grep sibin`) is sending the output of one command, `ps aux` to the input of another command, `grep sibin` (using a "*pipe*"). Hence, we are only listing those lines from the output of `ps aux` that has a string that matches the word, `sibin`. 
 
-**Note:** neither command/process (`ps`/`grep`) needs to be aware of each other. hey both carry out their normal functionality. It if the beauty and elgance of the UNIX design that allows this chaining of processes to work as well as it does. Technically *most* UNIX commands/processes can be chained together to get very advance functionality from very simple components.  
+**Note:** Neither command/process (`ps`/`grep`) needs to be aware of each other. They both carry out their normal functionality. It is the beauty and elegance of the UNIX design that allows this chaining of processes to work as well as it does. Technically *most* UNIX commands/processes can be chained together to get very advanced functionality from very simple components.  
 
 ## process
 
@@ -6231,7 +6229,7 @@ The above command (`ps aux | grep sibin`) is sending the output of one command, 
 <img src="./figures/process.png" width="400">``
 
 ## `fork()`
-Create a new, child, process &rarr; from the **state of the calling process**
+Create a new, child process &rarr; from the **state of the calling process**
 
 Defined in `<unistd.h>`.
 
@@ -6258,7 +6256,7 @@ Let's take a look at all the function available in `C` for dealing with processe
 - program &rarr; **compiled** version of code
 - process &rarr; program **executing** in memory
 
-### `pdt_t`
+### `pid_t`
 - process identifier defined in `<sys/types.h>`
 - same as a (signed) `int`
 
@@ -6771,36 +6769,26 @@ Let's look at these in more details.
 
 #### `on_exit()`
 ```c 
-typdef void (*function)( int , void * ) ;
+typedef void (*function)( int , void * ) ;
 int on_exit( function my_func, void *arg ) ;
 ```
 - register a *user-defined*  **function pointer**
 - `my_func`
 - to be called while exiting from `main()`<br>
-`typdef void (*function)( int , void * ) ;`
+`typedef void (*function)( int , void * ) ;`
 - function receives &rarr; exit `status` & `argument`
 - we can pass data/args to that function
 
 
 #### `atexit()`
 
-```c 
+```c  
 typedef void (*function)(void) ;
 int atexit(function my_func);
 ```
-
-Program output:
-```
-Undefined symbols for architecture arm64:
-  "_main", referenced from:
-      <initial-undefines>
-ld: symbol(s) not found for architecture arm64
-clang: error: linker command failed with exit code 1 (use -v to see invocation)
-make[1]: *** [inline_exec_tmp] Error 1
-```
 - register a *user-defined*  **function pointer**
 - `my_func`
-- to be called while exiting from `main()`<br>
+- to be called while exiting <br>
 `typedef void (*function)(void) ;`
 - **much simpler** function/interface &rarr; **no** args!
 -  **no** data/args passed to that function
@@ -7201,7 +7189,6 @@ Program output:
 ```
 user: jie
 user (forked child): penny
-Environment variable USER -> penny
 ```
 
 `03/envtest.c` is
@@ -9003,9 +8990,9 @@ int main(void)
 
 Program output:
 ```
-18148: We've been asked to terminate. Exit!
-18147: Parent asking child (18148) to terminate
-18147: Child process 18148 has exited.
+49864: We've been asked to terminate. Exit!
+49863: Parent asking child (49864) to terminate
+49863: Child process 49864 has exited.
 ```
 
 *Note:* You want to run this a few times on your system to see the output.
@@ -10301,7 +10288,7 @@ Program output:
 - F theme.css (691)
 - F fn_ptr.c (2477)
 - F LICENSE (1522)
-- F lectures.html (789661)
+- F lectures.html (789283)
 - F Makefile (2026)
 - F title.md (333)
 - D code
@@ -10320,7 +10307,7 @@ Program output:
 - D figures
 - F inline_exec_tmp (34832)
 - D templates
-- F aggregate.md (309826)
+- F aggregate.md (309368)
 - D inline_exec_tmp.dSYM
 - D .git
 - F output_tmp.dat (0)
