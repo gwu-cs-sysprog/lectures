@@ -2163,7 +2163,7 @@ main(void)
 }</code></pre>
             <p>Program output:</p>
             <pre><code>Integers: 2147483647, 9223372036854775807, 4294967295, *
-Hex and pointers: 7fffffffffffffff, 0x100d8fed8
+Hex and pointers: 7fffffffffffffff, 0x104c1fed8
 Strings: hello world</code></pre>
             <h3 data-number="3.3.3"
             id="more-about-compound-types-struct-and-union"><span
@@ -2331,8 +2331,8 @@ int main(void) {
     return 0;
 }</code></pre>
             <p>Program output:</p>
-            <pre><code>0th index: 0x16d576930 == 0x16d576930; 6 == 6
-nth index: 0x16d576934 == 0x16d576934; 7 == 7</code></pre>
+            <pre><code>0th index: 0x16f7b69f0 == 0x16f7b69f0; 6 == 6
+nth index: 0x16f7b69f4 == 0x16f7b69f4; 7 == 7</code></pre>
             <p>Making this a little more clear, lets understand how C
             accesses the <code>n</code>th item. Lets make a pointer
             <code>int *p = a + 1</code> (we’ll just simply and assume
@@ -2360,7 +2360,7 @@ main(void)
     return 0;
 }</code></pre>
             <p>Program output:</p>
-            <pre><code>nth index: 0x16fbde934 == 0x16fbde934; 7 == 7</code></pre>
+            <pre><code>nth index: 0x16da3a9f4 == 0x16da3a9f4; 7 == 7</code></pre>
             <p>We can see that <em>pointer arithmetic</em> (i.e. doing
             addition/subtraction on pointers) does the same thing as
             array indexing plus a dereference. That is,
@@ -2393,10 +2393,10 @@ main(void)
     return 0;
 }</code></pre>
             <p>Program output:</p>
-            <pre><code>idx 0 @ 0x16d852930 &amp; 0x16d852928
-idx 1 @ 0x16d852934 &amp; 0x16d852929
-idx 2 @ 0x16d852938 &amp; 0x16d85292a
-idx 3 @ 0x16d85293c &amp; 0x16d85292b</code></pre>
+            <pre><code>idx 0 @ 0x16fa1a9f0 &amp; 0x16fa1a9e8
+idx 1 @ 0x16fa1a9f4 &amp; 0x16fa1a9e9
+idx 2 @ 0x16fa1a9f8 &amp; 0x16fa1a9ea
+idx 3 @ 0x16fa1a9fc &amp; 0x16fa1a9eb</code></pre>
             <p>Note that the pointer for the integer array
             (<code>a</code>) is being incremented by 4, while the
             character array (<code>b</code>) by 1. Focusing on the key
@@ -2595,7 +2595,7 @@ main(void)
 
             Program output:
             ```
-            make[1]: *** [inline_exec] Error 4
+            make[1]: *** [inline_exec] Error 3
             ```
 
             - *Memory leaks.*
@@ -2801,7 +2801,7 @@ inline_exec_tmp.c:6:15: note: initialize the variable &#39;p_int&#39; to silence
       |                = NULL
 1 warning generated.
 i = 100  p_int = 0x1ed744100
-i = 100  p_int = 0x16bada948     address of i = 0x16bada948
+i = 100  p_int = 0x16b29ea08     address of i = 0x16b29ea08
 
 </code></pre>
             <p>To <em>follow the arrow</em>, <em>i.e.</em>, get the
@@ -3035,8 +3035,8 @@ int main()
     return 0 ;
 }</code></pre>
             <p>Program output:</p>
-            <pre><code>a   = 0x16d142930
-p_a = 0x16d142930
+            <pre><code>a   = 0x16f82e9f0
+p_a = 0x16f82e9f0
 
 a[2]   = 300
 p_a[2] = 300
@@ -3799,10 +3799,10 @@ print_values(void)
 }</code></pre>
             <p>Program output:</p>
             <pre><code>Addresses:
-a   @ 0x104104000
-b   @ 0x104104004
-c   @ 0x104104008
-end @ 0x104104020
+a   @ 0x100dc4000
+b   @ 0x100dc4004
+c   @ 0x100dc4008
+end @ 0x100dc4020
 &amp;end - &amp;a = 32
 
 Initial values:
@@ -3810,7 +3810,7 @@ a     = 1
 b     = 2
 c.c_a = 3
 c.c_b = 0
-c.c_c = 0x104104004
+c.c_c = 0x100dc4004
 
 Print out the variables as raw memory
 
@@ -3936,8 +3936,8 @@ main(void)
     return 0;
 }</code></pre>
             <p>Program output:</p>
-            <pre><code>0: 4 @ 0x104bf0014
-1: 2 @ 0x104bf000c
+            <pre><code>0: 4 @ 0x104590014
+1: 2 @ 0x10459000c
 2: 0 @ 0x0</code></pre>
             <p>You want to implement a simple “key-value” store that is
             very similar in API to a hash-table (many key-value stores
@@ -6189,7 +6189,7 @@ main(void)
 5: 0
 6: -308299152
 7: 1
-8: 1808182096
+8: 1803693072
 9: 1
 10: 1
 11: 0</code></pre>
@@ -6675,7 +6675,7 @@ main(void)
 }</code></pre>
             <p>Program output:</p>
             <pre><code>blahblahblah
-0x100d8bf88 == 0x100d8bf88 != 0x100d90000</code></pre>
+0x104a8bf88 == 0x104a8bf88 != 0x104a90000</code></pre>
             <p>The C compiler and linker are smart enough to see that if
             you have already used a string with a specific value (in
             this case <code>"clone"</code>), it will avoid allocating a
@@ -8922,7 +8922,8 @@ main(int argc, char *argv[])
 }</code></pre>
             <p>Program output:</p>
             <pre><code>user: jie
-user (forked child): penny</code></pre>
+user (forked child): penny
+Environment variable USER -&gt; penny</code></pre>
             <p><code>03/envtest.c</code> is</p>
             <pre class="c"><code>#include &lt;stdlib.h&gt;
 #include &lt;stdio.h&gt;
@@ -9613,14 +9614,39 @@ $</code></pre>
             </ul>
             <p><img src="figures/process.png" height="300"></p>
             <p><br></p>
-            <p>Most processes have <strong>at least</strong> three:
-            |number | descriptor | What it is | |——–|——–|——–|
-            |<code>0</code> | <code>STDIN_FILENO</code> | standard
-            <strong>input</strong> | |<code>1</code> |
-            <code>STDOUT_FILENO</code> | standard
-            <strong>output</strong> | |<code>2</code> |
-            <code>STDERR_FILENO</code> | standard <strong>error</strong>
-            <code>perror()</code>| ||</p>
+            <p>Most processes have <strong>at least</strong> three:</p>
+            <table>
+            <thead>
+            <tr>
+            <th>number</th>
+            <th>descriptor</th>
+            <th>What it is</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+            <td><code>0</code></td>
+            <td><code>STDIN_FILENO</code></td>
+            <td>standard <strong>input</strong></td>
+            </tr>
+            <tr>
+            <td><code>1</code></td>
+            <td><code>STDOUT_FILENO</code></td>
+            <td>standard <strong>output</strong></td>
+            </tr>
+            <tr>
+            <td><code>2</code></td>
+            <td><code>STDERR_FILENO</code></td>
+            <td>standard <strong>error</strong>
+            <code>perror()</code></td>
+            </tr>
+            <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            </tr>
+            </tbody>
+            </table>
             <p>defined in <code>unistd.h</code>.</p>
             <h4 data-number="8.0.3.1"
             id="standard-input-output-and-error"><span
@@ -9675,17 +9701,46 @@ $</code></pre>
             <p>File descriptors are <em>analogous</em> to pointers. The
             descriptors effectively <em>point to channel
             resources</em>.</p>
-            <p>Some core operations on files: |operation| interface |
-            |———|———–| |<strong>pull</strong> bytes from channel into
-            buffer | <code>read</code> | |<strong>send</strong> bytes
-            from channel into buffer | <code>write</code>
-            |<strong>duplicate</strong> a file descriptor |
-            <code>dup/dup2/dup3</code> | |<strong>deallocate</strong> a
-            file descriptor | <code>close</code> | ||</p>
-            <p><strong>Note:</strong>: - <code>printf()</code> is a
-            <code>write</code> to standard out - <code>close</code>
-            doesn’t necessarily remove channel - analogous to removing a
-            pointer</p>
+            <p>Some core operations on files:</p>
+            <table>
+            <thead>
+            <tr>
+            <th>operation</th>
+            <th>interface</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+            <td><strong>pull</strong> bytes from channel into
+            buffer</td>
+            <td><code>read</code></td>
+            </tr>
+            <tr>
+            <td><strong>send</strong> bytes from channel into
+            buffer</td>
+            <td><code>write</code></td>
+            </tr>
+            <tr>
+            <td><strong>duplicate</strong> a file descriptor</td>
+            <td><code>dup/dup2/dup3</code></td>
+            </tr>
+            <tr>
+            <td><strong>deallocate</strong> a file descriptor</td>
+            <td><code>close</code></td>
+            </tr>
+            <tr>
+            <td></td>
+            <td></td>
+            </tr>
+            </tbody>
+            </table>
+            <p><strong>Note:</strong>:</p>
+            <ul>
+            <li><code>printf()</code> is a <code>write</code> to
+            standard out.</li>
+            <li><code>close</code> doesn’t necessarily remove
+            channel—analogous to removing a pointer.</li>
+            </ul>
             <h4 data-number="8.0.4.1" id="dup-vs-dup2-vs-dup3"><span
             class="header-section-number">8.0.4.1</span>
             <code>dup()</code> vs <code>dup2()</code> vs
@@ -10876,9 +10931,9 @@ int main(void)
     return 0;
 }</code></pre>
             <p>Program output:</p>
-            <pre><code>49864: We&#39;ve been asked to terminate. Exit!
-49863: Parent asking child (49864) to terminate
-49863: Child process 49864 has exited.</code></pre>
+            <pre><code>43030: We&#39;ve been asked to terminate. Exit!
+43029: Parent asking child (43030) to terminate
+43029: Child process 43030 has exited.</code></pre>
             <p><em>Note:</em> You want to run this a few times on your
             system to see the output. The auto-execution scripts of the
             lectures might cause wonky effects here due to
@@ -12457,7 +12512,7 @@ file_size(char *dir, char *file)
 - F theme.css (691)
 - F fn_ptr.c (2477)
 - F LICENSE (1522)
-- F lectures.html (789283)
+- F lectures.html (790270)
 - F Makefile (2026)
 - F title.md (333)
 - D code
@@ -12476,7 +12531,7 @@ file_size(char *dir, char *file)
 - D figures
 - F inline_exec_tmp (34832)
 - D templates
-- F aggregate.md (309368)
+- F aggregate.md (309404)
 - D inline_exec_tmp.dSYM
 - D .git
 - F output_tmp.dat (0)

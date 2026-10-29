@@ -968,7 +968,7 @@ main(void)
 Program output:
 ```
 Integers: 2147483647, 9223372036854775807, 4294967295, *
-Hex and pointers: 7fffffffffffffff, 0x100d8fed8
+Hex and pointers: 7fffffffffffffff, 0x104c1fed8
 Strings: hello world
 ```
 
@@ -1155,8 +1155,8 @@ int main(void) {
 
 Program output:
 ```
-0th index: 0x16d576930 == 0x16d576930; 6 == 6
-nth index: 0x16d576934 == 0x16d576934; 7 == 7
+0th index: 0x16f7b69f0 == 0x16f7b69f0; 6 == 6
+nth index: 0x16f7b69f4 == 0x16f7b69f4; 7 == 7
 ```
 
 Making this a little more clear, lets understand how C accesses the `n`th item.
@@ -1191,7 +1191,7 @@ main(void)
 
 Program output:
 ```
-nth index: 0x16fbde934 == 0x16fbde934; 7 == 7
+nth index: 0x16da3a9f4 == 0x16da3a9f4; 7 == 7
 ```
 
 We can see that *pointer arithmetic* (i.e. doing addition/subtraction on pointers) does the same thing as array indexing plus a dereference.
@@ -1226,10 +1226,10 @@ main(void)
 
 Program output:
 ```
-idx 0 @ 0x16d852930 & 0x16d852928
-idx 1 @ 0x16d852934 & 0x16d852929
-idx 2 @ 0x16d852938 & 0x16d85292a
-idx 3 @ 0x16d85293c & 0x16d85292b
+idx 0 @ 0x16fa1a9f0 & 0x16fa1a9e8
+idx 1 @ 0x16fa1a9f4 & 0x16fa1a9e9
+idx 2 @ 0x16fa1a9f8 & 0x16fa1a9ea
+idx 3 @ 0x16fa1a9fc & 0x16fa1a9eb
 ```
 
 Note that the pointer for the integer array (`a`) is being incremented by 4, while the character array (`b`) by 1.
@@ -1410,7 +1410,7 @@ main(void)
 
 Program output:
 ```
-make[1]: *** [inline_exec] Error 4
+make[1]: *** [inline_exec] Error 3
 ```
 
 - *Memory leaks.*
@@ -1610,7 +1610,7 @@ inline_exec_tmp.c:6:15: note: initialize the variable 'p_int' to silence this wa
       |                = NULL
 1 warning generated.
 i = 100	 p_int = 0x1ed744100
-i = 100	 p_int = 0x16bada948	 address of i = 0x16bada948
+i = 100	 p_int = 0x16b29ea08	 address of i = 0x16b29ea08
 
 
 ```
@@ -1909,8 +1909,8 @@ int main()
 
 Program output:
 ```
-a   = 0x16d142930
-p_a = 0x16d142930
+a   = 0x16f82e9f0
+p_a = 0x16f82e9f0
 
 a[2]   = 300
 p_a[2] = 300
@@ -2596,10 +2596,10 @@ print_values(void)
 Program output:
 ```
 Addresses:
-a   @ 0x104104000
-b   @ 0x104104004
-c   @ 0x104104008
-end @ 0x104104020
+a   @ 0x100dc4000
+b   @ 0x100dc4004
+c   @ 0x100dc4008
+end @ 0x100dc4020
 &end - &a = 32
 
 Initial values:
@@ -2607,7 +2607,7 @@ a     = 1
 b     = 2
 c.c_a = 3
 c.c_b = 0
-c.c_c = 0x104104004
+c.c_c = 0x100dc4004
 
 Print out the variables as raw memory
 
@@ -2721,8 +2721,8 @@ main(void)
 
 Program output:
 ```
-0: 4 @ 0x104bf0014
-1: 2 @ 0x104bf000c
+0: 4 @ 0x104590014
+1: 2 @ 0x10459000c
 2: 0 @ 0x0
 ```
 
@@ -4830,7 +4830,7 @@ Program output:
 5: 0
 6: -308299152
 7: 1
-8: 1808182096
+8: 1803693072
 9: 1
 10: 1
 11: 0
@@ -5277,7 +5277,7 @@ main(void)
 Program output:
 ```
 blahblahblah
-0x100d8bf88 == 0x100d8bf88 != 0x100d90000
+0x104a8bf88 == 0x104a8bf88 != 0x104a90000
 ```
 
 The C compiler and linker are smart enough to see that if you have already used a string with a specific value (in this case `"clone"`), it will avoid allocating a copy of that string, and will just reuse the previous value.
@@ -7189,6 +7189,7 @@ Program output:
 ```
 user: jie
 user (forked child): penny
+Environment variable USER -> penny
 ```
 
 `03/envtest.c` is
@@ -7848,6 +7849,7 @@ $
 <br>
 
 Most processes have **at least** three:
+
 |number | descriptor | What it is |
 |--------|--------|--------|
 |`0` | `STDIN_FILENO` | standard **input** |
@@ -7883,6 +7885,7 @@ Now these are **file descriptors** so we treat them as **files**!
 File descriptors are *analogous* to pointers. The descriptors effectively *point to channel resources*. 
 
 Some core operations on files:
+
 |operation| interface |
 |---------|-----------|
 |**pull** bytes from channel into buffer | `read` | 
@@ -7892,9 +7895,9 @@ Some core operations on files:
 ||
 
 **Note:**:
-- `printf()` is a `write` to standard out
-- `close` doesn't necessarily remove channel
-    - analogous to removing a pointer
+
+- `printf()` is a `write` to standard out.
+- `close` doesn't necessarily remove channel—analogous to removing a pointer.
 
 #### `dup()` vs `dup2()` vs `dup3()`
 
@@ -8990,9 +8993,9 @@ int main(void)
 
 Program output:
 ```
-49864: We've been asked to terminate. Exit!
-49863: Parent asking child (49864) to terminate
-49863: Child process 49864 has exited.
+43030: We've been asked to terminate. Exit!
+43029: Parent asking child (43030) to terminate
+43029: Child process 43030 has exited.
 ```
 
 *Note:* You want to run this a few times on your system to see the output.
@@ -10288,7 +10291,7 @@ Program output:
 - F theme.css (691)
 - F fn_ptr.c (2477)
 - F LICENSE (1522)
-- F lectures.html (789283)
+- F lectures.html (790270)
 - F Makefile (2026)
 - F title.md (333)
 - D code
@@ -10307,7 +10310,7 @@ Program output:
 - D figures
 - F inline_exec_tmp (34832)
 - D templates
-- F aggregate.md (309368)
+- F aggregate.md (309404)
 - D inline_exec_tmp.dSYM
 - D .git
 - F output_tmp.dat (0)
