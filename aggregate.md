@@ -968,7 +968,7 @@ main(void)
 Program output:
 ```
 Integers: 2147483647, 9223372036854775807, 4294967295, *
-Hex and pointers: 7fffffffffffffff, 0x104c1fed8
+Hex and pointers: 7fffffffffffffff, 0x104d0fed8
 Strings: hello world
 ```
 
@@ -1155,8 +1155,8 @@ int main(void) {
 
 Program output:
 ```
-0th index: 0x16f7b69f0 == 0x16f7b69f0; 6 == 6
-nth index: 0x16f7b69f4 == 0x16f7b69f4; 7 == 7
+0th index: 0x16b3069f0 == 0x16b3069f0; 6 == 6
+nth index: 0x16b3069f4 == 0x16b3069f4; 7 == 7
 ```
 
 Making this a little more clear, lets understand how C accesses the `n`th item.
@@ -1191,7 +1191,7 @@ main(void)
 
 Program output:
 ```
-nth index: 0x16da3a9f4 == 0x16da3a9f4; 7 == 7
+nth index: 0x16dcd69f4 == 0x16dcd69f4; 7 == 7
 ```
 
 We can see that *pointer arithmetic* (i.e. doing addition/subtraction on pointers) does the same thing as array indexing plus a dereference.
@@ -1226,10 +1226,10 @@ main(void)
 
 Program output:
 ```
-idx 0 @ 0x16fa1a9f0 & 0x16fa1a9e8
-idx 1 @ 0x16fa1a9f4 & 0x16fa1a9e9
-idx 2 @ 0x16fa1a9f8 & 0x16fa1a9ea
-idx 3 @ 0x16fa1a9fc & 0x16fa1a9eb
+idx 0 @ 0x16d8b29f0 & 0x16d8b29e8
+idx 1 @ 0x16d8b29f4 & 0x16d8b29e9
+idx 2 @ 0x16d8b29f8 & 0x16d8b29ea
+idx 3 @ 0x16d8b29fc & 0x16d8b29eb
 ```
 
 Note that the pointer for the integer array (`a`) is being incremented by 4, while the character array (`b`) by 1.
@@ -1610,7 +1610,7 @@ inline_exec_tmp.c:6:15: note: initialize the variable 'p_int' to silence this wa
       |                = NULL
 1 warning generated.
 i = 100	 p_int = 0x1ed744100
-i = 100	 p_int = 0x16b29ea08	 address of i = 0x16b29ea08
+i = 100	 p_int = 0x16ba5aa08	 address of i = 0x16ba5aa08
 
 
 ```
@@ -1909,8 +1909,8 @@ int main()
 
 Program output:
 ```
-a   = 0x16f82e9f0
-p_a = 0x16f82e9f0
+a   = 0x16b9129f0
+p_a = 0x16b9129f0
 
 a[2]   = 300
 p_a[2] = 300
@@ -2596,10 +2596,10 @@ print_values(void)
 Program output:
 ```
 Addresses:
-a   @ 0x100dc4000
-b   @ 0x100dc4004
-c   @ 0x100dc4008
-end @ 0x100dc4020
+a   @ 0x102a4c000
+b   @ 0x102a4c004
+c   @ 0x102a4c008
+end @ 0x102a4c020
 &end - &a = 32
 
 Initial values:
@@ -2607,7 +2607,7 @@ a     = 1
 b     = 2
 c.c_a = 3
 c.c_b = 0
-c.c_c = 0x100dc4004
+c.c_c = 0x102a4c004
 
 Print out the variables as raw memory
 
@@ -2721,8 +2721,8 @@ main(void)
 
 Program output:
 ```
-0: 4 @ 0x104590014
-1: 2 @ 0x10459000c
+0: 4 @ 0x102054014
+1: 2 @ 0x10205400c
 2: 0 @ 0x0
 ```
 
@@ -4830,7 +4830,7 @@ Program output:
 5: 0
 6: -308299152
 7: 1
-8: 1803693072
+8: 1807395856
 9: 1
 10: 1
 11: 0
@@ -5277,7 +5277,7 @@ main(void)
 Program output:
 ```
 blahblahblah
-0x104a8bf88 == 0x104a8bf88 != 0x104a90000
+0x10291ff88 == 0x10291ff88 != 0x102924000
 ```
 
 The C compiler and linker are smart enough to see that if you have already used a string with a specific value (in this case `"clone"`), it will avoid allocating a copy of that string, and will just reuse the previous value.
@@ -8564,6 +8564,7 @@ Programs **crash**! Unless you *plan* to "**handle**" it!
 ### Enter '**signals**'
 
 UNIX's **signals** provide *asynchronous* execution in a process: 
+
 - provide asynchronous execution
 - when a signal activates,
     - a "signal handler" function is activated
@@ -8663,10 +8664,11 @@ Essentially....`sigset_t` tells us...when a signal executes,
 #### `sigset_t` functions
 
 Defined in `<signal.h>` to manage the `sigset_t` data structure.
+
 |name|function|
 |----|--------|
 |`sigemptyset`| initialize/empty the signal set <br> *i.e.*, "unmask" all|
-|`sigfullset`| initializefill the signal set <br> *i.e.*, "mask" all|                       
+|`sigfullset`| initialize/fill the signal set <br> *i.e.*, "mask" all|                       
 |`sigaddset`|add *specific*  signal to set <br> *i.e.,* "mask" specific one|
 |`sigdelset`|remove *specific* signal from set <br> *i.e.,* "mask" specific one|
 |`sigismember`|checks whether given signal is <br> part of the set|
@@ -8714,6 +8716,7 @@ struct sigaction {
 
 There are signals for quite a few events. A list of all of the signals is listed in `man 7 signal` and `glibc` has decent [documentation](https://www.gnu.org/software/libc/manual/html_node/Signal-Handling.html).
 Notable signals include:
+
 |signal| description |
 |--------|--------|
 |`SIGCHILD` | child process terminated |
@@ -8993,9 +8996,9 @@ int main(void)
 
 Program output:
 ```
-43030: We've been asked to terminate. Exit!
-43029: Parent asking child (43030) to terminate
-43029: Child process 43030 has exited.
+25281: We've been asked to terminate. Exit!
+25280: Parent asking child (25281) to terminate
+25280: Child process 25281 has exited.
 ```
 
 *Note:* You want to run this a few times on your system to see the output.
@@ -10291,7 +10294,7 @@ Program output:
 - F theme.css (691)
 - F fn_ptr.c (2477)
 - F LICENSE (1522)
-- F lectures.html (790270)
+- F lectures.html (791006)
 - F Makefile (2026)
 - F title.md (333)
 - D code
@@ -10310,7 +10313,7 @@ Program output:
 - D figures
 - F inline_exec_tmp (34832)
 - D templates
-- F aggregate.md (309404)
+- F aggregate.md (309408)
 - D inline_exec_tmp.dSYM
 - D .git
 - F output_tmp.dat (0)
