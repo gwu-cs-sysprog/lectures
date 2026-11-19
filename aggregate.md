@@ -968,7 +968,7 @@ main(void)
 Program output:
 ```
 Integers: 2147483647, 9223372036854775807, 4294967295, *
-Hex and pointers: 7fffffffffffffff, 0x104d0fed8
+Hex and pointers: 7fffffffffffffff, 0x100b3bed8
 Strings: hello world
 ```
 
@@ -1155,8 +1155,8 @@ int main(void) {
 
 Program output:
 ```
-0th index: 0x16b3069f0 == 0x16b3069f0; 6 == 6
-nth index: 0x16b3069f4 == 0x16b3069f4; 7 == 7
+0th index: 0x16d24a9f0 == 0x16d24a9f0; 6 == 6
+nth index: 0x16d24a9f4 == 0x16d24a9f4; 7 == 7
 ```
 
 Making this a little more clear, lets understand how C accesses the `n`th item.
@@ -1191,7 +1191,7 @@ main(void)
 
 Program output:
 ```
-nth index: 0x16dcd69f4 == 0x16dcd69f4; 7 == 7
+nth index: 0x16dc5a9f4 == 0x16dc5a9f4; 7 == 7
 ```
 
 We can see that *pointer arithmetic* (i.e. doing addition/subtraction on pointers) does the same thing as array indexing plus a dereference.
@@ -1226,10 +1226,10 @@ main(void)
 
 Program output:
 ```
-idx 0 @ 0x16d8b29f0 & 0x16d8b29e8
-idx 1 @ 0x16d8b29f4 & 0x16d8b29e9
-idx 2 @ 0x16d8b29f8 & 0x16d8b29ea
-idx 3 @ 0x16d8b29fc & 0x16d8b29eb
+idx 0 @ 0x16ceb69f0 & 0x16ceb69e8
+idx 1 @ 0x16ceb69f4 & 0x16ceb69e9
+idx 2 @ 0x16ceb69f8 & 0x16ceb69ea
+idx 3 @ 0x16ceb69fc & 0x16ceb69eb
 ```
 
 Note that the pointer for the integer array (`a`) is being incremented by 4, while the character array (`b`) by 1.
@@ -1410,7 +1410,7 @@ main(void)
 
 Program output:
 ```
-make[1]: *** [inline_exec] Error 3
+make[1]: *** [inline_exec] Error 4
 ```
 
 - *Memory leaks.*
@@ -1610,7 +1610,7 @@ inline_exec_tmp.c:6:15: note: initialize the variable 'p_int' to silence this wa
       |                = NULL
 1 warning generated.
 i = 100	 p_int = 0x1ed744100
-i = 100	 p_int = 0x16ba5aa08	 address of i = 0x16ba5aa08
+i = 100	 p_int = 0x16d8bea08	 address of i = 0x16d8bea08
 
 
 ```
@@ -1909,8 +1909,8 @@ int main()
 
 Program output:
 ```
-a   = 0x16b9129f0
-p_a = 0x16b9129f0
+a   = 0x16b3ee9f0
+p_a = 0x16b3ee9f0
 
 a[2]   = 300
 p_a[2] = 300
@@ -2477,7 +2477,7 @@ main(void)
 
 Program output:
 ```
-make[1]: *** [inline_exec] Error 7
+make[1]: *** [inline_exec] Error 4
 ```
 
 3. **memory leaks** &rarr; allocate but forget to `free()`!
@@ -2596,10 +2596,10 @@ print_values(void)
 Program output:
 ```
 Addresses:
-a   @ 0x102a4c000
-b   @ 0x102a4c004
-c   @ 0x102a4c008
-end @ 0x102a4c020
+a   @ 0x104088000
+b   @ 0x104088004
+c   @ 0x104088008
+end @ 0x104088020
 &end - &a = 32
 
 Initial values:
@@ -2607,7 +2607,7 @@ a     = 1
 b     = 2
 c.c_a = 3
 c.c_b = 0
-c.c_c = 0x102a4c004
+c.c_c = 0x104088004
 
 Print out the variables as raw memory
 
@@ -2721,8 +2721,8 @@ main(void)
 
 Program output:
 ```
-0: 4 @ 0x102054014
-1: 2 @ 0x10205400c
+0: 4 @ 0x102d9c014
+1: 2 @ 0x102d9c00c
 2: 0 @ 0x0
 ```
 
@@ -4830,7 +4830,7 @@ Program output:
 5: 0
 6: -308299152
 7: 1
-8: 1807395856
+8: 1835641872
 9: 1
 10: 1
 11: 0
@@ -5277,7 +5277,7 @@ main(void)
 Program output:
 ```
 blahblahblah
-0x10291ff88 == 0x10291ff88 != 0x102924000
+0x102637f88 == 0x102637f88 != 0x10263c000
 ```
 
 The C compiler and linker are smart enough to see that if you have already used a string with a specific value (in this case `"clone"`), it will avoid allocating a copy of that string, and will just reuse the previous value.
@@ -7189,7 +7189,6 @@ Program output:
 ```
 user: jie
 user (forked child): penny
-Environment variable USER -> penny
 ```
 
 `03/envtest.c` is
@@ -8723,7 +8722,7 @@ Notable signals include:
 |`SIGINT` | user typed `ctrl-c` |
 |`SIGSTOP/SIGCONT` | stop/continue child execution |
 |`SIGTSTP` | user typed `ctrl-z` |
-|`SIGTPIPE` | write to a pipe with no reader |
+|`SIGPIPE` | write to a pipe with no reader |
 |`SIGSEGV` | invalid memory access [segmentation fault] |
 |`SIGTERM/SIGKILL` | kill a process; SIGTERM can be caught, **SIGKILL** not |
 |`SIGHUP` | kill terminal that created shell |
@@ -8737,6 +8736,7 @@ Notable signals include:
 - SIGCONT &rarr; continue process after SIGSTOP
 
 Each signal has a *default behavior* that triggers if you do not define a handler. These are:
+
 * ignore
 * terminate process
 * stop process from executing
@@ -8756,19 +8756,8 @@ struct sigaction {
 };
 ```
 
-Program output:
-```
-inline_exec_tmp.c:3:35: error: unknown type name 'siginfo_t'
-    3 |     void     (*sa_sigaction)(int, siginfo_t *, void *);
-      |                                   ^
-inline_exec_tmp.c:4:5: error: unknown type name 'sigset_t'
-    4 |     sigset_t   sa_mask;
-      |     ^
-2 errors generated.
-make[1]: *** [inline_exec_tmp] Error 1
-```
-
 Why **two** function pointers?
+
 - `(*sa_handler)`
 - `(*sa_sigaction)`
 
@@ -8996,9 +8985,9 @@ int main(void)
 
 Program output:
 ```
-25281: We've been asked to terminate. Exit!
-25280: Parent asking child (25281) to terminate
-25280: Child process 25281 has exited.
+67191: We've been asked to terminate. Exit!
+67190: Parent asking child (67191) to terminate
+67190: Child process 67191 has exited.
 ```
 
 *Note:* You want to run this a few times on your system to see the output.
@@ -9700,11 +9689,10 @@ Streams:
 
 Streams are identified by the type `FILE *`, and all the APIs for operating on streams take `FILE`s instead of file descriptors.
 
-We've seen streams before...a lot!
+We have seen streams before...a lot!
 
 - `stdin`, `stdout`, `stderr`
 - `FILE*` names 
-- `STDOUT_FILENO`, `STDIN_FILENO` and `STDERR_FILENO` 
 - `printf()` writes to a stream! Hence, it is **buffered I/O**
 
 > **Why use Streams?**
@@ -9739,9 +9727,11 @@ Some notes:
 
 Now, let's look at our previous example of printing the `daffodils.txt` file in tweet lengths, this time using streams:
 
-```c
+```c 
 #include <stdio.h>
 #include <assert.h>
+
+#define TWEET_LEN 280
 
 int main(void)
 {
@@ -9770,28 +9760,6 @@ int main(void)
 }
 ```
 
-Program output:
-```
-inline_exec_tmp.c:7:16: error: use of undeclared identifier 'TWEET_LEN'
-    7 |     char tweet[TWEET_LEN+1] ;
-      |                ^
-inline_exec_tmp.c:13:9: error: call to undeclared library function 'exit' with type 'void (int) __attribute__((noreturn))'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
-   13 |         exit( EXIT_FAILURE ) ;
-      |         ^
-inline_exec_tmp.c:13:9: note: include the header <stdlib.h> or explicitly provide a declaration for 'exit'
-inline_exec_tmp.c:13:15: error: use of undeclared identifier 'EXIT_FAILURE'
-   13 |         exit( EXIT_FAILURE ) ;
-      |               ^
-inline_exec_tmp.c:17:29: error: use of undeclared identifier 'TWEET_LEN'
-   17 |     int ret = fread( tweet, TWEET_LEN, 1, f ) ;
-      |                             ^
-inline_exec_tmp.c:18:11: error: use of undeclared identifier 'TWEET_LEN'
-   18 |     tweet[TWEET_LEN] = '\0' ;
-      |           ^
-5 errors generated.
-make[1]: *** [inline_exec_tmp] Error 1
-```
-
 #### Streams as buffered I/O
 
 So it doesn't seem like we're getting much of use out of these streams compared to raw descriptors. Streams are an *optimization* over `read`/`write` as they *buffer* data.
@@ -9806,7 +9774,7 @@ However, this means that just because we called `printf`, doesn't mean it will o
 
 Lets see this how this works in practice:
 
-```c
+```c 
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -10088,7 +10056,7 @@ Program output:
 ```
  Directory: .
  Directory: ..
-      File: 14.02.files.other_methods.md (size: 11966)
+      File: 14.02.files.other_methods.md (size: 11941)
       File: prufrock.txt (size: 6044)
       File: 150_01_lecture.md (size: 4245)
       File: daffodils.txt (size: 869)
@@ -10294,7 +10262,7 @@ Program output:
 - F theme.css (691)
 - F fn_ptr.c (2477)
 - F LICENSE (1522)
-- F lectures.html (791006)
+- F lectures.html (791791)
 - F Makefile (2026)
 - F title.md (333)
 - D code
@@ -10313,7 +10281,7 @@ Program output:
 - D figures
 - F inline_exec_tmp (34832)
 - D templates
-- F aggregate.md (309408)
+- F aggregate.md (307946)
 - D inline_exec_tmp.dSYM
 - D .git
 - F output_tmp.dat (0)
